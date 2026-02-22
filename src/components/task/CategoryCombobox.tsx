@@ -146,6 +146,12 @@ export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
 
   return (
     <div className="relative">
+      {!isOpen && selectedCategory && (() => {
+        const IconComp = CATEGORY_ICONS[selectedCategory.icon] || CATEGORY_ICONS['folder'];
+        return IconComp ? (
+          <IconComp className="absolute left-2.5 top-2.5 w-4 h-4 text-slate-500 pointer-events-none z-10" />
+        ) : null;
+      })()}
       <input
         ref={inputRef}
         type="text"
@@ -160,8 +166,11 @@ export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
         }}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
-        placeholder="Search categories..."
-        className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none"
+        placeholder="Select category..."
+        className={clsx(
+          "w-full py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none",
+          !isOpen && selectedCategory ? "pl-8 pr-3" : "px-3"
+        )}
       />
 
       {isOpen && (

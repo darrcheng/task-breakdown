@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Trash2 } from 'lucide-react';
 import clsx from 'clsx';
-import { useCategories } from '../../db/hooks';
 import { STATUS_COLORS } from '../../utils/categories';
 import { CategoryCombobox } from './CategoryCombobox';
 import type { Task, TaskStatus } from '../../types';
@@ -26,7 +25,6 @@ export function TaskForm({
   onDelete,
   submitLabel = 'Save',
 }: TaskFormProps) {
-  const categories = useCategories();
   const titleRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState(initialData?.title ?? '');
   const [description, setDescription] = useState(
@@ -44,13 +42,6 @@ export function TaskForm({
   useEffect(() => {
     titleRef.current?.focus();
   }, []);
-
-  // Set default category when categories load
-  useEffect(() => {
-    if (categoryId === 0 && categories && categories.length > 0 && categories[0].id) {
-      setCategoryId(categories[0].id);
-    }
-  }, [categories, categoryId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
