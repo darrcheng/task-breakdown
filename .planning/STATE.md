@@ -35,6 +35,8 @@ Progress: [██████████░░░░░░░░░░] 25%
 - Trend: Stable velocity
 
 *Updated after each plan completion*
+| Phase 01.1-07 P07 | 2 | 2 tasks | 4 files |
+| Phase 01.1 P06 | 2 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -51,6 +53,9 @@ Recent decisions affecting current work:
 - Phase 01.1: Combobox pattern (onMouseDown, 150ms blur timeout) for category search
 - Phase 01.1: Global keyboard shortcuts with input/modal/modifier guards
 - Phase 01.1: Settings persisted in localStorage under 'taskbreaker-settings'
+- [Phase 01.1-07]: Delete auto-select useEffect in TaskForm entirely — state initializer already handles edit mode, CategoryCombobox manages its own category data
+- [Phase 01.1-07]: Flex-fill pattern for clickable calendar cells: flex flex-col on DroppableDay + flex-1 flex flex-col on inner div + flex-1 on task list
+- [Phase 01.1]: Use departing state + setTimeout to delay DB write 1500ms so animation plays before Dexie live query removes done tasks
 
 ### Pending Todos
 
