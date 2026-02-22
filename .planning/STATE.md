@@ -49,7 +49,7 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-None yet.
+12 UI enhancement todos from Phase 1 UAT (all area: ui)
 
 ### Blockers/Concerns
 
