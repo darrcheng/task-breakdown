@@ -39,6 +39,19 @@ Plans:
 - [x] 01-05-PLAN.md — Drag-to-reschedule in both views
 - [x] 01-06-PLAN.md — Polish, category management, end-to-end verification
 
+### Phase 01.1: UI polish — implement 12 enhancement todos from Phase 1 UAT (INSERTED)
+
+**Goal:** Implement all 12 UI enhancement todos from Phase 1 UAT to polish the user experience before Phase 2
+**Depends on:** Phase 1
+**Plans:** 5 plans
+
+Plans:
+- [ ] 01.1-01-PLAN.md — Red circle today indicator, default categories deletable, status cycling safety
+- [ ] 01.1-02-PLAN.md — Status pill buttons, searchable category combobox
+- [ ] 01.1-03-PLAN.md — Larger add button, blank-space click-to-create, inline category field
+- [ ] 01.1-04-PLAN.md — Sticky header/navigation, full cell clickable, popover task modal
+- [ ] 01.1-05-PLAN.md — Keyboard shortcuts, settings modal with start-of-week preference
+
 ### Phase 2: AI Task Breakdown
 **Goal**: User can break down overwhelming tasks into actionable subtasks using AI
 **Depends on**: Phase 1
