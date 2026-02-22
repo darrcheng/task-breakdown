@@ -44,7 +44,7 @@ export function DayGroup({
           </h3>
           <button
             onClick={() => setIsCreating(!isCreating)}
-            className="flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 hover:bg-blue-100 hover:text-blue-600 text-slate-500 transition-colors text-lg font-medium"
+            className="flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 hover:bg-blue-100 hover:text-blue-600 text-slate-500 transition-colors text-lg font-medium leading-none"
             aria-label={`Add task for ${dateLabel}`}
           >
             +
