@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import clsx from 'clsx';
 import { CATEGORY_ICONS, STATUS_COLORS, getNextStatus } from '../../utils/categories';
 import { db } from '../../db/database';
@@ -10,6 +11,7 @@ interface TaskListItemProps {
 }
 
 export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) {
+  const [confirmReopen, setConfirmReopen] = useState(false);
   const colors = STATUS_COLORS[task.status];
   const category = categoryMap?.get(task.categoryId);
   const IconComponent = category
@@ -26,6 +28,12 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
   const handleStatusClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (task.id) {
+      if (task.status === 'done' && !confirmReopen) {
+        setConfirmReopen(true);
+        setTimeout(() => setConfirmReopen(false), 2000);
+        return;
+      }
+      setConfirmReopen(false);
       await db.tasks.update(task.id, {
         status: getNextStatus(task.status),
         updatedAt: new Date(),
@@ -48,13 +56,19 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
         onClick={handleStatusClick}
         className={clsx(
           'w-5 h-5 rounded-full border-2 flex-shrink-0 transition-colors',
-          task.status === 'done'
-            ? 'bg-emerald-500 border-emerald-500'
-            : task.status === 'in-progress'
-              ? 'bg-amber-400 border-amber-400'
-              : 'bg-white border-slate-400 hover:border-slate-500'
+          confirmReopen
+            ? 'bg-emerald-500 border-emerald-500 ring-2 ring-offset-1 ring-amber-400 animate-pulse'
+            : task.status === 'done'
+              ? 'bg-emerald-500 border-emerald-500'
+              : task.status === 'in-progress'
+                ? 'bg-amber-400 border-amber-400'
+                : 'bg-white border-slate-400 hover:border-slate-500'
         )}
-        title={`Status: ${statusLabel}. Click to cycle.`}
+        title={
+          confirmReopen
+            ? 'Click again to reopen task'
+            : `Status: ${statusLabel}. Click to cycle.`
+        }
       />
 
       {IconComponent && (
