@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import clsx from 'clsx';
 import { db } from '../../db/database';
 import { useCategories } from '../../db/hooks';
@@ -100,6 +100,14 @@ export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
     }, 150);
   }, []);
 
+  const handleClear = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    onChange(0);
+    setSearch('');
+    setIsOpen(false);
+    setHighlightIndex(-1);
+  }, [onChange]);
+
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (!isOpen) {
       if (e.key === 'ArrowDown' || e.key === 'Enter') {
@@ -152,6 +160,16 @@ export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
           <IconComp className="absolute left-2.5 top-2.5 w-4 h-4 text-slate-500 pointer-events-none z-10" />
         ) : null;
       })()}
+      {!isOpen && selectedCategory && (
+        <button
+          type="button"
+          onClick={handleClear}
+          className="absolute right-2 top-2.5 p-0.5 rounded hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors z-10"
+          aria-label="Clear category"
+        >
+          <X className="w-3.5 h-3.5" />
+        </button>
+      )}
       <input
         ref={inputRef}
         type="text"
@@ -169,7 +187,7 @@ export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
         placeholder="Select category..."
         className={clsx(
           "w-full py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none",
-          !isOpen && selectedCategory ? "pl-8 pr-3" : "px-3"
+          !isOpen && selectedCategory ? "pl-8 pr-8" : "px-3"
         )}
       />
 
