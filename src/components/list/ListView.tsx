@@ -98,7 +98,7 @@ export function ListView({
   };
 
   return (
-    <div className="flex-1 relative">
+    <div className="flex-1 relative min-h-0">
       <div ref={scrollRef} className="h-full overflow-y-auto">
         {/* Top sentinel for infinite scroll backward */}
         <div ref={topSentinelRef} className="h-1" />

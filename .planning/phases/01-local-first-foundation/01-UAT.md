@@ -1,5 +1,5 @@
 ---
-status: complete
+status: diagnosed
 phase: 01-local-first-foundation
 source: 01-01-SUMMARY.md, 01-02-SUMMARY.md, 01-03-SUMMARY.md, 01-04-SUMMARY.md, 01-05-SUMMARY.md, 01-06-SUMMARY.md
 started: 2026-02-22T00:00:00Z
@@ -88,7 +88,10 @@ skipped: 0
   reason: "User reported: No, just limited from 2/8 to 3/15 not infinite"
   severity: major
   test: 13
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Missing min-h-0 on ListView flex container (line 101). Flex item grows to content height, so scrollRef child never becomes a true scroll container. IntersectionObserver fires once on mount then stops."
+  artifacts:
+    - path: "src/components/list/ListView.tsx"
+      issue: "Line 101: flex-1 relative missing min-h-0 — flex item unconstrained"
+  missing:
+    - "Add min-h-0 class to ListView root div (line 101)"
+  debug_session: ".planning/debug/listview-infinite-scroll.md"
