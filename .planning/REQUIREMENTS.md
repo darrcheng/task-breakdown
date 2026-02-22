@@ -9,12 +9,12 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Core Task Management
 
-- [ ] **TASK-01**: User can create a task via single-input quick capture
+- [x] **TASK-01**: User can create a task via single-input quick capture
 - [ ] **TASK-02**: User can view tasks in a daily calendar view
 - [ ] **TASK-03**: User can drag tasks between calendar days to reschedule
-- [ ] **TASK-04**: User can edit task title and details inline
-- [ ] **TASK-05**: User can delete a task
-- [ ] **TASK-06**: User can mark a task as done (clears from calendar view)
+- [x] **TASK-04**: User can edit task title and details inline
+- [x] **TASK-05**: User can delete a task
+- [x] **TASK-06**: User can mark a task as done (clears from calendar view)
 - [ ] **TASK-07**: Task completion shows satisfying visual/audio feedback
 - [ ] **TASK-08**: Uncompleted tasks can be easily rescheduled with no guilt language
 
@@ -83,12 +83,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TASK-01 | Phase 1 | Pending |
+| TASK-01 | Phase 1 | Complete |
 | TASK-02 | Phase 1 | Pending |
 | TASK-03 | Phase 1 | Pending |
-| TASK-04 | Phase 1 | Pending |
-| TASK-05 | Phase 1 | Pending |
-| TASK-06 | Phase 1 | Pending |
+| TASK-04 | Phase 1 | Complete |
+| TASK-05 | Phase 1 | Complete |
+| TASK-06 | Phase 1 | Complete |
 | PLAT-03 | Phase 1 | Pending |
 | AI-01 | Phase 2 | Pending |
 | AI-02 | Phase 2 | Pending |
