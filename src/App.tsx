@@ -64,15 +64,13 @@ function App() {
         case 't': // Today
           setCurrentMonth(new Date());
           break;
-        case 'm': // Month view
-          setCalendarView('month');
+        case 'c': // Calendar view
           setViewMode('calendar');
           break;
-        case 'w': // Week view
-          setCalendarView('week');
-          setViewMode('calendar');
+        case 'l': // List view
+          setViewMode('list');
           break;
-        case 'c': // Create task for today
+        case 'n': // New task (defaults to today)
           setModalState({ isOpen: true, date: formatDateKey(new Date()) });
           break;
         case '?': // Open settings

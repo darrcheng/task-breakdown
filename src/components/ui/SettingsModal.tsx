@@ -14,9 +14,9 @@ const SHORTCUTS = [
   { key: 'j', description: 'Next period' },
   { key: 'k', description: 'Previous period' },
   { key: 't', description: 'Go to today' },
-  { key: 'm', description: 'Month view' },
-  { key: 'w', description: 'Week view' },
-  { key: 'c', description: 'Create task' },
+  { key: 'c', description: 'Calendar view' },
+  { key: 'l', description: 'List view' },
+  { key: 'n', description: 'New task' },
   { key: '?', description: 'Open settings' },
 ];
 
