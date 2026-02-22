@@ -6,6 +6,7 @@ import { MonthNavigation } from './components/calendar/MonthNavigation';
 import { ListView } from './components/list/ListView';
 import { TaskModal } from './components/task/TaskModal';
 import { ViewToggle } from './components/ui/ViewToggle';
+import { DndProvider } from './components/dnd/DndProvider';
 import { useCategoryMap, useTaskCount } from './db/hooks';
 import type { ViewMode, CalendarView, Task } from './types';
 
@@ -96,34 +97,36 @@ function App() {
       )}
 
       {/* Main content */}
-      <main className="flex-1 flex flex-col overflow-hidden">
-        {viewMode === 'calendar' ? (
-          calendarView === 'month' ? (
-            <CalendarGrid
-              month={currentMonth}
-              showCompleted={showCompleted}
-              categoryMap={categoryMap}
-              onDayClick={handleDayClick}
-              onTaskClick={handleTaskClickCalendar}
-            />
+      <DndProvider categoryMap={categoryMap}>
+        <main className="flex-1 flex flex-col overflow-hidden">
+          {viewMode === 'calendar' ? (
+            calendarView === 'month' ? (
+              <CalendarGrid
+                month={currentMonth}
+                showCompleted={showCompleted}
+                categoryMap={categoryMap}
+                onDayClick={handleDayClick}
+                onTaskClick={handleTaskClickCalendar}
+              />
+            ) : (
+              <WeekView
+                currentDate={currentMonth}
+                showCompleted={showCompleted}
+                categoryMap={categoryMap}
+                onDayClick={handleDayClick}
+                onTaskClick={handleTaskClickCalendar}
+              />
+            )
           ) : (
-            <WeekView
-              currentDate={currentMonth}
+            <ListView
               showCompleted={showCompleted}
               categoryMap={categoryMap}
               onDayClick={handleDayClick}
-              onTaskClick={handleTaskClickCalendar}
+              onTaskClick={handleTaskClickList}
             />
-          )
-        ) : (
-          <ListView
-            showCompleted={showCompleted}
-            categoryMap={categoryMap}
-            onDayClick={handleDayClick}
-            onTaskClick={handleTaskClickList}
-          />
-        )}
-      </main>
+          )}
+        </main>
+      </DndProvider>
 
       {/* Task modal (calendar view create/edit) */}
       <TaskModal

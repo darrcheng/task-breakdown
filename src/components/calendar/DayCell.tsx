@@ -3,6 +3,8 @@ import clsx from 'clsx';
 import { useTasksByDate } from '../../db/hooks';
 import { formatDateKey, isToday, isSameMonth } from '../../utils/dates';
 import { TaskCard } from '../task/TaskCard';
+import { DraggableTask } from '../dnd/DraggableTask';
+import { DroppableDay } from '../dnd/DroppableDay';
 import type { Task, Category } from '../../types';
 
 interface DayCellProps {
@@ -28,8 +30,8 @@ export function DayCell({
   const today = isToday(date);
 
   return (
-    <div
-      onClick={() => onDayClick(dateStr)}
+    <DroppableDay
+      dateStr={dateStr}
       className={clsx(
         'min-h-[80px] p-1.5 border-b border-r border-slate-200 cursor-pointer transition-colors',
         isCurrentMonth ? 'bg-white' : 'bg-slate-50',
@@ -37,28 +39,31 @@ export function DayCell({
         'hover:bg-slate-50/80'
       )}
     >
-      <div
-        className={clsx(
-          'text-sm font-medium mb-1',
-          today
-            ? 'text-blue-600'
-            : isCurrentMonth
-              ? 'text-slate-700'
-              : 'text-slate-400'
-        )}
-      >
-        {format(date, 'd')}
+      <div onClick={() => onDayClick(dateStr)}>
+        <div
+          className={clsx(
+            'text-sm font-medium mb-1',
+            today
+              ? 'text-blue-600'
+              : isCurrentMonth
+                ? 'text-slate-700'
+                : 'text-slate-400'
+          )}
+        >
+          {format(date, 'd')}
+        </div>
+        <div className="space-y-1">
+          {tasks?.map((task) => (
+            <DraggableTask key={task.id} task={task}>
+              <TaskCard
+                task={task}
+                categoryMap={categoryMap}
+                onClick={onTaskClick}
+              />
+            </DraggableTask>
+          ))}
+        </div>
       </div>
-      <div className="space-y-1">
-        {tasks?.map((task) => (
-          <TaskCard
-            key={task.id}
-            task={task}
-            categoryMap={categoryMap}
-            onClick={onTaskClick}
-          />
-        ))}
-      </div>
-    </div>
+    </DroppableDay>
   );
 }
