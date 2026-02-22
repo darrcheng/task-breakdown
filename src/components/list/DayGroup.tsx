@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { isToday } from '../../utils/dates';
 import { TaskListItem } from './TaskListItem';
+import { TaskInlineCreate } from '../task/TaskInlineCreate';
+import { TaskInlineEdit } from '../task/TaskInlineEdit';
 import type { Task, Category } from '../../types';
 
 interface DayGroupProps {
@@ -15,9 +18,10 @@ export function DayGroup({
   date,
   tasks,
   categoryMap,
-  onDayClick,
-  onTaskClick,
 }: DayGroupProps) {
+  const [isCreating, setIsCreating] = useState(false);
+  const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
+
   const dateObj = parseISO(date);
   const today = isToday(dateObj);
   const dateLabel = today
@@ -36,7 +40,7 @@ export function DayGroup({
           {dateLabel}
         </h3>
         <button
-          onClick={() => onDayClick(date)}
+          onClick={() => setIsCreating(!isCreating)}
           className="text-sm text-slate-400 hover:text-slate-600 px-2 py-0.5 rounded hover:bg-slate-100 transition-colors"
           aria-label={`Add task for ${dateLabel}`}
         >
@@ -44,19 +48,34 @@ export function DayGroup({
         </button>
       </div>
 
+      {/* Inline create */}
+      {isCreating && (
+        <TaskInlineCreate date={date} onClose={() => setIsCreating(false)} />
+      )}
+
       {/* Tasks */}
       <div className="px-4 py-2 space-y-2">
         {tasks.length > 0 ? (
-          tasks.map((task) => (
-            <TaskListItem
-              key={task.id}
-              task={task}
-              categoryMap={categoryMap}
-              onClick={onTaskClick}
-            />
-          ))
+          tasks.map((task) =>
+            editingTaskId === task.id ? (
+              <TaskInlineEdit
+                key={task.id}
+                task={task}
+                onClose={() => setEditingTaskId(null)}
+              />
+            ) : (
+              <TaskListItem
+                key={task.id}
+                task={task}
+                categoryMap={categoryMap}
+                onClick={(t) => setEditingTaskId(t.id ?? null)}
+              />
+            )
+          )
         ) : (
-          <p className="text-sm text-slate-300 py-2 italic">No tasks</p>
+          !isCreating && (
+            <p className="text-sm text-slate-300 py-2 italic">No tasks</p>
+          )
         )}
       </div>
     </div>

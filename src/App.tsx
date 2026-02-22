@@ -4,27 +4,53 @@ import { CalendarGrid } from './components/calendar/CalendarGrid';
 import { WeekView } from './components/calendar/WeekView';
 import { MonthNavigation } from './components/calendar/MonthNavigation';
 import { ListView } from './components/list/ListView';
+import { TaskModal } from './components/task/TaskModal';
 import { ViewToggle } from './components/ui/ViewToggle';
-import { useCategoryMap } from './db/hooks';
+import { useCategoryMap, useTaskCount } from './db/hooks';
 import type { ViewMode, CalendarView, Task } from './types';
+
+interface ModalState {
+  isOpen: boolean;
+  date: string;
+  task?: Task;
+}
 
 function App() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [calendarView, setCalendarView] = useState<CalendarView>('month');
   const [viewMode, setViewMode] = useState<ViewMode>('calendar');
   const [showCompleted, setShowCompleted] = useState(false);
+  const [modalState, setModalState] = useState<ModalState>({
+    isOpen: false,
+    date: '',
+  });
 
   const categoryMap = useCategoryMap();
+  const taskCount = useTaskCount();
 
   const handleDayClick = (date: string) => {
-    console.log('Day clicked:', date);
-    // Will open create modal in Plan 04
+    if (viewMode === 'calendar') {
+      // Calendar view: open create modal
+      setModalState({ isOpen: true, date });
+    }
+    // List view handles inline create internally via DayGroup
   };
 
-  const handleTaskClick = (task: Task) => {
-    console.log('Task clicked:', task);
-    // Will open edit modal in Plan 04
+  const handleTaskClickCalendar = (task: Task) => {
+    // Calendar view: open edit modal
+    setModalState({ isOpen: true, date: task.date, task });
   };
+
+  const handleTaskClickList = (task: Task) => {
+    // List view: handled inline by DayGroup/TaskInlineEdit
+    // This is a no-op at App level for list view
+  };
+
+  const closeModal = () => {
+    setModalState({ isOpen: false, date: '' });
+  };
+
+  const isEmpty = taskCount === 0;
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -50,7 +76,7 @@ function App() {
         </div>
       </header>
 
-      {/* Calendar navigation - only shown in calendar view */}
+      {/* Calendar navigation */}
       {viewMode === 'calendar' && (
         <MonthNavigation
           currentMonth={currentMonth}
@@ -58,6 +84,15 @@ function App() {
           calendarView={calendarView}
           onCalendarViewChange={setCalendarView}
         />
+      )}
+
+      {/* Empty state hint (overlaid, not replacing views) */}
+      {isEmpty && (
+        <div className="text-center py-4 text-slate-400 text-sm">
+          {viewMode === 'calendar'
+            ? 'Click a day to add your first task'
+            : 'Click + to add your first task'}
+        </div>
       )}
 
       {/* Main content */}
@@ -69,7 +104,7 @@ function App() {
               showCompleted={showCompleted}
               categoryMap={categoryMap}
               onDayClick={handleDayClick}
-              onTaskClick={handleTaskClick}
+              onTaskClick={handleTaskClickCalendar}
             />
           ) : (
             <WeekView
@@ -77,7 +112,7 @@ function App() {
               showCompleted={showCompleted}
               categoryMap={categoryMap}
               onDayClick={handleDayClick}
-              onTaskClick={handleTaskClick}
+              onTaskClick={handleTaskClickCalendar}
             />
           )
         ) : (
@@ -85,10 +120,18 @@ function App() {
             showCompleted={showCompleted}
             categoryMap={categoryMap}
             onDayClick={handleDayClick}
-            onTaskClick={handleTaskClick}
+            onTaskClick={handleTaskClickList}
           />
         )}
       </main>
+
+      {/* Task modal (calendar view create/edit) */}
+      <TaskModal
+        isOpen={modalState.isOpen}
+        onClose={closeModal}
+        date={modalState.date}
+        task={modalState.task}
+      />
     </div>
   );
 }
