@@ -29,6 +29,7 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
     description: string;
     status: 'todo' | 'in-progress' | 'done';
     categoryId: number;
+    date: string;
   }) => {
     if (task?.id) {
       // Edit existing task
@@ -40,7 +41,6 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
       // Create new task
       await db.tasks.add({
         ...data,
-        date,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -57,7 +57,7 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
 
   // Calculate position with viewport clamping
   const MODAL_WIDTH = 400;
-  const MODAL_HEIGHT = 500;
+  const MODAL_HEIGHT = 560;
   const positionStyle: React.CSSProperties = clickPosition
     ? {
         left: Math.min(clickPosition.x + 8, window.innerWidth - MODAL_WIDTH - 16),
@@ -90,6 +90,7 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
         </h2>
         <TaskForm
           initialData={task}
+          initialDate={date}
           onSubmit={handleSubmit}
           onCancel={onClose}
           onDelete={task ? handleDelete : undefined}
