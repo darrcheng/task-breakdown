@@ -12,14 +12,14 @@ Turn vague, paralyzing tasks into small, concrete steps you can start right now.
 
 ### Validated
 
-(None yet — ship to validate)
+- Calendar-based daily view showing tasks for each day — Phase 1
+- Create, edit, and delete tasks — Phase 1
+- Drag tasks between calendar days to reschedule — Phase 1
+- Mark tasks as done (clears from calendar view) — Phase 1
+- Data persists across browser sessions via IndexedDB — Phase 1
 
 ### Active
 
-- [ ] Calendar-based daily view showing tasks for each day
-- [ ] Create, edit, and delete tasks
-- [ ] Drag tasks between calendar days to reschedule
-- [ ] Mark tasks as done (clears from calendar view)
 - [ ] AI-powered subtask generation — tap a button, get subtasks instantly
 - [ ] Edit, reorder, delete, and regenerate AI-generated subtasks
 - [ ] Recursive breakdown — subtasks can be broken down further (3-4 levels)
@@ -52,8 +52,13 @@ Turn vague, paralyzing tasks into small, concrete steps you can start right now.
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
 | Swappable AI provider | User wants to start free, upgrade later | — Pending |
-| Calendar-day based organization | Mirrors user's existing Notion workflow that works well | — Pending |
-| Personal-first, shareable later | Reduces initial complexity (no auth, teams, etc.) | — Pending |
+| Calendar-day based organization | Mirrors user's existing Notion workflow that works well | Validated in Phase 1 |
+| Personal-first, shareable later | Reduces initial complexity (no auth, teams, etc.) | Validated in Phase 1 |
+| React + Vite + Tailwind CSS | Fast dev cycle, modern stack, excellent DX | Phase 1 |
+| Dexie.js for IndexedDB | Reactive queries via useLiveQuery, simple API, good performance | Phase 1 |
+| @dnd-kit for drag-and-drop | Composable, accessible, works with React 19 | Phase 1 |
+| Native dialog element for modals | Free focus trap, Esc handling, backdrop click | Phase 1 |
+| Per-cell reactive queries | Each DayCell queries its own tasks, Dexie handles reactivity | Phase 1 |
 
 ---
-*Last updated: 2026-02-05 after initialization*
+*Last updated: 2026-02-22 after Phase 1*
