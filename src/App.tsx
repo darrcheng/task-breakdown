@@ -3,6 +3,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { CalendarGrid } from './components/calendar/CalendarGrid';
 import { WeekView } from './components/calendar/WeekView';
 import { MonthNavigation } from './components/calendar/MonthNavigation';
+import { ListView } from './components/list/ListView';
 import { ViewToggle } from './components/ui/ViewToggle';
 import { useCategoryMap } from './db/hooks';
 import type { ViewMode, CalendarView, Task } from './types';
@@ -80,9 +81,12 @@ function App() {
             />
           )
         ) : (
-          <div className="flex-1 flex items-center justify-center text-slate-400">
-            List view coming soon
-          </div>
+          <ListView
+            showCompleted={showCompleted}
+            categoryMap={categoryMap}
+            onDayClick={handleDayClick}
+            onTaskClick={handleTaskClick}
+          />
         )}
       </main>
     </div>
