@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useEffect } from 'react';
 import { db } from '../../db/database';
 import { TaskForm } from './TaskForm';
 import type { Task } from '../../types';
@@ -8,21 +8,21 @@ interface TaskModalProps {
   onClose: () => void;
   date: string;
   task?: Task;
+  clickPosition?: { x: number; y: number };
 }
 
-export function TaskModal({ isOpen, onClose, date, task }: TaskModalProps) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
-
+export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskModalProps) {
+  // Handle Escape key
   useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    if (isOpen && !dialog.open) {
-      dialog.showModal();
-    }
-    if (!isOpen && dialog.open) {
-      dialog.close();
-    }
-  }, [isOpen]);
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
 
   const handleSubmit = async (data: {
     title: string;
@@ -55,26 +55,47 @@ export function TaskModal({ isOpen, onClose, date, task }: TaskModalProps) {
     }
   };
 
+  // Calculate position with viewport clamping
+  const MODAL_WIDTH = 400;
+  const MODAL_HEIGHT = 500;
+  const positionStyle: React.CSSProperties = clickPosition
+    ? {
+        left: Math.min(clickPosition.x + 8, window.innerWidth - MODAL_WIDTH - 16),
+        top: Math.min(Math.max(clickPosition.y - 100, 16), window.innerHeight - MODAL_HEIGHT - 16),
+        width: `${MODAL_WIDTH}px`,
+        maxHeight: `${MODAL_HEIGHT}px`,
+      }
+    : {
+        left: '50%',
+        top: '50%',
+        transform: 'translate(-50%, -50%)',
+        maxWidth: `${MODAL_WIDTH}px`,
+        width: '100%',
+      };
+
   return (
-    <dialog
-      ref={dialogRef}
-      onClose={onClose}
-      className="rounded-lg p-0 backdrop:bg-black/50 max-w-md w-full shadow-xl"
-    >
-      <div className="p-6">
+    <div className="fixed inset-0 z-50">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/50"
+        onClick={onClose}
+      />
+      {/* Modal content */}
+      <div
+        className="fixed bg-white rounded-lg shadow-xl p-6 overflow-y-auto"
+        style={positionStyle}
+      >
         <h2 className="text-lg font-semibold text-slate-800 mb-4">
           {task ? 'Edit Task' : 'New Task'}
         </h2>
-        {isOpen && (
-          <TaskForm
-            initialData={task}
-            onSubmit={handleSubmit}
-            onCancel={onClose}
-            onDelete={task ? handleDelete : undefined}
-            submitLabel={task ? 'Save' : 'Create'}
-          />
-        )}
+        <TaskForm
+          initialData={task}
+          onSubmit={handleSubmit}
+          onCancel={onClose}
+          onDelete={task ? handleDelete : undefined}
+          submitLabel={task ? 'Save' : 'Create'}
+        />
       </div>
-    </dialog>
+    </div>
   );
 }
