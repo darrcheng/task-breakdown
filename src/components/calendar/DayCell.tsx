@@ -37,12 +37,12 @@ export function DayCell({
     <DroppableDay
       dateStr={dateStr}
       className={clsx(
-        'min-h-[80px] p-1.5 border-b border-r border-slate-200 cursor-pointer transition-colors',
+        'min-h-[80px] p-1.5 border-b border-r border-slate-200 cursor-pointer transition-colors flex flex-col',
         isCurrentMonth ? 'bg-white' : 'bg-slate-50',
         'hover:bg-slate-50/80'
       )}
     >
-      <div onClick={handleCellClick}>
+      <div onClick={handleCellClick} className="flex-1 flex flex-col">
         <div
           className={clsx(
             'w-6 h-6 flex items-center justify-center rounded-full text-sm font-medium mb-1 mx-auto',
@@ -55,13 +55,14 @@ export function DayCell({
         >
           {format(date, 'd')}
         </div>
-        <div className="space-y-1">
+        <div className="space-y-1 flex-1">
           {tasks?.map((task) => (
             <DraggableTask key={task.id} task={task}>
               <TaskCard
                 task={task}
                 categoryMap={categoryMap}
                 onClick={(t, e) => {
+                  e?.stopPropagation();
                   onTaskClick(t, e ? { x: e.clientX, y: e.clientY } : undefined);
                 }}
               />
