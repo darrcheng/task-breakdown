@@ -12,7 +12,7 @@ Build an ADHD-friendly to-do list with AI-powered task breakdown across 4 phases
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Local-First Foundation** - Core task management with calendar view
+- [x] **Phase 1: Local-First Foundation** - Core task management with calendar view (completed 2026-02-22)
 - [ ] **Phase 2: AI Task Breakdown** - AI-powered subtask generation with controls
 - [ ] **Phase 3: ADHD-Optimized UX** - Energy tracking and gentle reschedule prompts
 - [ ] **Phase 4: Cross-Platform Expansion** - Full web and mobile parity
@@ -32,12 +32,12 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 6 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Project scaffolding, database, data model, utilities
-- [ ] 01-02-PLAN.md — Calendar view with monthly grid, week toggle, navigation
-- [ ] 01-03-PLAN.md — List view with infinite scroll day-by-day
-- [ ] 01-04-PLAN.md — Task CRUD (create/edit/delete/status toggle)
-- [ ] 01-05-PLAN.md — Drag-to-reschedule in both views
-- [ ] 01-06-PLAN.md — Polish, category management, end-to-end verification
+- [x] 01-01-PLAN.md — Project scaffolding, database, data model, utilities
+- [x] 01-02-PLAN.md — Calendar view with monthly grid, week toggle, navigation
+- [x] 01-03-PLAN.md — List view with infinite scroll day-by-day
+- [x] 01-04-PLAN.md — Task CRUD (create/edit/delete/status toggle)
+- [x] 01-05-PLAN.md — Drag-to-reschedule in both views
+- [x] 01-06-PLAN.md — Polish, category management, end-to-end verification
 
 ### Phase 2: AI Task Breakdown
 **Goal**: User can break down overwhelming tasks into actionable subtasks using AI
@@ -89,7 +89,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Local-First Foundation | 0/6 | Planned | - |
+| 1. Local-First Foundation | 6/6 | Complete | 2026-02-22 |
 | 2. AI Task Breakdown | 0/TBD | Not started | - |
 | 3. ADHD-Optimized UX | 0/TBD | Not started | - |
 | 4. Cross-Platform Expansion | 0/TBD | Not started | - |

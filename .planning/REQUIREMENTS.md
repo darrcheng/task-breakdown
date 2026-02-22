@@ -10,7 +10,7 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Core Task Management
 
 - [x] **TASK-01**: User can create a task via single-input quick capture
-- [ ] **TASK-02**: User can view tasks in a daily calendar view
+- [x] **TASK-02**: User can view tasks in a daily calendar view
 - [x] **TASK-03**: User can drag tasks between calendar days to reschedule
 - [x] **TASK-04**: User can edit task title and details inline
 - [x] **TASK-05**: User can delete a task
@@ -84,7 +84,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | TASK-01 | Phase 1 | Complete |
-| TASK-02 | Phase 1 | Pending |
+| TASK-02 | Phase 1 | Complete |
 | TASK-03 | Phase 1 | Complete |
 | TASK-04 | Phase 1 | Complete |
 | TASK-05 | Phase 1 | Complete |
