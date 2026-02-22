@@ -14,18 +14,18 @@ import {
  * From start-of-week of month start to end-of-week of month end.
  * Typically 35 or 42 days.
  */
-export function getCalendarDays(month: Date): Date[] {
-  const start = startOfWeek(startOfMonth(month));
-  const end = endOfWeek(endOfMonth(month));
+export function getCalendarDays(month: Date, weekStartsOn: 0 | 1 = 0): Date[] {
+  const start = startOfWeek(startOfMonth(month), { weekStartsOn });
+  const end = endOfWeek(endOfMonth(month), { weekStartsOn });
   return eachDayOfInterval({ start, end });
 }
 
 /**
  * Returns 7 days for the week containing the given date.
  */
-export function getWeekDays(date: Date): Date[] {
-  const start = startOfWeek(date);
-  const end = endOfWeek(date);
+export function getWeekDays(date: Date, weekStartsOn: 0 | 1 = 0): Date[] {
+  const start = startOfWeek(date, { weekStartsOn });
+  const end = endOfWeek(date, { weekStartsOn });
   return eachDayOfInterval({ start, end });
 }
 

@@ -2,7 +2,7 @@ import { getWeekDays, formatDateKey } from '../../utils/dates';
 import { DayCell } from './DayCell';
 import type { Task, Category } from '../../types';
 
-const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const ALL_DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 interface WeekViewProps {
   currentDate: Date;
@@ -10,6 +10,7 @@ interface WeekViewProps {
   categoryMap?: Map<number, Category>;
   onDayClick: (date: string, clickPosition?: { x: number; y: number }) => void;
   onTaskClick: (task: Task, clickPosition?: { x: number; y: number }) => void;
+  weekStartsOn?: 0 | 1;
 }
 
 export function WeekView({
@@ -18,14 +19,18 @@ export function WeekView({
   categoryMap,
   onDayClick,
   onTaskClick,
+  weekStartsOn = 0,
 }: WeekViewProps) {
-  const days = getWeekDays(currentDate);
+  const days = getWeekDays(currentDate, weekStartsOn);
+  const dayNames = weekStartsOn === 1
+    ? [...ALL_DAY_NAMES.slice(1), ALL_DAY_NAMES[0]]
+    : ALL_DAY_NAMES;
 
   return (
     <div className="flex-1 overflow-auto">
       {/* Day name headers */}
       <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50 sticky top-0 z-10">
-        {DAY_NAMES.map((name) => (
+        {dayNames.map((name) => (
           <div
             key={name}
             className="px-2 py-2 text-xs font-semibold text-slate-500 text-center uppercase tracking-wider"

@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Eye, EyeOff, Tag } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Eye, EyeOff, Tag, Settings } from 'lucide-react';
+import { addMonths, subMonths, addWeeks, subWeeks } from 'date-fns';
 import { CalendarGrid } from './components/calendar/CalendarGrid';
 import { WeekView } from './components/calendar/WeekView';
 import { MonthNavigation } from './components/calendar/MonthNavigation';
@@ -8,8 +9,11 @@ import { TaskModal } from './components/task/TaskModal';
 import { ViewToggle } from './components/ui/ViewToggle';
 import { EmptyState } from './components/ui/EmptyState';
 import { CategoryManager } from './components/ui/CategoryManager';
+import { SettingsModal } from './components/ui/SettingsModal';
 import { DndProvider } from './components/dnd/DndProvider';
 import { useCategoryMap, useTaskCount } from './db/hooks';
+import { useSettings } from './hooks/useSettings';
+import { formatDateKey } from './utils/dates';
 import type { ViewMode, CalendarView, Task } from './types';
 
 interface ModalState {
@@ -25,6 +29,7 @@ function App() {
   const [viewMode, setViewMode] = useState<ViewMode>('calendar');
   const [showCompleted, setShowCompleted] = useState(false);
   const [isCategoryManagerOpen, setIsCategoryManagerOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [modalState, setModalState] = useState<ModalState>({
     isOpen: false,
     date: '',
@@ -32,6 +37,53 @@ function App() {
 
   const categoryMap = useCategoryMap();
   const taskCount = useTaskCount();
+  const { settings, updateSettings } = useSettings();
+
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Guard: don't fire in inputs
+      const tag = (e.target as HTMLElement).tagName;
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return;
+      // Guard: don't fire with modifier keys
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      // Guard: don't fire when any modal/overlay is open
+      if (modalState.isOpen || isCategoryManagerOpen || isSettingsOpen) return;
+
+      switch (e.key) {
+        case 'j': // Next period
+          setCurrentMonth(prev =>
+            calendarView === 'week' ? addWeeks(prev, 1) : addMonths(prev, 1)
+          );
+          break;
+        case 'k': // Previous period
+          setCurrentMonth(prev =>
+            calendarView === 'week' ? subWeeks(prev, 1) : subMonths(prev, 1)
+          );
+          break;
+        case 't': // Today
+          setCurrentMonth(new Date());
+          break;
+        case 'm': // Month view
+          setCalendarView('month');
+          setViewMode('calendar');
+          break;
+        case 'w': // Week view
+          setCalendarView('week');
+          setViewMode('calendar');
+          break;
+        case 'c': // Create task for today
+          setModalState({ isOpen: true, date: formatDateKey(new Date()) });
+          break;
+        case '?': // Open settings
+          setIsSettingsOpen(true);
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [calendarView, viewMode, modalState.isOpen, isCategoryManagerOpen, isSettingsOpen]);
 
   const handleDayClick = (date: string, clickPosition?: { x: number; y: number }) => {
     if (viewMode === 'calendar') {
@@ -86,6 +138,14 @@ function App() {
             <Tag className="w-4 h-4" />
             <span className="hidden sm:inline">Categories</span>
           </button>
+          <button
+            onClick={() => setIsSettingsOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 rounded-md hover:bg-slate-100 border border-slate-300 transition-colors"
+            title="Settings"
+          >
+            <Settings className="w-4 h-4" />
+            <span className="hidden sm:inline">Settings</span>
+          </button>
         </div>
       </header>
 
@@ -113,6 +173,7 @@ function App() {
                 categoryMap={categoryMap}
                 onDayClick={handleDayClick}
                 onTaskClick={handleTaskClickCalendar}
+                weekStartsOn={settings.weekStartsOn}
               />
             ) : (
               <WeekView
@@ -121,6 +182,7 @@ function App() {
                 categoryMap={categoryMap}
                 onDayClick={handleDayClick}
                 onTaskClick={handleTaskClickCalendar}
+                weekStartsOn={settings.weekStartsOn}
               />
             )
           ) : (
@@ -147,6 +209,14 @@ function App() {
       <CategoryManager
         isOpen={isCategoryManagerOpen}
         onClose={() => setIsCategoryManagerOpen(false)}
+      />
+
+      {/* Settings modal */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        settings={settings}
+        onUpdateSettings={updateSettings}
       />
     </div>
   );
