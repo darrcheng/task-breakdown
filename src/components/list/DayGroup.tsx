@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Plus } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { isToday } from '../../utils/dates';
 import { TaskListItem } from './TaskListItem';
@@ -44,10 +45,10 @@ export function DayGroup({
           </h3>
           <button
             onClick={() => setIsCreating(!isCreating)}
-            className="flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 hover:bg-blue-100 hover:text-blue-600 text-slate-500 transition-colors text-lg font-medium leading-none"
+            className="flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 hover:bg-blue-100 hover:text-blue-600 text-slate-500 transition-colors"
             aria-label={`Add task for ${dateLabel}`}
           >
-            +
+            <Plus className="w-4 h-4" />
           </button>
         </div>
 
