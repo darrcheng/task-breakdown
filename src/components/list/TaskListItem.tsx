@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import clsx from 'clsx';
 import { CATEGORY_ICONS, STATUS_COLORS, getNextStatus } from '../../utils/categories';
 import { db } from '../../db/database';
-import type { Task, Category } from '../../types';
+import type { Task, Category, TaskStatus } from '../../types';
 
 interface TaskListItemProps {
   task: Task;
@@ -12,6 +12,8 @@ interface TaskListItemProps {
 
 export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) {
   const [departing, setDeparting] = useState(false);
+  const [displayStatus, setDisplayStatus] = useState<TaskStatus>(task.status);
+  const departureTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const colors = STATUS_COLORS[task.status];
   const category = categoryMap?.get(task.categoryId);
   const IconComponent = category
@@ -19,30 +21,56 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
     : CATEGORY_ICONS['folder'];
 
   const statusLabel =
-    task.status === 'todo'
+    displayStatus === 'todo'
       ? 'To do'
-      : task.status === 'in-progress'
+      : displayStatus === 'in-progress'
         ? 'In progress'
         : 'Done';
 
+  useEffect(() => {
+    return () => {
+      if (departureTimeout.current) {
+        clearTimeout(departureTimeout.current);
+      }
+    };
+  }, []);
+
   const handleStatusClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (task.id) {
-      const nextStatus = getNextStatus(task.status);
-      if (nextStatus === 'done') {
-        setDeparting(true);
-        setTimeout(async () => {
-          await db.tasks.update(task.id!, {
-            status: 'done',
-            updatedAt: new Date(),
-          });
-        }, 1500);
-      } else {
-        await db.tasks.update(task.id, {
-          status: nextStatus,
+    if (!task.id) return;
+
+    if (departing) {
+      // Re-click during departure: cancel and cycle back to todo
+      if (departureTimeout.current) {
+        clearTimeout(departureTimeout.current);
+        departureTimeout.current = null;
+      }
+      setDeparting(false);
+      setDisplayStatus('todo');
+      await db.tasks.update(task.id, {
+        status: 'todo',
+        updatedAt: new Date(),
+      });
+      return;
+    }
+
+    const nextStatus = getNextStatus(task.status);
+    if (nextStatus === 'done') {
+      setDeparting(true);
+      setDisplayStatus('done');
+      departureTimeout.current = setTimeout(async () => {
+        await db.tasks.update(task.id!, {
+          status: 'done',
           updatedAt: new Date(),
         });
-      }
+        departureTimeout.current = null;
+      }, 1500);
+    } else {
+      setDisplayStatus(nextStatus);
+      await db.tasks.update(task.id, {
+        status: nextStatus,
+        updatedAt: new Date(),
+      });
     }
   };
 
@@ -62,9 +90,9 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
         onClick={handleStatusClick}
         className={clsx(
           'w-5 h-5 rounded-full border-2 flex-shrink-0 transition-colors',
-          task.status === 'done'
+          displayStatus === 'done'
             ? 'bg-emerald-500 border-emerald-500'
-            : task.status === 'in-progress'
+            : displayStatus === 'in-progress'
               ? 'bg-amber-400 border-amber-400'
               : 'bg-white border-slate-400 hover:border-slate-500'
         )}
