@@ -43,7 +43,7 @@ Plans:
 
 **Goal:** Implement all 12 UI enhancement todos from Phase 1 UAT to polish the user experience before Phase 2
 **Depends on:** Phase 1
-**Plans:** 11 plans (10 complete, 1 gap closure pending)
+**Plans:** 11/11 plans complete
 
 Plans:
 - [x] 01.1-01-PLAN.md — Red circle today indicator, default categories deletable, status cycling safety
@@ -109,7 +109,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Local-First Foundation | 6/6 | Complete | 2026-02-22 |
-| 01.1. UI Polish (gap closure) | 10/11 | In progress | - |
+| 01.1. UI Polish (gap closure) | 11/11 | Complete   | 2026-02-22 |
 | 2. AI Task Breakdown | 0/TBD | Not started | - |
 | 3. ADHD-Optimized UX | 0/TBD | Not started | - |
 | 4. Cross-Platform Expansion | 0/TBD | Not started | - |

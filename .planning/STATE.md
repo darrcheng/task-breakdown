@@ -12,16 +12,16 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 Phase: 2 of 4 (AI Task Breakdown)
 Plan: Not started
 Status: Ready to plan
-Last activity: 2026-02-22 — Phase 01.1 complete including gap closure plans 09-10 (keyboard shortcuts + custom DatePicker)
+Last activity: 2026-02-22 — Phase 01.1 fully complete including gap closure plan 11 (green checkbox + CategoryCombobox inline create)
 
 Progress: [██████████░░░░░░░░░░] 25%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 11
+- Total plans completed: 12
 - Average duration: ~4 min
-- Total execution time: ~45 min
+- Total execution time: ~47 min
 
 **By Phase:**
 
@@ -40,6 +40,7 @@ Progress: [██████████░░░░░░░░░░] 25%
 | Phase 01.1 P08 | 2 | 2 tasks | 4 files |
 | Phase 01.1-09 P09 | 2 | 3 tasks | 3 files |
 | Phase 01.1 P10 | 2 | 3 tasks | 5 files |
+| Phase 01.1 P11 | 2 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -67,6 +68,9 @@ Recent decisions affecting current work:
 - [Phase 01.1]: e.preventDefault() added to every keyboard shortcut case — prevents character insertion side effects
 - [Phase 01.1]: Custom DatePicker uses only existing date-fns + utils/dates.ts — no new library dependencies
 - [Phase 01.1]: m/w shortcuts re-added and also set viewMode=calendar so they work from list view
+- [Phase 01.1-11]: displayStatus local state pattern — drives checkbox color independently of DB/prop during optimistic departure transition
+- [Phase 01.1-11]: departureTimeout useRef — store setTimeout return value in ref for cancellable async; clear on re-click or unmount
+- [Phase 01.1-11]: CategoryCombobox in inline create: drop useCategories hook entirely, CategoryCombobox is self-contained
 
 ### Pending Todos
 
@@ -82,6 +86,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-22 (completed 01.1-10-PLAN.md — keyboard shortcuts + DatePicker)
-Stopped at: Completed 01.1-10-PLAN.md; Phase 01.1 fully done, ready to plan Phase 2
+Last session: 2026-02-22 (completed 01.1-11-PLAN.md — green checkbox + CategoryCombobox inline create)
+Stopped at: Completed 01.1-11-PLAN.md; Phase 01.1 fully done (all 11 plans + gap closures), ready to plan Phase 2
 Resume file: None
