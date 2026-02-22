@@ -43,7 +43,7 @@ Plans:
 
 **Goal:** Implement all 12 UI enhancement todos from Phase 1 UAT to polish the user experience before Phase 2
 **Depends on:** Phase 1
-**Plans:** 10/10 plans complete
+**Plans:** 11 plans (10 complete, 1 gap closure pending)
 
 Plans:
 - [x] 01.1-01-PLAN.md — Red circle today indicator, default categories deletable, status cycling safety
@@ -54,8 +54,9 @@ Plans:
 - [x] 01.1-06-PLAN.md — Gap closure: done task departure animation, add button centering, inline field sizing
 - [x] 01.1-07-PLAN.md — Gap closure: category combobox empty default + icon, full cell click area
 - [x] 01.1-08-PLAN.md — Gap closure: keyboard shortcut rebinding, date field in task form
-- [ ] 01.1-09-PLAN.md — Gap closure: green departure text, category clear button, SVG plus icon
-- [ ] 01.1-10-PLAN.md — Gap closure: keyboard preventDefault + m/w restore, custom DatePicker
+- [x] 01.1-09-PLAN.md — Gap closure: green departure text, category clear button, SVG plus icon
+- [x] 01.1-10-PLAN.md — Gap closure: keyboard preventDefault + m/w restore, custom DatePicker
+- [ ] 01.1-11-PLAN.md — Gap closure: green checkbox + re-click cancellation, inline create CategoryCombobox
 
 ### Phase 2: AI Task Breakdown
 **Goal**: User can break down overwhelming tasks into actionable subtasks using AI
@@ -108,7 +109,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Local-First Foundation | 6/6 | Complete | 2026-02-22 |
-| 01.1. UI Polish (gap closure) | 10/10 | Complete    | 2026-02-22 |
+| 01.1. UI Polish (gap closure) | 10/11 | In progress | - |
 | 2. AI Task Breakdown | 0/TBD | Not started | - |
 | 3. ADHD-Optimized UX | 0/TBD | Not started | - |
 | 4. Cross-Platform Expansion | 0/TBD | Not started | - |
