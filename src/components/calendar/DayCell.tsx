@@ -35,16 +35,15 @@ export function DayCell({
       className={clsx(
         'min-h-[80px] p-1.5 border-b border-r border-slate-200 cursor-pointer transition-colors',
         isCurrentMonth ? 'bg-white' : 'bg-slate-50',
-        today && 'ring-2 ring-blue-400 ring-inset',
         'hover:bg-slate-50/80'
       )}
     >
       <div onClick={() => onDayClick(dateStr)}>
         <div
           className={clsx(
-            'text-sm font-medium mb-1',
+            'w-6 h-6 flex items-center justify-center rounded-full text-sm font-medium mb-1 mx-auto',
             today
-              ? 'text-blue-600'
+              ? 'bg-red-500 text-white'
               : isCurrentMonth
                 ? 'text-slate-700'
                 : 'text-slate-400'

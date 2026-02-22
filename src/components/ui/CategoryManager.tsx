@@ -172,24 +172,22 @@ export function CategoryManager({ isOpen, onClose }: CategoryManagerProps) {
                   >
                     <Pencil className="w-3.5 h-3.5" />
                   </button>
-                  {!cat.isDefault && (
-                    <button
-                      onClick={() => cat.id && handleDelete(cat.id)}
-                      className={clsx(
-                        'p-1 rounded transition-colors',
-                        confirmDeleteId === cat.id
-                          ? 'bg-red-100 text-red-600'
-                          : 'hover:bg-slate-200 text-slate-400 hover:text-slate-600'
-                      )}
-                      title={
-                        confirmDeleteId === cat.id
-                          ? 'Click again to confirm delete'
-                          : 'Delete category'
-                      }
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  )}
+                  <button
+                    onClick={() => cat.id && handleDelete(cat.id)}
+                    className={clsx(
+                      'p-1 rounded transition-colors',
+                      confirmDeleteId === cat.id
+                        ? 'bg-red-100 text-red-600'
+                        : 'hover:bg-slate-200 text-slate-400 hover:text-slate-600'
+                    )}
+                    title={
+                      confirmDeleteId === cat.id
+                        ? 'Click again to confirm delete'
+                        : 'Delete category'
+                    }
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
             );
