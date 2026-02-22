@@ -1,9 +1,9 @@
 ---
-status: diagnosed
+status: resolved
 phase: 01-local-first-foundation
 source: 01-01-SUMMARY.md, 01-02-SUMMARY.md, 01-03-SUMMARY.md, 01-04-SUMMARY.md, 01-05-SUMMARY.md, 01-06-SUMMARY.md
 started: 2026-02-22T00:00:00Z
-updated: 2026-02-22T12:00:00Z
+updated: 2026-02-22T15:55:00Z
 ---
 
 ## Current Test
@@ -84,7 +84,7 @@ skipped: 0
 ## Gaps
 
 - truth: "List view infinite scroll loads more days when scrolling up/down"
-  status: failed
+  status: resolved
   reason: "User reported: No, just limited from 2/8 to 3/15 not infinite"
   severity: major
   test: 13
