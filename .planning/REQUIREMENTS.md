@@ -40,7 +40,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [ ] **PLAT-01**: App works on web browsers
 - [ ] **PLAT-02**: App works on mobile (iOS and Android)
-- [ ] **PLAT-03**: Data persists across sessions
+- [x] **PLAT-03**: Data persists across sessions
 
 ## v2 Requirements
 
@@ -89,7 +89,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TASK-04 | Phase 1 | Complete |
 | TASK-05 | Phase 1 | Complete |
 | TASK-06 | Phase 1 | Complete |
-| PLAT-03 | Phase 1 | Pending |
+| PLAT-03 | Phase 1 | Complete |
 | AI-01 | Phase 2 | Pending |
 | AI-02 | Phase 2 | Pending |
 | AI-03 | Phase 2 | Pending |
