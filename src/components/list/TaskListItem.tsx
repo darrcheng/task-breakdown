@@ -11,7 +11,7 @@ interface TaskListItemProps {
 }
 
 export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) {
-  const [confirmReopen, setConfirmReopen] = useState(false);
+  const [departing, setDeparting] = useState(false);
   const colors = STATUS_COLORS[task.status];
   const category = categoryMap?.get(task.categoryId);
   const IconComponent = category
@@ -28,16 +28,21 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
   const handleStatusClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (task.id) {
-      if (task.status === 'done' && !confirmReopen) {
-        setConfirmReopen(true);
-        setTimeout(() => setConfirmReopen(false), 2000);
-        return;
+      const nextStatus = getNextStatus(task.status);
+      if (nextStatus === 'done') {
+        setDeparting(true);
+        setTimeout(async () => {
+          await db.tasks.update(task.id!, {
+            status: 'done',
+            updatedAt: new Date(),
+          });
+        }, 1500);
+      } else {
+        await db.tasks.update(task.id, {
+          status: nextStatus,
+          updatedAt: new Date(),
+        });
       }
-      setConfirmReopen(false);
-      await db.tasks.update(task.id, {
-        status: getNextStatus(task.status),
-        updatedAt: new Date(),
-      });
     }
   };
 
@@ -48,7 +53,8 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
         'w-full flex items-center gap-3 px-4 py-3 rounded-lg border text-left cursor-pointer transition-colors',
         colors.bg,
         colors.border,
-        'hover:opacity-80'
+        'hover:opacity-80',
+        departing && 'line-through opacity-0 transition-all duration-[1500ms]'
       )}
     >
       {/* Status indicator - clickable to cycle */}
@@ -56,19 +62,13 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
         onClick={handleStatusClick}
         className={clsx(
           'w-5 h-5 rounded-full border-2 flex-shrink-0 transition-colors',
-          confirmReopen
-            ? 'bg-emerald-500 border-emerald-500 ring-2 ring-offset-1 ring-amber-400 animate-pulse'
-            : task.status === 'done'
-              ? 'bg-emerald-500 border-emerald-500'
-              : task.status === 'in-progress'
-                ? 'bg-amber-400 border-amber-400'
-                : 'bg-white border-slate-400 hover:border-slate-500'
+          task.status === 'done'
+            ? 'bg-emerald-500 border-emerald-500'
+            : task.status === 'in-progress'
+              ? 'bg-amber-400 border-amber-400'
+              : 'bg-white border-slate-400 hover:border-slate-500'
         )}
-        title={
-          confirmReopen
-            ? 'Click again to reopen task'
-            : `Status: ${statusLabel}. Click to cycle.`
-        }
+        title={`Status: ${statusLabel}. Click to cycle.`}
       />
 
       {IconComponent && (
