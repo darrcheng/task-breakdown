@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Tag } from 'lucide-react';
 import { CalendarGrid } from './components/calendar/CalendarGrid';
 import { WeekView } from './components/calendar/WeekView';
 import { MonthNavigation } from './components/calendar/MonthNavigation';
 import { ListView } from './components/list/ListView';
 import { TaskModal } from './components/task/TaskModal';
 import { ViewToggle } from './components/ui/ViewToggle';
+import { EmptyState } from './components/ui/EmptyState';
+import { CategoryManager } from './components/ui/CategoryManager';
 import { DndProvider } from './components/dnd/DndProvider';
 import { useCategoryMap, useTaskCount } from './db/hooks';
 import type { ViewMode, CalendarView, Task } from './types';
@@ -21,6 +23,7 @@ function App() {
   const [calendarView, setCalendarView] = useState<CalendarView>('month');
   const [viewMode, setViewMode] = useState<ViewMode>('calendar');
   const [showCompleted, setShowCompleted] = useState(false);
+  const [isCategoryManagerOpen, setIsCategoryManagerOpen] = useState(false);
   const [modalState, setModalState] = useState<ModalState>({
     isOpen: false,
     date: '',
@@ -74,6 +77,14 @@ function App() {
               {showCompleted ? 'Showing done' : 'Hiding done'}
             </span>
           </button>
+          <button
+            onClick={() => setIsCategoryManagerOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 rounded-md hover:bg-slate-100 border border-slate-300 transition-colors"
+            title="Manage categories"
+          >
+            <Tag className="w-4 h-4" />
+            <span className="hidden sm:inline">Categories</span>
+          </button>
         </div>
       </header>
 
@@ -88,13 +99,7 @@ function App() {
       )}
 
       {/* Empty state hint (overlaid, not replacing views) */}
-      {isEmpty && (
-        <div className="text-center py-4 text-slate-400 text-sm">
-          {viewMode === 'calendar'
-            ? 'Click a day to add your first task'
-            : 'Click + to add your first task'}
-        </div>
-      )}
+      {isEmpty && <EmptyState viewMode={viewMode} />}
 
       {/* Main content */}
       <DndProvider categoryMap={categoryMap}>
@@ -134,6 +139,12 @@ function App() {
         onClose={closeModal}
         date={modalState.date}
         task={modalState.task}
+      />
+
+      {/* Category manager */}
+      <CategoryManager
+        isOpen={isCategoryManagerOpen}
+        onClose={() => setIsCategoryManagerOpen(false)}
       />
     </div>
   );
