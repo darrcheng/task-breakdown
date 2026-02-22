@@ -54,7 +54,7 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
         colors.bg,
         colors.border,
         'hover:opacity-80',
-        departing && 'line-through opacity-0 transition-all duration-[1500ms]'
+        departing && 'line-through decoration-green-600 text-green-600 opacity-0 transition-all duration-[1500ms]'
       )}
     >
       {/* Status indicator - clickable to cycle */}
@@ -72,16 +72,16 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
       />
 
       {IconComponent && (
-        <IconComponent className={clsx('w-4 h-4 flex-shrink-0', colors.text)} />
+        <IconComponent className={clsx('w-4 h-4 flex-shrink-0', departing ? 'text-green-600' : colors.text)} />
       )}
-      <span className={clsx('flex-1 font-medium text-sm', colors.text)}>
+      <span className={clsx('flex-1 font-medium text-sm', departing ? 'text-green-600' : colors.text)}>
         {task.title}
       </span>
       <span
         className={clsx(
           'text-xs px-2 py-0.5 rounded-full font-medium',
           colors.bg,
-          colors.text,
+          departing ? 'text-green-600' : colors.text,
           'border',
           colors.border
         )}
