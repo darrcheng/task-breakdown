@@ -12,8 +12,8 @@ interface DayCellProps {
   currentMonth: Date;
   showCompleted: boolean;
   categoryMap?: Map<number, Category>;
-  onDayClick: (date: string) => void;
-  onTaskClick: (task: Task) => void;
+  onDayClick: (date: string, clickPosition?: { x: number; y: number }) => void;
+  onTaskClick: (task: Task, clickPosition?: { x: number; y: number }) => void;
 }
 
 export function DayCell({
@@ -29,6 +29,10 @@ export function DayCell({
   const isCurrentMonth = isSameMonth(date, currentMonth);
   const today = isToday(date);
 
+  const handleCellClick = (e: React.MouseEvent) => {
+    onDayClick(dateStr, { x: e.clientX, y: e.clientY });
+  };
+
   return (
     <DroppableDay
       dateStr={dateStr}
@@ -38,7 +42,7 @@ export function DayCell({
         'hover:bg-slate-50/80'
       )}
     >
-      <div onClick={() => onDayClick(dateStr)}>
+      <div onClick={handleCellClick}>
         <div
           className={clsx(
             'w-6 h-6 flex items-center justify-center rounded-full text-sm font-medium mb-1 mx-auto',
@@ -57,7 +61,9 @@ export function DayCell({
               <TaskCard
                 task={task}
                 categoryMap={categoryMap}
-                onClick={onTaskClick}
+                onClick={(t, e) => {
+                  onTaskClick(t, e ? { x: e.clientX, y: e.clientY } : undefined);
+                }}
               />
             </DraggableTask>
           ))}

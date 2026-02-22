@@ -16,6 +16,7 @@ interface ModalState {
   isOpen: boolean;
   date: string;
   task?: Task;
+  clickPosition?: { x: number; y: number };
 }
 
 function App() {
@@ -32,17 +33,17 @@ function App() {
   const categoryMap = useCategoryMap();
   const taskCount = useTaskCount();
 
-  const handleDayClick = (date: string) => {
+  const handleDayClick = (date: string, clickPosition?: { x: number; y: number }) => {
     if (viewMode === 'calendar') {
       // Calendar view: open create modal
-      setModalState({ isOpen: true, date });
+      setModalState({ isOpen: true, date, clickPosition });
     }
     // List view handles inline create internally via DayGroup
   };
 
-  const handleTaskClickCalendar = (task: Task) => {
+  const handleTaskClickCalendar = (task: Task, clickPosition?: { x: number; y: number }) => {
     // Calendar view: open edit modal
-    setModalState({ isOpen: true, date: task.date, task });
+    setModalState({ isOpen: true, date: task.date, task, clickPosition });
   };
 
   const handleTaskClickList = (task: Task) => {
@@ -59,7 +60,7 @@ function App() {
   return (
     <div className="h-screen bg-white flex flex-col">
       {/* Header */}
-      <header className="border-b border-slate-200 px-6 py-3 flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between">
         <h1 className="text-xl font-semibold text-slate-800">TaskBreaker</h1>
         <div className="flex items-center gap-3">
           <ViewToggle viewMode={viewMode} onViewModeChange={setViewMode} />
@@ -139,6 +140,7 @@ function App() {
         onClose={closeModal}
         date={modalState.date}
         task={modalState.task}
+        clickPosition={modalState.clickPosition}
       />
 
       {/* Category manager */}

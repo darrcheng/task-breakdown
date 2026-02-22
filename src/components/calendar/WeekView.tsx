@@ -8,8 +8,8 @@ interface WeekViewProps {
   currentDate: Date;
   showCompleted: boolean;
   categoryMap?: Map<number, Category>;
-  onDayClick: (date: string) => void;
-  onTaskClick: (task: Task) => void;
+  onDayClick: (date: string, clickPosition?: { x: number; y: number }) => void;
+  onTaskClick: (task: Task, clickPosition?: { x: number; y: number }) => void;
 }
 
 export function WeekView({

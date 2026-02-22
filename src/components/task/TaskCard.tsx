@@ -5,7 +5,7 @@ import type { Task, Category } from '../../types';
 interface TaskCardProps {
   task: Task;
   categoryMap?: Map<number, Category>;
-  onClick?: (task: Task) => void;
+  onClick?: (task: Task, e?: React.MouseEvent) => void;
 }
 
 export function TaskCard({ task, categoryMap, onClick }: TaskCardProps) {
@@ -19,7 +19,7 @@ export function TaskCard({ task, categoryMap, onClick }: TaskCardProps) {
     <button
       onClick={(e) => {
         e.stopPropagation();
-        onClick?.(task);
+        onClick?.(task, e);
       }}
       className={clsx(
         'w-full flex items-center gap-1.5 px-2 py-1 rounded border text-left cursor-pointer transition-colors',
