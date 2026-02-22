@@ -122,7 +122,7 @@ export function ListView({
       {/* Floating Today button */}
       <button
         onClick={scrollToToday}
-        className="absolute bottom-4 right-4 flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-full shadow-lg hover:bg-blue-700 transition-colors"
+        className="absolute bottom-4 right-4 z-50 flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-full shadow-lg hover:bg-blue-700 transition-colors"
       >
         <ArrowDown className="w-4 h-4" />
         Today

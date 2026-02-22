@@ -57,7 +57,7 @@ function App() {
   const isEmpty = taskCount === 0;
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="h-screen bg-white flex flex-col">
       {/* Header */}
       <header className="border-b border-slate-200 px-6 py-3 flex items-center justify-between">
         <h1 className="text-xl font-semibold text-slate-800">TaskBreaker</h1>

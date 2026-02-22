@@ -1,4 +1,4 @@
-import { format, addMonths, subMonths } from 'date-fns';
+import { format, addMonths, subMonths, addWeeks, subWeeks } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { CalendarView } from '../../types';
 
@@ -19,9 +19,15 @@ export function MonthNavigation({
     <div className="flex items-center justify-between px-6 py-3 border-b border-slate-200">
       <div className="flex items-center gap-3">
         <button
-          onClick={() => onMonthChange(subMonths(currentMonth, 1))}
+          onClick={() =>
+            onMonthChange(
+              calendarView === 'week'
+                ? subWeeks(currentMonth, 1)
+                : subMonths(currentMonth, 1)
+            )
+          }
           className="p-1.5 rounded-md hover:bg-slate-100 text-slate-600 transition-colors"
-          aria-label="Previous month"
+          aria-label={calendarView === 'week' ? 'Previous week' : 'Previous month'}
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
@@ -29,9 +35,15 @@ export function MonthNavigation({
           {format(currentMonth, 'MMMM yyyy')}
         </h2>
         <button
-          onClick={() => onMonthChange(addMonths(currentMonth, 1))}
+          onClick={() =>
+            onMonthChange(
+              calendarView === 'week'
+                ? addWeeks(currentMonth, 1)
+                : addMonths(currentMonth, 1)
+            )
+          }
           className="p-1.5 rounded-md hover:bg-slate-100 text-slate-600 transition-colors"
-          aria-label="Next month"
+          aria-label={calendarView === 'week' ? 'Next week' : 'Next month'}
         >
           <ChevronRight className="w-5 h-5" />
         </button>
