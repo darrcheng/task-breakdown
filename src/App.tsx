@@ -52,28 +52,45 @@ function App() {
 
       switch (e.key) {
         case 'j': // Next period
+          e.preventDefault();
           setCurrentMonth(prev =>
             calendarView === 'week' ? addWeeks(prev, 1) : addMonths(prev, 1)
           );
           break;
         case 'k': // Previous period
+          e.preventDefault();
           setCurrentMonth(prev =>
             calendarView === 'week' ? subWeeks(prev, 1) : subMonths(prev, 1)
           );
           break;
         case 't': // Today
+          e.preventDefault();
           setCurrentMonth(new Date());
           break;
+        case 'm': // Month view
+          e.preventDefault();
+          setCalendarView('month');
+          setViewMode('calendar');
+          break;
+        case 'w': // Week view
+          e.preventDefault();
+          setCalendarView('week');
+          setViewMode('calendar');
+          break;
         case 'c': // Calendar view
+          e.preventDefault();
           setViewMode('calendar');
           break;
         case 'l': // List view
+          e.preventDefault();
           setViewMode('list');
           break;
         case 'n': // New task (defaults to today)
+          e.preventDefault();
           setModalState({ isOpen: true, date: formatDateKey(new Date()) });
           break;
         case '?': // Open settings
+          e.preventDefault();
           setIsSettingsOpen(true);
           break;
       }
