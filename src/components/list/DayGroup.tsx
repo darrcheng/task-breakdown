@@ -44,7 +44,7 @@ export function DayGroup({
           </h3>
           <button
             onClick={() => setIsCreating(!isCreating)}
-            className="text-sm text-slate-400 hover:text-slate-600 px-2 py-0.5 rounded hover:bg-slate-100 transition-colors"
+            className="flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 hover:bg-blue-100 hover:text-blue-600 text-slate-500 transition-colors text-lg font-medium"
             aria-label={`Add task for ${dateLabel}`}
           >
             +
@@ -57,7 +57,14 @@ export function DayGroup({
         )}
 
         {/* Tasks */}
-        <div className="px-4 py-2 space-y-2">
+        <div
+          className="px-4 py-2 space-y-2 min-h-[40px]"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setIsCreating(true);
+            }
+          }}
+        >
           {tasks.length > 0 ? (
             tasks.map((task) =>
               editingTaskId === task.id ? (
@@ -78,7 +85,9 @@ export function DayGroup({
             )
           ) : (
             !isCreating && (
-              <p className="text-sm text-slate-300 py-2 italic">No tasks</p>
+              <p className="text-sm text-slate-300 py-2 italic pointer-events-none">
+                Click to add a task
+              </p>
             )
           )}
         </div>
