@@ -29,10 +29,15 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. User can drag tasks between calendar days to reschedule
   4. User can edit task details inline without friction
   5. User can delete tasks and mark tasks as done
-**Plans**: TBD
+**Plans**: 6 plans
 
 Plans:
-- [ ] TBD during planning
+- [ ] 01-01-PLAN.md — Project scaffolding, database, data model, utilities
+- [ ] 01-02-PLAN.md — Calendar view with monthly grid, week toggle, navigation
+- [ ] 01-03-PLAN.md — List view with infinite scroll day-by-day
+- [ ] 01-04-PLAN.md — Task CRUD (create/edit/delete/status toggle)
+- [ ] 01-05-PLAN.md — Drag-to-reschedule in both views
+- [ ] 01-06-PLAN.md — Polish, category management, end-to-end verification
 
 ### Phase 2: AI Task Breakdown
 **Goal**: User can break down overwhelming tasks into actionable subtasks using AI
@@ -84,11 +89,11 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Local-First Foundation | 0/TBD | Not started | - |
+| 1. Local-First Foundation | 0/6 | Planned | - |
 | 2. AI Task Breakdown | 0/TBD | Not started | - |
 | 3. ADHD-Optimized UX | 0/TBD | Not started | - |
 | 4. Cross-Platform Expansion | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-05*
-*Last updated: 2026-02-05*
+*Last updated: 2026-02-22*
