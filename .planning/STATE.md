@@ -51,6 +51,10 @@ Recent decisions affecting current work:
 
 12 UI enhancement todos from Phase 1 UAT (all area: ui)
 
+### Roadmap Evolution
+
+- Phase 01.1 inserted after Phase 1: UI polish — implement 12 enhancement todos from Phase 1 UAT (URGENT)
+
 ### Blockers/Concerns
 
 None.
