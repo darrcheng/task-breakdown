@@ -3,6 +3,7 @@ import { Trash2 } from 'lucide-react';
 import clsx from 'clsx';
 import { useCategories } from '../../db/hooks';
 import { STATUS_COLORS } from '../../utils/categories';
+import { CategoryCombobox } from './CategoryCombobox';
 import type { Task, TaskStatus } from '../../types';
 
 interface TaskFormProps {
@@ -125,24 +126,10 @@ export function TaskForm({
 
       {/* Category */}
       <div>
-        <label
-          htmlFor="task-category"
-          className="block text-sm font-medium text-slate-700 mb-1"
-        >
+        <label className="block text-sm font-medium text-slate-700 mb-1">
           Category
         </label>
-        <select
-          id="task-category"
-          value={categoryId}
-          onChange={(e) => setCategoryId(Number(e.target.value))}
-          className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none"
-        >
-          {categories?.map((cat) => (
-            <option key={cat.id} value={cat.id}>
-              {cat.name}
-            </option>
-          ))}
-        </select>
+        <CategoryCombobox value={categoryId} onChange={setCategoryId} />
       </div>
 
       {/* Description */}
