@@ -57,7 +57,7 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
 
   // Calculate position with viewport clamping
   const MODAL_WIDTH = 400;
-  const MODAL_HEIGHT = 560;
+  const MODAL_HEIGHT = 620;
   const positionStyle: React.CSSProperties = clickPosition
     ? {
         left: Math.min(clickPosition.x + 8, window.innerWidth - MODAL_WIDTH - 16),

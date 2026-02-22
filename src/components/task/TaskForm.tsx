@@ -3,6 +3,7 @@ import { Trash2 } from 'lucide-react';
 import clsx from 'clsx';
 import { STATUS_COLORS } from '../../utils/categories';
 import { CategoryCombobox } from './CategoryCombobox';
+import { DatePicker } from './DatePicker';
 import type { Task, TaskStatus } from '../../types';
 
 interface TaskFormProps {
@@ -92,20 +93,10 @@ export function TaskForm({
 
       {/* Date */}
       <div>
-        <label
-          htmlFor="task-date"
-          className="block text-sm font-medium text-slate-700 mb-1"
-        >
+        <label className="block text-sm font-medium text-slate-700 mb-1">
           Date
         </label>
-        <input
-          id="task-date"
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none"
-          required
-        />
+        <DatePicker value={date} onChange={setDate} required />
       </div>
 
       {/* Status */}
