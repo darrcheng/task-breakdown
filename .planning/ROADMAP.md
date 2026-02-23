@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Local-First Foundation** - Core task management with calendar view (completed 2026-02-22)
 - [x] **Phase 2: AI Task Breakdown** - AI-powered subtask generation with controls (completed 2026-02-23)
-- [x] **Phase 3: ADHD-Optimized UX** - Energy tracking and gentle reschedule prompts (completed 2026-02-23)
+- [ ] **Phase 3: ADHD-Optimized UX** - Energy tracking and gentle reschedule prompts (gap closure in progress)
 - [ ] **Phase 4: Cross-Platform Expansion** - Full web and mobile parity
 
 ## Phase Details
@@ -98,14 +98,16 @@ Plans:
   3. User experiences satisfying celebration when completing tasks
   4. User sees gentle reschedule prompts for overdue tasks without guilt language
   5. User can identify the first subtask to start with visual highlighting
-**Plans**: 5 plans
+**Plans**: 7 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Schema migration (energyLevel, timeEstimate, isSomeday), celebration animation, start-here highlighting
-- [ ] 03-02-PLAN.md — Energy level tagging (chips in form, badges on cards, filter in header)
-- [ ] 03-03-PLAN.md — AI time estimation (provider method, background hook, badge display, override, calibration)
-- [ ] 03-04-PLAN.md — Overdue banner, quick picker with bulk actions, Someday view
-- [ ] 03-05-PLAN.md — UAT: end-to-end human verification of all Phase 3 features
+- [x] 03-01-PLAN.md — Schema migration (energyLevel, timeEstimate, isSomeday), celebration animation, start-here highlighting
+- [x] 03-02-PLAN.md — Energy level tagging (chips in form, badges on cards, filter in header)
+- [x] 03-03-PLAN.md — AI time estimation (provider method, background hook, badge display, override, calibration)
+- [x] 03-04-PLAN.md — Overdue banner, quick picker with bulk actions, Someday view
+- [x] 03-05-PLAN.md — UAT: end-to-end human verification of all Phase 3 features
+- [ ] 03-06-PLAN.md — Gap closure: celebration animation CSS race, AI breakdown regression, Enter key inline create
+- [ ] 03-07-PLAN.md — Gap closure: quick picker calendar UX, modal autosave, post-create edit view
 
 ### Phase 4: Cross-Platform Expansion
 **Goal**: App works equally well on web browsers and mobile devices
@@ -131,7 +133,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 01.1. UI Polish (gap closure) | 11/11 | Complete    | 2026-02-22 |
 | 2. AI Task Breakdown | 7/7 | Complete   | 2026-02-23 |
 | 02.1. Gemini Model Selector | 1/1 | Complete    | 2026-02-23 |
-| 3. ADHD-Optimized UX | 5/5 | Complete   | 2026-02-23 |
+| 3. ADHD-Optimized UX | 5/7 | Gap closure | - |
 | 4. Cross-Platform Expansion | 0/TBD | Not started | - |
 
 ---
