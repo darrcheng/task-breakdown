@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 2 of 4 (AI Task Breakdown)
-Plan: 02-03 + 02-04 (Wave 2)
-Status: Executing Wave 2
-Last activity: 2026-02-22 — Wave 1 complete (Plans 02-01 data model + provider, 02-02 settings UI)
+Plan: 02-05 (Wave 3)
+Status: Executing Wave 3
+Last activity: 2026-02-22 — Wave 2 complete (Plans 02-03 breakdown flow + 02-04 subtask display)
 
 Progress: [██████████░░░░░░░░░░] 25%
 
