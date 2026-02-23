@@ -68,10 +68,14 @@ Plans:
   3. User can regenerate subtasks if first attempt is not helpful
   4. User can recursively break down subtasks up to 3 levels deep
   5. AI provider can be swapped between Gemini/Claude/OpenAI without data loss
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] TBD during planning
+- [ ] 02-01-PLAN.md — Data model extension, provider abstraction, encrypted key storage
+- [ ] 02-02-PLAN.md — AI provider settings UI, first-use setup modal
+- [ ] 02-03-PLAN.md — Break it down button, streaming generation, review-before-accept flow
+- [ ] 02-04-PLAN.md — Subtask display in parent modal, parent badge, completion prompt
+- [ ] 02-05-PLAN.md — Selective regeneration with pin/keep, recursive breakdown, e2e verification
 
 ### Phase 3: ADHD-Optimized UX
 **Goal**: App supports ADHD-specific needs with energy tracking and positive feedback
@@ -110,7 +114,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Local-First Foundation | 6/6 | Complete | 2026-02-22 |
 | 01.1. UI Polish (gap closure) | 11/11 | Complete    | 2026-02-22 |
-| 2. AI Task Breakdown | 0/TBD | Not started | - |
+| 2. AI Task Breakdown | 0/5 | Planned | - |
 | 3. ADHD-Optimized UX | 0/TBD | Not started | - |
 | 4. Cross-Platform Expansion | 0/TBD | Not started | - |
 
