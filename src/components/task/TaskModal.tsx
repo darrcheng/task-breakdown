@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, Clock, Pencil } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/database';
 import { useCategoryMap } from '../../db/hooks';
 import { TaskForm } from './TaskForm';
+import type { TaskFormHandle } from './TaskForm';
 import { BreakdownButton } from './BreakdownButton';
 import { SubtaskReview } from './SubtaskReview';
 import { SubtaskList } from './SubtaskList';
@@ -31,6 +32,9 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
   const breakdown = useBreakdown();
   const categoryMap = useCategoryMap();
   const { triggerEstimate } = useTimeEstimate();
+
+  // Ref to TaskForm — used for auto-save on Escape/backdrop click
+  const formRef = useRef<TaskFormHandle>(null);
 
   // Override editing state
   const [isEditingOverride, setIsEditingOverride] = useState(false);
@@ -71,9 +75,13 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         if (parentStack.length > 0 || parentTask) {
+          // Navigating back to parent — no auto-save needed
           handleBackToParent();
         } else {
-          onClose();
+          // Final close — auto-save form data first
+          const saved = formRef.current?.submit();
+          if (!saved) onClose();
+          // If saved is true, handleSubmit will call onClose after saving
         }
       }
     };
@@ -100,6 +108,7 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
       if (data.title !== currentTask.title) {
         triggerEstimate(currentTask.id, data.title, data.description, data.categoryId);
       }
+      onClose();
     } else {
       const newId = await db.tasks.add({
         ...data,
@@ -109,8 +118,14 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
       });
       // Trigger background estimation for new tasks
       triggerEstimate(newId as number, data.title, data.description, data.categoryId);
+      // Stay in modal — switch to editing the new task so BreakdownButton is visible
+      const newTask = await db.tasks.get(newId as number);
+      if (newTask) {
+        setNavigationOverride(newTask);
+      } else {
+        onClose();
+      }
     }
-    onClose();
   };
 
   const handleDelete = async () => {
@@ -183,12 +198,19 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
       ? parentStack[parentStack.length - 1].title
       : parentTask?.title ?? 'parent';
 
+  // Backdrop click handler — auto-save form data before closing
+  const handleBackdropClick = () => {
+    const saved = formRef.current?.submit();
+    if (!saved) onClose();
+    // If saved is true, handleSubmit will call onClose after saving
+  };
+
   return (
     <div className="fixed inset-0 z-50">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/50"
-        onClick={onClose}
+        onClick={handleBackdropClick}
       />
       {/* Modal content */}
       <div
@@ -214,6 +236,7 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
         {/* key prop forces TaskForm to remount when task identity changes,
             ensuring useState initializers run fresh with up-to-date data */}
         <TaskForm
+          ref={formRef}
           key={currentTask?.id ?? 'new'}
           initialData={currentTask}
           initialDate={currentTask?.date ?? date}

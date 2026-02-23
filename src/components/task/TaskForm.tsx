@@ -1,10 +1,14 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { Trash2, Battery, BatteryMedium, Zap } from 'lucide-react';
 import clsx from 'clsx';
 import { STATUS_COLORS } from '../../utils/categories';
 import { CategoryCombobox } from './CategoryCombobox';
 import { DatePicker } from './DatePicker';
 import type { Task, TaskStatus, EnergyLevel } from '../../types';
+
+export interface TaskFormHandle {
+  submit: () => boolean;
+}
 
 interface TaskFormProps {
   initialData?: Partial<Task>;
@@ -46,14 +50,17 @@ const ENERGY_OPTIONS: { value: EnergyLevel; label: string; icon: typeof Battery;
   },
 ];
 
-export function TaskForm({
-  initialData,
-  initialDate,
-  onSubmit,
-  onCancel,
-  onDelete,
-  submitLabel = 'Save',
-}: TaskFormProps) {
+export const TaskForm = forwardRef<TaskFormHandle, TaskFormProps>(function TaskForm(
+  {
+    initialData,
+    initialDate,
+    onSubmit,
+    onCancel,
+    onDelete,
+    submitLabel = 'Save',
+  },
+  ref
+) {
   const titleRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState(initialData?.title ?? '');
   const [description, setDescription] = useState(
@@ -75,6 +82,15 @@ export function TaskForm({
   useEffect(() => {
     titleRef.current?.focus();
   }, []);
+
+  // Expose submit() via ref for external callers (e.g. TaskModal auto-save)
+  useImperativeHandle(ref, () => ({
+    submit: () => {
+      if (!title.trim()) return false;
+      onSubmit({ title: title.trim(), description, status, categoryId, date, energyLevel });
+      return true;
+    },
+  }));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -251,4 +267,4 @@ export function TaskForm({
       </div>
     </form>
   );
-}
+});

@@ -63,6 +63,8 @@ function OverdueTaskRow({ task }: { task: Task }) {
           <DatePicker
             value={task.date}
             onChange={handleReschedule}
+            defaultOpen={true}
+            inline={true}
           />
         </div>
       )}
