@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 Phase: 3 of 4 (ADHD-Optimized UX)
 Plan: 5 of 5 complete
 Status: Phase 3 Complete
-Last activity: 2026-02-23 — Phase 03 Plan 07 complete. Inline calendar picker, post-create edit view with BreakdownButton visible, autosave on Escape/backdrop via forwardRef form handle.
+Last activity: 2026-02-23 — Phase 03 Plan 06 complete. Two-frame rAF departure animation CSS race fix, AI breakdown stale isConfigured race fix, Enter key inline create in list view.
 
 Progress: [████████████████████] 25/25 plans (100%)
 
@@ -117,6 +117,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-23 (Phase 03 Plan 07 complete — inline calendar picker, post-create edit view, autosave on modal close)
-Stopped at: Completed 03-adhd-optimized-ux-07-PLAN.md
+Last session: 2026-02-23 (Phase 03 Plan 06 complete — celebration animation CSS race fix, AI breakdown stale state fix, Enter key inline create)
+Stopped at: Completed 03-adhd-optimized-ux-06-PLAN.md
 Resume file: None
