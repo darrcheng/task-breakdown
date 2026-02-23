@@ -13,6 +13,8 @@ export function TaskInlineEdit({ task, onClose }: TaskInlineEditProps) {
     description: string;
     status: 'todo' | 'in-progress' | 'done';
     categoryId: number;
+    date: string;
+    energyLevel: import('../../types').EnergyLevel | null;
   }) => {
     if (task.id) {
       await db.tasks.update(task.id, {

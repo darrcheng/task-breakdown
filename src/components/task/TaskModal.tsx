@@ -82,6 +82,7 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
     status: 'todo' | 'in-progress' | 'done';
     categoryId: number;
     date: string;
+    energyLevel: import('../../types').EnergyLevel | null;
   }) => {
     if (currentTask?.id) {
       await db.tasks.update(currentTask.id, {

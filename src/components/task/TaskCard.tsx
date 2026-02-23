@@ -1,7 +1,9 @@
+import { type LucideIcon } from 'lucide-react';
+import { Battery, BatteryMedium, Zap } from 'lucide-react';
 import clsx from 'clsx';
 import { CATEGORY_ICONS, STATUS_COLORS } from '../../utils/categories';
 import { ParentBadge } from './ParentBadge';
-import type { Task, Category } from '../../types';
+import type { Task, Category, EnergyLevel } from '../../types';
 
 interface TaskCardProps {
   task: Task;
@@ -9,12 +11,20 @@ interface TaskCardProps {
   onClick?: (task: Task, e?: React.MouseEvent) => void;
 }
 
+const ENERGY_DISPLAY: Record<EnergyLevel, { icon: LucideIcon; color: string; label: string }> = {
+  low: { icon: Battery, color: 'text-sky-500', label: 'Low' },
+  medium: { icon: BatteryMedium, color: 'text-amber-500', label: 'Med' },
+  high: { icon: Zap, color: 'text-emerald-500', label: 'High' },
+};
+
 export function TaskCard({ task, categoryMap, onClick }: TaskCardProps) {
   const colors = STATUS_COLORS[task.status];
   const category = categoryMap?.get(task.categoryId);
   const IconComponent = category
     ? CATEGORY_ICONS[category.icon]
     : CATEGORY_ICONS['folder'];
+
+  const energy = task.energyLevel ? ENERGY_DISPLAY[task.energyLevel] : null;
 
   return (
     <button
@@ -32,6 +42,12 @@ export function TaskCard({ task, categoryMap, onClick }: TaskCardProps) {
     >
       {IconComponent && <IconComponent className="w-3 h-3 flex-shrink-0" />}
       <span className="text-xs font-medium truncate">{task.title}</span>
+      {energy && (
+        <span className={clsx('flex items-center gap-0.5 text-[10px] flex-shrink-0', energy.color)}>
+          <energy.icon className="w-3 h-3" />
+          {energy.label}
+        </span>
+      )}
       {task.id && <ParentBadge taskId={task.id} />}
     </button>
   );

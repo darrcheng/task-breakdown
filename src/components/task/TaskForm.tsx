@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Battery, BatteryMedium, Zap } from 'lucide-react';
 import clsx from 'clsx';
 import { STATUS_COLORS } from '../../utils/categories';
 import { CategoryCombobox } from './CategoryCombobox';
 import { DatePicker } from './DatePicker';
-import type { Task, TaskStatus } from '../../types';
+import type { Task, TaskStatus, EnergyLevel } from '../../types';
 
 interface TaskFormProps {
   initialData?: Partial<Task>;
@@ -15,11 +15,36 @@ interface TaskFormProps {
     status: TaskStatus;
     categoryId: number;
     date: string;
+    energyLevel: EnergyLevel | null;
   }) => void;
   onCancel: () => void;
   onDelete?: () => void;
   submitLabel?: string;
 }
+
+const ENERGY_OPTIONS: { value: EnergyLevel; label: string; icon: typeof Battery; selected: string; unselected: string }[] = [
+  {
+    value: 'low',
+    label: 'Low',
+    icon: Battery,
+    selected: 'text-sky-600 bg-sky-50 border-sky-300',
+    unselected: 'text-slate-500 bg-white border-slate-300 hover:border-slate-400',
+  },
+  {
+    value: 'medium',
+    label: 'Medium',
+    icon: BatteryMedium,
+    selected: 'text-amber-600 bg-amber-50 border-amber-300',
+    unselected: 'text-slate-500 bg-white border-slate-300 hover:border-slate-400',
+  },
+  {
+    value: 'high',
+    label: 'High',
+    icon: Zap,
+    selected: 'text-emerald-600 bg-emerald-50 border-emerald-300',
+    unselected: 'text-slate-500 bg-white border-slate-300 hover:border-slate-400',
+  },
+];
 
 export function TaskForm({
   initialData,
@@ -41,6 +66,9 @@ export function TaskForm({
     initialData?.categoryId ?? 0
   );
   const [date, setDate] = useState(initialData?.date ?? initialDate ?? '');
+  const [energyLevel, setEnergyLevel] = useState<EnergyLevel | null>(
+    initialData?.energyLevel ?? null
+  );
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   // Auto-focus title on mount
@@ -51,7 +79,7 @@ export function TaskForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    onSubmit({ title: title.trim(), description, status, categoryId, date });
+    onSubmit({ title: title.trim(), description, status, categoryId, date, energyLevel });
   };
 
   const handleDelete = () => {
@@ -61,6 +89,11 @@ export function TaskForm({
       setConfirmDelete(true);
       setTimeout(() => setConfirmDelete(false), 3000);
     }
+  };
+
+  const handleEnergyClick = (value: EnergyLevel) => {
+    // Click again to deselect
+    setEnergyLevel(prev => (prev === value ? null : value));
   };
 
   const statusOptions: { value: TaskStatus; label: string }[] = [
@@ -121,6 +154,33 @@ export function TaskForm({
                     : 'border-transparent opacity-50 hover:opacity-80'
                 )}
               >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Energy */}
+      <div>
+        <label className="block text-sm font-medium text-slate-700 mb-1">
+          Energy
+        </label>
+        <div className="flex gap-2">
+          {ENERGY_OPTIONS.map((opt) => {
+            const Icon = opt.icon;
+            const isSelected = energyLevel === opt.value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => handleEnergyClick(opt.value)}
+                className={clsx(
+                  'flex items-center gap-1 px-2 py-1 rounded-full border text-xs font-medium transition-colors',
+                  isSelected ? opt.selected : opt.unselected
+                )}
+              >
+                <Icon className="w-3.5 h-3.5" />
                 {opt.label}
               </button>
             );

@@ -1,9 +1,17 @@
 import { useState, useRef, useEffect } from 'react';
+import { type LucideIcon } from 'lucide-react';
+import { Battery, BatteryMedium, Zap } from 'lucide-react';
 import clsx from 'clsx';
 import { CATEGORY_ICONS, STATUS_COLORS, getNextStatus } from '../../utils/categories';
 import { ParentBadge } from '../task/ParentBadge';
 import { db } from '../../db/database';
-import type { Task, Category, TaskStatus } from '../../types';
+import type { Task, Category, TaskStatus, EnergyLevel } from '../../types';
+
+const ENERGY_DISPLAY: Record<EnergyLevel, { icon: LucideIcon; color: string; label: string }> = {
+  low: { icon: Battery, color: 'text-sky-500', label: 'Low' },
+  medium: { icon: BatteryMedium, color: 'text-amber-500', label: 'Med' },
+  high: { icon: Zap, color: 'text-emerald-500', label: 'High' },
+};
 
 interface TaskListItemProps {
   task: Task;
@@ -20,6 +28,7 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
   const IconComponent = category
     ? CATEGORY_ICONS[category.icon]
     : CATEGORY_ICONS['folder'];
+  const energy = task.energyLevel ? ENERGY_DISPLAY[task.energyLevel] : null;
 
   const statusLabel =
     displayStatus === 'todo'
@@ -106,6 +115,12 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
       <span className={clsx('flex-1 font-medium text-sm', departing ? 'text-green-600' : colors.text)}>
         {task.title}
       </span>
+      {energy && (
+        <span className={clsx('flex items-center gap-0.5 text-xs flex-shrink-0', energy.color)}>
+          <energy.icon className="w-3.5 h-3.5" />
+          {energy.label}
+        </span>
+      )}
       {task.id && <ParentBadge taskId={task.id} />}
       <span
         className={clsx(
