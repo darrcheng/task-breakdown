@@ -3,6 +3,7 @@ import { Bot, Check, AlertCircle, Eye, EyeOff, Trash2 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAIProvider } from '../../hooks/useAIProvider';
 import type { AIProviderName } from '../../types';
+import { GEMINI_MODELS } from '../../types';
 
 const PROVIDERS: { name: AIProviderName; label: string; description: string }[] = [
   {
@@ -26,6 +27,8 @@ export function AIProviderSettings() {
     configureProvider,
     clearProvider,
     getKeyLastChars,
+    geminiModel,
+    setGeminiModel,
   } = useAIProvider();
 
   const [selectedProvider, setSelectedProvider] = useState<AIProviderName | null>(
@@ -229,6 +232,30 @@ export function AIProviderSettings() {
         <div className="flex items-center gap-2 mt-2 text-sm text-red-600">
           <AlertCircle className="w-4 h-4" />
           {error || 'Connection failed. Check your API key.'}
+        </div>
+      )}
+
+      {/* Gemini model selector */}
+      {currentProvider === 'gemini' && hasKey && !showKeyInput && (
+        <div className="mt-3">
+          <h4 className="text-xs font-medium text-slate-500 mb-2">Model</h4>
+          <div className="space-y-1.5">
+            {GEMINI_MODELS.map((m) => (
+              <button
+                key={m.id}
+                onClick={() => setGeminiModel(m.id)}
+                className={clsx(
+                  'w-full text-left px-3 py-2 rounded-lg border-2 transition-colors',
+                  geminiModel === m.id
+                    ? 'border-blue-400 bg-blue-50 text-blue-700'
+                    : 'border-slate-200 text-slate-600 hover:border-slate-300',
+                )}
+              >
+                <div className="text-xs font-medium">{m.label}</div>
+                <div className="text-[11px] text-slate-400">{m.description}</div>
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>
