@@ -4,13 +4,14 @@ import { ArrowDown } from 'lucide-react';
 import { formatDateKey, getDaysInRange } from '../../utils/dates';
 import { useTasksByDateRange } from '../../db/hooks';
 import { DayGroup } from './DayGroup';
-import type { Task, Category } from '../../types';
+import type { Task, Category, EnergyLevel } from '../../types';
 
 interface ListViewProps {
   showCompleted: boolean;
   categoryMap?: Map<number, Category>;
   onDayClick: (date: string) => void;
   onTaskClick: (task: Task) => void;
+  energyFilter?: EnergyLevel | null;
 }
 
 export function ListView({
@@ -18,6 +19,7 @@ export function ListView({
   categoryMap,
   onDayClick,
   onTaskClick,
+  energyFilter,
 }: ListViewProps) {
   const today = new Date();
   const [startDate, setStartDate] = useState(() => subDays(today, 7));
@@ -30,7 +32,7 @@ export function ListView({
 
   const startStr = formatDateKey(startDate);
   const endStr = formatDateKey(endDate);
-  const tasks = useTasksByDateRange(startStr, endStr, showCompleted);
+  const tasks = useTasksByDateRange(startStr, endStr, showCompleted, energyFilter);
 
   // Group tasks by date
   const days = getDaysInRange(startDate, endDate);

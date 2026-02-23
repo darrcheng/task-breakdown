@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Eye, EyeOff, Tag, Settings } from 'lucide-react';
+import { Eye, EyeOff, Tag, Settings, Battery, BatteryMedium, Zap } from 'lucide-react';
 import { addMonths, subMonths, addWeeks, subWeeks } from 'date-fns';
 import { CalendarGrid } from './components/calendar/CalendarGrid';
 import { WeekView } from './components/calendar/WeekView';
@@ -14,7 +14,7 @@ import { DndProvider } from './components/dnd/DndProvider';
 import { useCategoryMap, useTaskCount } from './db/hooks';
 import { useSettings } from './hooks/useSettings';
 import { formatDateKey } from './utils/dates';
-import type { ViewMode, CalendarView, Task } from './types';
+import type { ViewMode, CalendarView, Task, EnergyLevel } from './types';
 
 interface ModalState {
   isOpen: boolean;
@@ -23,11 +23,18 @@ interface ModalState {
   clickPosition?: { x: number; y: number };
 }
 
+const ENERGY_FILTER_OPTIONS: { value: EnergyLevel; label: string; icon: typeof Battery; activeClass: string }[] = [
+  { value: 'low', label: 'Low', icon: Battery, activeClass: 'text-sky-600 bg-sky-50 border-sky-300' },
+  { value: 'medium', label: 'Med', icon: BatteryMedium, activeClass: 'text-amber-600 bg-amber-50 border-amber-300' },
+  { value: 'high', label: 'High', icon: Zap, activeClass: 'text-emerald-600 bg-emerald-50 border-emerald-300' },
+];
+
 function App() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [calendarView, setCalendarView] = useState<CalendarView>('month');
   const [viewMode, setViewMode] = useState<ViewMode>('calendar');
   const [showCompleted, setShowCompleted] = useState(false);
+  const [energyFilter, setEnergyFilter] = useState<EnergyLevel | null>(null);
   const [isCategoryManagerOpen, setIsCategoryManagerOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [modalState, setModalState] = useState<ModalState>({
@@ -122,6 +129,10 @@ function App() {
     setModalState({ isOpen: false, date: '' });
   };
 
+  const handleEnergyFilterClick = (value: EnergyLevel) => {
+    setEnergyFilter(prev => (prev === value ? null : value));
+  };
+
   const isEmpty = taskCount === 0;
 
   return (
@@ -131,6 +142,30 @@ function App() {
         <h1 className="text-xl font-semibold text-slate-800">TaskBreaker</h1>
         <div className="flex items-center gap-3">
           <ViewToggle viewMode={viewMode} onViewModeChange={setViewMode} />
+
+          {/* Energy filter chips */}
+          <div className="flex items-center gap-1 border-l border-slate-200 pl-3 ml-1">
+            {ENERGY_FILTER_OPTIONS.map((opt) => {
+              const Icon = opt.icon;
+              const isActive = energyFilter === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  onClick={() => handleEnergyFilterClick(opt.value)}
+                  className={`flex items-center gap-1 px-1.5 py-0.5 text-xs rounded-full border transition-colors ${
+                    isActive
+                      ? opt.activeClass
+                      : 'text-slate-400 border-slate-200 hover:border-slate-300'
+                  }`}
+                  title={`Filter by ${opt.label} energy`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+
           <button
             onClick={() => setShowCompleted(!showCompleted)}
             className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 rounded-md hover:bg-slate-100 border border-slate-300 transition-colors"
@@ -189,6 +224,7 @@ function App() {
                 onDayClick={handleDayClick}
                 onTaskClick={handleTaskClickCalendar}
                 weekStartsOn={settings.weekStartsOn}
+                energyFilter={energyFilter}
               />
             ) : (
               <WeekView
@@ -198,6 +234,7 @@ function App() {
                 onDayClick={handleDayClick}
                 onTaskClick={handleTaskClickCalendar}
                 weekStartsOn={settings.weekStartsOn}
+                energyFilter={energyFilter}
               />
             )
           ) : (
@@ -206,6 +243,7 @@ function App() {
               categoryMap={categoryMap}
               onDayClick={handleDayClick}
               onTaskClick={handleTaskClickList}
+              energyFilter={energyFilter}
             />
           )}
         </main>

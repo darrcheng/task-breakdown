@@ -1,33 +1,36 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from './database';
-import type { Category } from '../types';
+import type { Category, EnergyLevel } from '../types';
 import { formatDateKey } from '../utils/dates';
 
 /**
  * Returns tasks for a specific date.
  * Filters out 'done' status unless showCompleted is true.
+ * Optionally filters by energyLevel (null = no filter).
  */
-export function useTasksByDate(date: string, showCompleted: boolean) {
+export function useTasksByDate(date: string, showCompleted: boolean, energyFilter?: EnergyLevel | null) {
   return useLiveQuery(
     () => {
       const query = db.tasks.where('date').equals(date);
       if (!showCompleted) {
-        return query.filter((t) => t.status !== 'done' && !t.isSomeday).toArray();
+        return query.filter((t) => t.status !== 'done' && !t.isSomeday && (!energyFilter || t.energyLevel === energyFilter)).toArray();
       }
-      return query.filter((t) => !t.isSomeday).toArray();
+      return query.filter((t) => !t.isSomeday && (!energyFilter || t.energyLevel === energyFilter)).toArray();
     },
-    [date, showCompleted]
+    [date, showCompleted, energyFilter]
   );
 }
 
 /**
  * Returns tasks for a date range (inclusive).
  * Used for calendar month view and list view.
+ * Optionally filters by energyLevel (null = no filter).
  */
 export function useTasksByDateRange(
   startDate: string,
   endDate: string,
-  showCompleted: boolean
+  showCompleted: boolean,
+  energyFilter?: EnergyLevel | null
 ) {
   return useLiveQuery(
     () => {
@@ -35,11 +38,11 @@ export function useTasksByDateRange(
         .where('date')
         .between(startDate, endDate, true, true);
       if (!showCompleted) {
-        return query.filter((t) => t.status !== 'done' && !t.isSomeday).toArray();
+        return query.filter((t) => t.status !== 'done' && !t.isSomeday && (!energyFilter || t.energyLevel === energyFilter)).toArray();
       }
-      return query.filter((t) => !t.isSomeday).toArray();
+      return query.filter((t) => !t.isSomeday && (!energyFilter || t.energyLevel === energyFilter)).toArray();
     },
-    [startDate, endDate, showCompleted]
+    [startDate, endDate, showCompleted, energyFilter]
   );
 }
 

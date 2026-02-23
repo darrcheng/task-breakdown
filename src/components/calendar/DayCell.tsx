@@ -5,7 +5,7 @@ import { formatDateKey, isToday, isSameMonth } from '../../utils/dates';
 import { TaskCard } from '../task/TaskCard';
 import { DraggableTask } from '../dnd/DraggableTask';
 import { DroppableDay } from '../dnd/DroppableDay';
-import type { Task, Category } from '../../types';
+import type { Task, Category, EnergyLevel } from '../../types';
 
 interface DayCellProps {
   date: Date;
@@ -14,6 +14,7 @@ interface DayCellProps {
   categoryMap?: Map<number, Category>;
   onDayClick: (date: string, clickPosition?: { x: number; y: number }) => void;
   onTaskClick: (task: Task, clickPosition?: { x: number; y: number }) => void;
+  energyFilter?: EnergyLevel | null;
 }
 
 export function DayCell({
@@ -23,9 +24,10 @@ export function DayCell({
   categoryMap,
   onDayClick,
   onTaskClick,
+  energyFilter,
 }: DayCellProps) {
   const dateStr = formatDateKey(date);
-  const tasks = useTasksByDate(dateStr, showCompleted);
+  const tasks = useTasksByDate(dateStr, showCompleted, energyFilter);
   const isCurrentMonth = isSameMonth(date, currentMonth);
   const today = isToday(date);
 

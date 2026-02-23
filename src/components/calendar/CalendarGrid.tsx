@@ -1,6 +1,6 @@
 import { getCalendarDays, formatDateKey } from '../../utils/dates';
 import { DayCell } from './DayCell';
-import type { Task, Category } from '../../types';
+import type { Task, Category, EnergyLevel } from '../../types';
 
 const ALL_DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -11,6 +11,7 @@ interface CalendarGridProps {
   onDayClick: (date: string, clickPosition?: { x: number; y: number }) => void;
   onTaskClick: (task: Task, clickPosition?: { x: number; y: number }) => void;
   weekStartsOn?: 0 | 1;
+  energyFilter?: EnergyLevel | null;
 }
 
 export function CalendarGrid({
@@ -20,6 +21,7 @@ export function CalendarGrid({
   onDayClick,
   onTaskClick,
   weekStartsOn = 0,
+  energyFilter,
 }: CalendarGridProps) {
   const days = getCalendarDays(month, weekStartsOn);
   const dayNames = weekStartsOn === 1
@@ -54,6 +56,7 @@ export function CalendarGrid({
             categoryMap={categoryMap}
             onDayClick={onDayClick}
             onTaskClick={onTaskClick}
+            energyFilter={energyFilter}
           />
         ))}
       </div>
