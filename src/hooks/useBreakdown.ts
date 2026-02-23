@@ -23,7 +23,7 @@ export type BreakdownState =
 
 export function useBreakdown() {
   const [state, setState] = useState<BreakdownState>({ status: 'idle' });
-  const { isConfigured, getProvider } = useAIProvider();
+  const { isConfigured, getProvider, configureProvider } = useAIProvider();
   const pendingTaskRef = useRef<Task | null>(null);
   const stateRef = useRef(state);
 
@@ -91,13 +91,56 @@ export function useBreakdown() {
     const task = pendingTaskRef.current;
     if (task) {
       pendingTaskRef.current = null;
-      setState({ status: 'idle' });
-      // Re-trigger after a tick so isConfigured updates
-      setTimeout(() => startBreakdown(task), 100);
+      // Don't call startBreakdown (which checks stale isConfigured).
+      // Instead, directly proceed to generation since we KNOW config just succeeded.
+      setState({ status: 'generating', subtasks: [], progress: 0 });
+
+      (async () => {
+        try {
+          const provider = await getProvider();
+          if (!provider) {
+            setState({ status: 'error', message: 'Failed to load AI provider.' });
+            return;
+          }
+
+          const subtasks: ReviewSubtask[] = [];
+          await provider.generateSubtasks(
+            task.title,
+            task.description,
+            '',
+            {
+              onSubtask: (suggestion: SubtaskSuggestion) => {
+                const newSubtask: ReviewSubtask = {
+                  id: crypto.randomUUID(),
+                  title: suggestion.title,
+                  description: suggestion.description,
+                  pinned: false,
+                  removed: false,
+                };
+                subtasks.push(newSubtask);
+                setState({
+                  status: 'generating',
+                  subtasks: [...subtasks],
+                  progress: subtasks.length,
+                });
+              },
+              onComplete: () => {
+                setState({ status: 'reviewing', subtasks: [...subtasks] });
+              },
+              onError: (error: Error) => {
+                setState({ status: 'error', message: error.message });
+              },
+            },
+          );
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          setState({ status: 'error', message });
+        }
+      })();
     } else {
       setState({ status: 'idle' });
     }
-  }, [startBreakdown]);
+  }, [getProvider]);
 
   const editSubtask = useCallback((id: string, title: string) => {
     setState((prev) => {
@@ -276,6 +319,7 @@ export function useBreakdown() {
     state,
     startBreakdown,
     onProviderConfigured,
+    configureProvider,
     editSubtask,
     editSubtaskDescription,
     removeSubtask,

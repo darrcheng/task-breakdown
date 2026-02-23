@@ -259,6 +259,7 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
           isOpen={true}
           onClose={breakdown.cancelBreakdown}
           onConfigured={breakdown.onProviderConfigured}
+          configureProvider={breakdown.configureProvider}
         />
       )}
     </div>

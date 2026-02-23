@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { X, Bot, Check, AlertCircle, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import clsx from 'clsx';
-import { useAIProvider } from '../../hooks/useAIProvider';
 import type { AIProviderName } from '../../types';
 
 interface ProviderSetupModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfigured: () => void;
+  configureProvider: (provider: AIProviderName, apiKey: string) => Promise<boolean>;
 }
 
 type SetupStep = 'choose' | 'key' | 'done';
@@ -16,13 +16,14 @@ export function ProviderSetupModal({
   isOpen,
   onClose,
   onConfigured,
+  configureProvider,
 }: ProviderSetupModalProps) {
-  const { configureProvider, isLoading, error } = useAIProvider();
-
   const [step, setStep] = useState<SetupStep>('choose');
   const [selectedProvider, setSelectedProvider] = useState<AIProviderName | null>(null);
   const [apiKey, setApiKey] = useState('');
   const [showKey, setShowKey] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -33,10 +34,19 @@ export function ProviderSetupModal({
 
   const handleSaveKey = async () => {
     if (!selectedProvider || !apiKey.trim()) return;
-
-    const success = await configureProvider(selectedProvider, apiKey.trim());
-    if (success) {
-      setStep('done');
+    setIsLoading(true);
+    setError(null);
+    try {
+      const success = await configureProvider(selectedProvider, apiKey.trim());
+      if (success) {
+        setStep('done');
+      } else {
+        setError('Connection test failed. Please check your API key.');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -44,6 +54,7 @@ export function ProviderSetupModal({
     setStep('choose');
     setSelectedProvider(null);
     setApiKey('');
+    setError(null);
     onConfigured();
     onClose();
   };
@@ -52,6 +63,7 @@ export function ProviderSetupModal({
     setStep('choose');
     setSelectedProvider(null);
     setApiKey('');
+    setError(null);
     onClose();
   };
 
