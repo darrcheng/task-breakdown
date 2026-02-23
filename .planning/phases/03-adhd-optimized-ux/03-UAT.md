@@ -1,9 +1,9 @@
 ---
-status: complete
+status: diagnosed
 phase: 03-adhd-optimized-ux
 source: 03-01-SUMMARY.md, 03-02-SUMMARY.md, 03-03-SUMMARY.md, 03-04-SUMMARY.md
 started: 2026-02-23T22:45:00Z
-updated: 2026-02-23T23:05:00Z
+updated: 2026-02-23T23:10:00Z
 ---
 
 ## Current Test
@@ -82,52 +82,84 @@ skipped: 0
   reason: "User reported: Subtasks only visible in calendar view, not list view. No emerald ring border on subtask completion — task just disappears then reappears. Also, completing a task when 'showing done' causes it to straight up disappear."
   severity: major
   test: 2
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Three sub-issues: (1) CSS transition race — opacity-0 and transition-all applied in same paint frame so no animation fires. (2) TaskListItem missing setDeparting(false) after DB write — task stays invisible when showCompleted=true. (3) Subtasks appear as orphan rows in list view because hooks don't filter by parentId."
+  artifacts:
+    - path: "src/components/task/SubtaskList.tsx"
+      issue: "opacity-0 and transition-all in same className string — no CSS transition fires"
+    - path: "src/components/list/TaskListItem.tsx"
+      issue: "Same CSS race; also missing setDeparting(false) in departure timeout callback"
+    - path: "src/db/hooks.ts"
+      issue: "useTasksByDate/Range missing !t.parentId filter — subtasks leak into flat list"
+  missing:
+    - "Split departure into two-frame animation (frame 1: ring+transition, frame 2: opacity-0)"
+    - "Add setDeparting(false) after DB write in TaskListItem timeout callback"
+    - "Add !t.parentId to hook filter predicates"
+  debug_session: ".planning/debug/subtask-celebration-animation.md"
 - truth: "Pressing Enter in list view creates a new task"
   status: failed
   reason: "User reported: Pressing enter no longer allows creating a new task in list view"
   severity: major
   test: 6
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Enter key shortcut for inline task creation was never implemented — not a regression. DayGroup only opens inline create via mouse click on '+' button or empty area. No case 'Enter' in App.tsx keyboard handler."
+  artifacts:
+    - path: "src/components/list/DayGroup.tsx"
+      issue: "Only mouse click triggers setIsCreating — no keyboard handler for Enter"
+    - path: "src/App.tsx"
+      issue: "No case 'Enter' in global keyboard switch"
+  missing:
+    - "Add Enter key handler in App.tsx for list view that triggers inline create on today's DayGroup"
+  debug_session: ".planning/debug/enter-key-no-new-task-list-view.md"
 - truth: "Quick picker reschedule opens calendar date picker directly without extra clicks or scrolling"
   status: failed
   reason: "User reported: clicking calendar icon shows the due date first, then you have to click the date to see the calendar, and then have to scroll down to see it. Should just pop up the calendar directly without needing to scroll."
   severity: minor
   test: 9
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "DatePicker starts with isOpen=false (two-click problem). Calendar dropdown uses position:absolute inside overflow-y-auto container (scroll problem). Need defaultOpen prop and inline rendering mode."
+  artifacts:
+    - path: "src/components/task/DatePicker.tsx"
+      issue: "isOpen defaults to false — requires second click to open calendar"
+    - path: "src/components/overdue/OverdueQuickPicker.tsx"
+      issue: "DatePicker absolute dropdown renders inside scrollable modal — pushed out of view"
+  missing:
+    - "Add defaultOpen prop to DatePicker, pass defaultOpen={true} from OverdueQuickPicker"
+    - "Add inline variant to DatePicker that skips trigger button and removes absolute positioning"
+  debug_session: ".planning/debug/overdue-quick-picker-calendar-ux.md"
 - truth: "AI break it down (subtask generation) works after Phase 3 changes"
   status: failed
   reason: "User reported: AI break it down no longer works"
   severity: major
   test: 12
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "useBreakdown.ts checks isConfigured from useAIProvider state which initializes as false until useEffect fires. Clicking 'Break it down' before async init completes hits !isConfigured branch and shows setup modal even when AI is configured. Phase 03's second useAIProvider instance widened the timing window."
+  artifacts:
+    - path: "src/hooks/useBreakdown.ts"
+      issue: "Stale isConfigured check races with async useEffect init — line 37"
+  missing:
+    - "Replace isConfigured guard with direct getProvider() call that reads live localStorage"
+  debug_session: ".planning/debug/ai-breakdown-regression-phase03.md"
 - truth: "AI breakdown button visible without closing and reopening the task"
   status: failed
   reason: "User reported: shouldn't need to close the task to see the AI breakdown button"
   severity: minor
   test: 12
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "TaskModal.tsx handleSubmit for new task calls onClose() immediately after db.tasks.add(). BreakdownButton only renders when isEditing=true. User never sees edit view for newly created task."
+  artifacts:
+    - path: "src/components/task/TaskModal.tsx"
+      issue: "onClose() called immediately after create — line 113. Should navigate into edit view instead."
+  missing:
+    - "After db.tasks.add(), fetch new task and switch to edit view within same modal session"
+  debug_session: ".planning/debug/ai-breakdown-regression-phase03.md"
 - truth: "Task modals autosave on esc or clicking outside"
   status: failed
   reason: "User reported: modals should autosave on esc or clicking out instead of requiring save button"
   severity: minor
   test: 12
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "TaskModal Escape handler (line 76) and backdrop onClick (line 191) call onClose() directly, bypassing TaskForm. Form state is internal — no imperative handle exists to trigger save externally."
+  artifacts:
+    - path: "src/components/task/TaskModal.tsx"
+      issue: "Escape and backdrop close without saving — lines 76, 191"
+    - path: "src/components/task/TaskForm.tsx"
+      issue: "No forwardRef/useImperativeHandle to expose submit() method"
+  missing:
+    - "Add useImperativeHandle + forwardRef to TaskForm exposing submit()"
+    - "Call formRef.current?.submit() before onClose() in Escape and backdrop handlers"
+  debug_session: ".planning/debug/ai-breakdown-regression-phase03.md"
