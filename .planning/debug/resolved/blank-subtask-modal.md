@@ -1,5 +1,5 @@
 ---
-status: diagnosed
+status: resolved
 trigger: "Subtasks show title in calendar/board but modal content is blank when opened directly"
 created: 2026-02-22T00:00:00Z
 updated: 2026-02-22T00:00:00Z

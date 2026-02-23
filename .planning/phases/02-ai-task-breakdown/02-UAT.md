@@ -1,9 +1,9 @@
 ---
-status: diagnosed
+status: resolved
 phase: 02-ai-task-breakdown
 source: 02-01-SUMMARY.md, 02-02-SUMMARY.md, 02-03-SUMMARY.md, 02-04-SUMMARY.md, 02-05-SUMMARY.md
 started: 2026-02-22T00:00:00Z
-updated: 2026-02-22T00:02:00Z
+updated: 2026-02-22T12:00:00Z
 ---
 
 ## Current Test
@@ -92,7 +92,7 @@ skipped: 0
 ## Gaps
 
 - truth: "After completing provider setup, clicking 'start breaking down tasks' should proceed to task breakdown, not loop back to provider selection"
-  status: failed
+  status: resolved
   reason: "User reported: I hit gemini, then enter in the API key, press test and save, and it's successful, but then when i hit start breaking down tasks, it takes me back to the select claude or gemini modal. But then I refresh the page and it's saved"
   severity: major
   test: 3
@@ -109,7 +109,7 @@ skipped: 0
   debug_session: ".planning/debug/provider-setup-loop.md"
 
 - truth: "Clicking subtask status checkbox in parent list should persist the status change to the database, visible when opening the subtask modal"
-  status: failed
+  status: resolved
   reason: "User reported: the color of the subtask changes to in progress, but the if you actually open up the subtask, the indicator still says to-do"
   severity: major
   test: 11
@@ -124,7 +124,7 @@ skipped: 0
   debug_session: ".planning/debug/subtask-status-not-persisting.md"
 
 - truth: "Subtask modals should show full task data (title, description, form fields) when opened directly from calendar/board view"
-  status: failed
+  status: resolved
   reason: "User reported: subtask shows a title in the calendar view, but in the modal, everything is blank"
   severity: major
   test: 13
@@ -139,7 +139,7 @@ skipped: 0
   debug_session: ".planning/debug/blank-subtask-modal.md"
 
 - truth: "Parent navigation breadcrumb should appear when opening a subtask modal from any entry point (calendar, board, list), not just when drilling down from parent"
-  status: failed
+  status: resolved
   reason: "User reported: only if you go directly from the parent, but not when you go directly from the modal"
   severity: major
   test: 15

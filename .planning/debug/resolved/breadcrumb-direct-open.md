@@ -1,5 +1,5 @@
 ---
-status: diagnosed
+status: resolved
 trigger: "Breadcrumb 'Back to [parent name]' missing when opening subtask directly from calendar/board view"
 created: 2026-02-22T00:00:00Z
 updated: 2026-02-22T00:00:00Z
