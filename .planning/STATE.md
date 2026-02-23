@@ -96,7 +96,7 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-None.
+14 pending todos (see `.planning/todos/pending/`).
 
 ### Roadmap Evolution
 
