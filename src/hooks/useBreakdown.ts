@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { db } from '../db/database';
 import { useAIProvider } from './useAIProvider';
 import type { Task } from '../types';
+import { buildRegenerationPrompt } from '../ai/prompts';
 import type { SubtaskSuggestion } from '../ai/providers/types';
 
 export interface ReviewSubtask {
@@ -230,7 +231,6 @@ export function useBreakdown() {
         const allSubtasks = [...pinnedSubtasks];
         const pinnedTitles = pinnedSubtasks.map((s) => s.title);
 
-        const { buildRegenerationPrompt } = await import('../ai/prompts');
         const targetCount = 4;
         const newCount = Math.max(1, targetCount - pinnedSubtasks.length);
         const prompt = buildRegenerationPrompt(
