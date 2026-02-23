@@ -3,6 +3,23 @@ export type ViewMode = 'calendar' | 'list';
 export type CalendarView = 'month' | 'week';
 export type AIProviderName = 'anthropic' | 'gemini';
 
+export type GeminiModelId =
+  | 'gemini-2.5-flash'
+  | 'gemini-2.5-flash-lite'
+  | 'gemini-3-flash-preview'
+  | 'gemma-3-12b-it'
+  | 'gemma-3-27b-it';
+
+export const GEMINI_DEFAULT_MODEL: GeminiModelId = 'gemini-2.5-flash';
+
+export const GEMINI_MODELS: { id: GeminiModelId; label: string; description: string }[] = [
+  { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash', description: 'Default — balanced speed and quality' },
+  { id: 'gemini-2.5-flash-lite', label: 'Flash Lite', description: 'Fastest, lowest cost' },
+  { id: 'gemini-3-flash-preview', label: 'Gemini 3 Flash', description: 'Frontier-class, preview' },
+  { id: 'gemma-3-12b-it', label: 'Gemma 3 12B', description: 'Open model, free tier friendly' },
+  { id: 'gemma-3-27b-it', label: 'Gemma 3 27B', description: 'Open model, larger and more capable' },
+];
+
 export interface Task {
   id?: number;
   title: string;

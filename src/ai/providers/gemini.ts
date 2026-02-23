@@ -1,6 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 import type { AIProvider, StreamCallbacks, SubtaskSuggestion } from './types';
 import { buildSubtaskPrompt } from '../prompts';
+import { GEMINI_DEFAULT_MODEL } from '../../types';
 
 function parseSubtaskLines(buffer: string): {
   complete: SubtaskSuggestion[];
@@ -32,9 +33,11 @@ function parseSubtaskLines(buffer: string): {
 export class GeminiProvider implements AIProvider {
   name = 'gemini';
   private ai: GoogleGenAI;
+  private model: string;
 
-  constructor(apiKey: string) {
+  constructor(apiKey: string, model: string = GEMINI_DEFAULT_MODEL) {
     this.ai = new GoogleGenAI({ apiKey });
+    this.model = model;
   }
 
   async generateSubtasks(
@@ -49,7 +52,7 @@ export class GeminiProvider implements AIProvider {
 
     try {
       const response = await this.ai.models.generateContentStream({
-        model: 'gemini-2.0-flash',
+        model: this.model,
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         config: {
           systemInstruction: systemPrompt,
@@ -104,7 +107,7 @@ export class GeminiProvider implements AIProvider {
   async testConnection(): Promise<boolean> {
     try {
       await this.ai.models.generateContent({
-        model: 'gemini-2.0-flash',
+        model: this.model,
         contents: 'Hi',
       });
       return true;

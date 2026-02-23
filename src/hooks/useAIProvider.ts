@@ -1,16 +1,38 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { AIProviderName } from '../types';
+import type { AIProviderName, GeminiModelId } from '../types';
+import { GEMINI_DEFAULT_MODEL } from '../types';
 import type { AIProvider } from '../ai/providers/types';
 import { createProvider } from '../ai/provider-factory';
 import { saveApiKey, loadApiKey, hasApiKey, deleteApiKey } from '../ai/key-storage';
 
 const PROVIDER_STORAGE_KEY = 'taskbreaker-ai-provider';
+const GEMINI_MODEL_KEY = 'taskbreaker-gemini-model';
+
+function saveGeminiModel(model: GeminiModelId): void {
+  localStorage.setItem(GEMINI_MODEL_KEY, model);
+}
+
+function loadGeminiModel(): GeminiModelId {
+  const saved = localStorage.getItem(GEMINI_MODEL_KEY);
+  const validIds: string[] = [
+    'gemini-2.5-flash',
+    'gemini-2.5-flash-lite',
+    'gemini-3-flash-preview',
+    'gemma-3-12b-it',
+    'gemma-3-27b-it',
+  ];
+  if (saved && validIds.includes(saved)) {
+    return saved as GeminiModelId;
+  }
+  return GEMINI_DEFAULT_MODEL;
+}
 
 interface AIProviderState {
   provider: AIProviderName | null;
   hasKey: boolean;
   isLoading: boolean;
   error: string | null;
+  geminiModel: GeminiModelId;
 }
 
 export function useAIProvider() {
@@ -19,11 +41,13 @@ export function useAIProvider() {
     hasKey: false,
     isLoading: true,
     error: null,
+    geminiModel: GEMINI_DEFAULT_MODEL,
   });
 
   // Load provider config on mount
   useEffect(() => {
     const savedProvider = localStorage.getItem(PROVIDER_STORAGE_KEY) as AIProviderName | null;
+    const savedModel = loadGeminiModel();
     if (savedProvider && (savedProvider === 'anthropic' || savedProvider === 'gemini')) {
       const keyExists = hasApiKey(savedProvider);
       setState({
@@ -31,9 +55,10 @@ export function useAIProvider() {
         hasKey: keyExists,
         isLoading: false,
         error: null,
+        geminiModel: savedModel,
       });
     } else {
-      setState((prev) => ({ ...prev, isLoading: false }));
+      setState((prev) => ({ ...prev, isLoading: false, geminiModel: savedModel }));
     }
   }, []);
 
@@ -61,12 +86,13 @@ export function useAIProvider() {
         localStorage.setItem(PROVIDER_STORAGE_KEY, provider);
         await saveApiKey(provider, apiKey);
 
-        setState({
+        setState((prev) => ({
+          ...prev,
           provider,
           hasKey: true,
           isLoading: false,
           error: null,
-        });
+        }));
         return true;
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
@@ -87,19 +113,22 @@ export function useAIProvider() {
     const apiKey = await loadApiKey(state.provider);
     if (!apiKey) return null;
 
-    return createProvider(state.provider, apiKey);
-  }, [state.provider]);
+    const model = state.provider === 'gemini' ? state.geminiModel : undefined;
+    return createProvider(state.provider, apiKey, model);
+  }, [state.provider, state.geminiModel]);
 
   const clearProvider = useCallback(() => {
     if (state.provider) {
       deleteApiKey(state.provider);
     }
     localStorage.removeItem(PROVIDER_STORAGE_KEY);
+    localStorage.removeItem(GEMINI_MODEL_KEY);
     setState({
       provider: null,
       hasKey: false,
       isLoading: false,
       error: null,
+      geminiModel: GEMINI_DEFAULT_MODEL,
     });
   }, [state.provider]);
 
@@ -110,6 +139,11 @@ export function useAIProvider() {
     return key.slice(-4);
   }, [state.provider, state.hasKey]);
 
+  const setGeminiModel = useCallback((model: GeminiModelId) => {
+    saveGeminiModel(model);
+    setState((prev) => ({ ...prev, geminiModel: model }));
+  }, []);
+
   return {
     ...state,
     isConfigured,
@@ -117,5 +151,6 @@ export function useAIProvider() {
     getProvider,
     clearProvider,
     getKeyLastChars,
+    setGeminiModel,
   };
 }

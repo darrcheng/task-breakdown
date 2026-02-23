@@ -6,12 +6,13 @@ import { GeminiProvider } from './providers/gemini';
 export function createProvider(
   name: AIProviderName,
   apiKey: string,
+  model?: string,
 ): AIProvider {
   switch (name) {
     case 'anthropic':
       return new AnthropicProvider(apiKey);
     case 'gemini':
-      return new GeminiProvider(apiKey);
+      return new GeminiProvider(apiKey, model);
     default:
       throw new Error(
         `Unknown AI provider: "${name}". Supported providers: anthropic, gemini`,
