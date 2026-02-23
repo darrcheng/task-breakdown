@@ -15,7 +15,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **TASK-04**: User can edit task title and details inline
 - [x] **TASK-05**: User can delete a task
 - [x] **TASK-06**: User can mark a task as done (clears from calendar view)
-- [ ] **TASK-07**: Task completion shows satisfying visual/audio feedback
+- [x] **TASK-07**: Task completion shows satisfying visual/audio feedback
 - [ ] **TASK-08**: Uncompleted tasks can be easily rescheduled with no guilt language
 
 ### AI Task Breakdown
@@ -32,9 +32,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [ ] **ADHD-01**: User can tag tasks by energy level (low/medium/high)
 - [ ] **ADHD-02**: User can see AI-suggested time estimates for tasks
-- [ ] **ADHD-03**: Completing tasks shows positive celebration animation
+- [x] **ADHD-03**: Completing tasks shows positive celebration animation
 - [ ] **ADHD-04**: Overdue tasks show gentle reschedule prompts (not guilt)
-- [ ] **ADHD-05**: First subtask is visually highlighted as "start here"
+- [x] **ADHD-05**: First subtask is visually highlighted as "start here"
 
 ### Cross-Platform
 
@@ -97,13 +97,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AI-05 | Phase 2 | Pending |
 | AI-06 | Phase 2 | Complete |
 | AI-07 | Phase 2 | Complete |
-| TASK-07 | Phase 3 | Pending |
+| TASK-07 | Phase 3 | Complete |
 | TASK-08 | Phase 3 | Pending |
 | ADHD-01 | Phase 3 | Pending |
 | ADHD-02 | Phase 3 | Pending |
-| ADHD-03 | Phase 3 | Pending |
+| ADHD-03 | Phase 3 | Complete |
 | ADHD-04 | Phase 3 | Pending |
-| ADHD-05 | Phase 3 | Pending |
+| ADHD-05 | Phase 3 | Complete |
 | PLAT-01 | Phase 4 | Pending |
 | PLAT-02 | Phase 4 | Pending |
 

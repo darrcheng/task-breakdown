@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 3 of 4 (ADHD-Optimized UX)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-02-23 — Phase 02.1 complete. Gemini model selector with 5 model toggles shipped.
+Plan: 1 of 5 complete
+Status: In Progress
+Last activity: 2026-02-23 — Phase 03 Plan 01 complete. Data model extension + celebration animation + start-here ring shipped.
 
 Progress: [████████████████████] 25/25 plans (100%)
 
@@ -44,6 +44,7 @@ Progress: [████████████████████] 25/25 p
 | Phase 02 P06 | 2 | 1 tasks | 1 files |
 | Phase 02-ai-task-breakdown P07 | 2 | 1 tasks | 3 files |
 | Phase 02.1 P01 | 1 | 2 tasks | 5 files |
+| Phase 03-adhd-optimized-ux P01 | 8 | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,9 @@ Recent decisions affecting current work:
 - [Phase 02-ai-task-breakdown]: onProviderConfigured bypasses startBreakdown and stale isConfigured by inlining generation logic using getProvider() directly
 - [Phase 02.1]: GeminiModelId type with 5 models, model parameter threaded through GeminiProvider/factory/hook with localStorage persistence
 - [Phase 02.1]: Model selector visible only when Gemini is active provider AND has saved API key AND key input is not shown — no API call on model switch
+- [Phase 03-adhd-optimized-ux]: Dexie v3 upgrade sets all new fields to null/false defaults — no data loss for existing tasks
+- [Phase 03-adhd-optimized-ux]: Start-here ring uses violet-400 to visually distinguish from emerald celebration ring
+- [Phase 03-adhd-optimized-ux]: isSomeday filter applied to both branches of useTasksByDate/Range to exclude Someday tasks from calendar/list views
 
 ### Pending Todos
 
@@ -97,6 +101,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-23 (Phase 02.1 complete — Gemini model selector)
-Stopped at: Phase 02.1 complete, ready to plan Phase 3
+Last session: 2026-02-23 (Phase 03 Plan 01 complete — data model + animations)
+Stopped at: Completed 03-adhd-optimized-ux-01-PLAN.md
 Resume file: None
