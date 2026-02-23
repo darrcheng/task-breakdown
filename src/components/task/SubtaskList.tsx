@@ -27,6 +27,7 @@ export function SubtaskList({
 
   const allDone = subtasks.every((s) => s.status === 'done');
   const doneCount = subtasks.filter((s) => s.status === 'done').length;
+  const firstIncompleteIndex = subtasks.findIndex((s) => s.status !== 'done');
 
   const handleCompleteParent = async () => {
     await db.tasks.update(parentId, {
@@ -45,13 +46,14 @@ export function SubtaskList({
       </div>
 
       <div className="space-y-1">
-        {subtasks.map((subtask) => (
+        {subtasks.map((subtask, index) => (
           <SubtaskRow
             key={subtask.id}
             subtask={subtask}
             parentDepth={parentDepth}
             categoryMap={categoryMap}
             onOpenSubtask={onOpenSubtask}
+            isStartHere={index === firstIncompleteIndex}
           />
         ))}
       </div>
@@ -82,6 +84,7 @@ interface SubtaskRowProps {
   parentDepth: number;
   categoryMap?: Map<number, Category>;
   onOpenSubtask: (task: Task) => void;
+  isStartHere?: boolean;
 }
 
 function SubtaskRow({
@@ -89,6 +92,7 @@ function SubtaskRow({
   parentDepth,
   categoryMap,
   onOpenSubtask,
+  isStartHere,
 }: SubtaskRowProps) {
   const [departing, setDeparting] = useState(false);
   const [displayStatus, setDisplayStatus] = useState<TaskStatus>(subtask.status);
@@ -167,6 +171,7 @@ function SubtaskRow({
       className={clsx(
         'flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-slate-50 transition-colors group',
         departing && 'ring-2 ring-emerald-400 ring-offset-1 opacity-0 transition-all duration-[1500ms]',
+        isStartHere && !departing && 'ring-2 ring-violet-400 ring-offset-1 rounded-md',
       )}
       style={{ marginLeft: indent > 0 ? indent : 0 }}
     >
