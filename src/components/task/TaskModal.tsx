@@ -20,16 +20,22 @@ interface TaskModalProps {
 }
 
 export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskModalProps) {
-  // Support navigating into subtasks without closing the modal
-  const [viewingTask, setViewingTask] = useState<Task | undefined>(task);
+  // Support navigating into subtasks without closing the modal.
+  // navigationOverride holds the task when user drills into a subtask;
+  // viewingTask is derived directly from it (no useEffect delay).
+  const [navigationOverride, setNavigationOverride] = useState<Task | undefined>();
   const [parentStack, setParentStack] = useState<Task[]>([]);
 
   const breakdown = useBreakdown();
   const categoryMap = useCategoryMap();
 
-  // Reset navigation when modal opens/closes or initial task changes
+  // Derive viewingTask synchronously — no useEffect timing issue.
+  const viewingTask = navigationOverride ?? task;
+
+  // Reset navigation state when modal opens/closes or initial task changes.
+  // We do NOT set viewingTask here; it is derived from the task prop above.
   useEffect(() => {
-    setViewingTask(task);
+    setNavigationOverride(undefined);
     setParentStack([]);
     if (!isOpen) {
       breakdown.cancelBreakdown();
@@ -45,12 +51,19 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
   // Use live task when available, fall back to viewing task
   const currentTask = liveTask ?? viewingTask;
 
+  // Fetch parent task reactively so breadcrumb works when opening a subtask directly
+  // from calendar/board (parentStack is empty in that case, but parentId is set).
+  const parentTask = useLiveQuery(
+    () => (currentTask?.parentId ? db.tasks.get(currentTask.parentId) : undefined),
+    [currentTask?.parentId],
+  );
+
   // Handle Escape key
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (parentStack.length > 0) {
+        if (parentStack.length > 0 || parentTask) {
           handleBackToParent();
         } else {
           onClose();
@@ -59,7 +72,7 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose, parentStack]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isOpen, onClose, parentStack, parentTask]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!isOpen) return null;
 
@@ -89,7 +102,7 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
   const handleDelete = async () => {
     if (currentTask?.id) {
       await db.tasks.delete(currentTask.id);
-      if (parentStack.length > 0) {
+      if (parentStack.length > 0 || parentTask) {
         handleBackToParent();
       } else {
         onClose();
@@ -101,17 +114,26 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
     if (currentTask) {
       setParentStack((prev) => [...prev, currentTask]);
     }
-    setViewingTask(subtask);
+    setNavigationOverride(subtask);
     breakdown.cancelBreakdown();
   };
 
   const handleBackToParent = () => {
-    const parent = parentStack[parentStack.length - 1];
-    if (parent) {
+    if (parentStack.length > 0) {
+      const parent = parentStack[parentStack.length - 1];
       setParentStack((prev) => prev.slice(0, -1));
-      setViewingTask(parent);
-      breakdown.cancelBreakdown();
+      // When returning to the root task (last item on stack), clear the
+      // override so the original task prop takes over again.
+      if (parentStack.length === 1) {
+        setNavigationOverride(undefined);
+      } else {
+        setNavigationOverride(parent);
+      }
+    } else if (parentTask) {
+      // Subtask was opened directly from calendar/board — navigate to parent.
+      setNavigationOverride(parentTask);
     }
+    breakdown.cancelBreakdown();
   };
 
   const isEditing = !!currentTask?.id;
@@ -141,6 +163,12 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
         width: '100%',
       };
 
+  // Breadcrumb text: show the actual parent task title.
+  const breadcrumbTitle =
+    parentStack.length > 0
+      ? parentStack[parentStack.length - 1].title
+      : parentTask?.title ?? 'parent';
+
   return (
     <div className="fixed inset-0 z-50">
       {/* Backdrop */}
@@ -153,14 +181,15 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
         className="fixed bg-white rounded-lg shadow-xl p-6 overflow-y-auto"
         style={positionStyle}
       >
-        {/* Back to parent breadcrumb */}
-        {parentStack.length > 0 && (
+        {/* Back to parent breadcrumb — shown when navigating via drill-down OR
+            when opening a subtask directly from calendar/board view */}
+        {(parentStack.length > 0 || parentTask) && (
           <button
             onClick={handleBackToParent}
             className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 mb-3 -mt-1"
           >
             <ChevronLeft className="w-4 h-4" />
-            Back to parent
+            Back to {breadcrumbTitle}
           </button>
         )}
 
@@ -168,7 +197,10 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
           {currentTask?.id ? 'Edit Task' : 'New Task'}
         </h2>
 
+        {/* key prop forces TaskForm to remount when task identity changes,
+            ensuring useState initializers run fresh with up-to-date data */}
         <TaskForm
+          key={currentTask?.id ?? 'new'}
           initialData={currentTask}
           initialDate={currentTask?.date ?? date}
           onSubmit={handleSubmit}
