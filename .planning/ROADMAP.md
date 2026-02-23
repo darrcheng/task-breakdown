@@ -98,10 +98,14 @@ Plans:
   3. User experiences satisfying celebration when completing tasks
   4. User sees gentle reschedule prompts for overdue tasks without guilt language
   5. User can identify the first subtask to start with visual highlighting
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] TBD during planning
+- [ ] 03-01-PLAN.md — Schema migration (energyLevel, timeEstimate, isSomeday), celebration animation, start-here highlighting
+- [ ] 03-02-PLAN.md — Energy level tagging (chips in form, badges on cards, filter in header)
+- [ ] 03-03-PLAN.md — AI time estimation (provider method, background hook, badge display, override, calibration)
+- [ ] 03-04-PLAN.md — Overdue banner, quick picker with bulk actions, Someday view
+- [ ] 03-05-PLAN.md — UAT: end-to-end human verification of all Phase 3 features
 
 ### Phase 4: Cross-Platform Expansion
 **Goal**: App works equally well on web browsers and mobile devices
@@ -127,9 +131,9 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 01.1. UI Polish (gap closure) | 11/11 | Complete    | 2026-02-22 |
 | 2. AI Task Breakdown | 7/7 | Complete   | 2026-02-23 |
 | 02.1. Gemini Model Selector | 1/1 | Complete    | 2026-02-23 |
-| 3. ADHD-Optimized UX | 0/TBD | Not started | - |
+| 3. ADHD-Optimized UX | 0/5 | Not started | - |
 | 4. Cross-Platform Expansion | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-05*
-*Last updated: 2026-02-22*
+*Last updated: 2026-02-23*
