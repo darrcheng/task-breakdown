@@ -26,7 +26,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **AI-04**: User can delete individual AI-generated subtasks
 - [ ] **AI-05**: User can regenerate all subtasks for a task
 - [x] **AI-06**: User can recursively break down subtasks (up to 3 levels deep)
-- [ ] **AI-07**: AI provider is swappable (start with free tier, support Claude/OpenAI/Gemini)
+- [x] **AI-07**: AI provider is swappable (start with free tier, support Claude/OpenAI/Gemini)
 
 ### ADHD-Friendly Polish
 
@@ -96,7 +96,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AI-04 | Phase 2 | Complete |
 | AI-05 | Phase 2 | Pending |
 | AI-06 | Phase 2 | Complete |
-| AI-07 | Phase 2 | Pending |
+| AI-07 | Phase 2 | Complete |
 | TASK-07 | Phase 3 | Pending |
 | TASK-08 | Phase 3 | Pending |
 | ADHD-01 | Phase 3 | Pending |

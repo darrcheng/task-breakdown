@@ -13,7 +13,7 @@ Build an ADHD-friendly to-do list with AI-powered task breakdown across 4 phases
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Local-First Foundation** - Core task management with calendar view (completed 2026-02-22)
-- [ ] **Phase 2: AI Task Breakdown** - AI-powered subtask generation with controls
+- [x] **Phase 2: AI Task Breakdown** - AI-powered subtask generation with controls (completed 2026-02-23)
 - [ ] **Phase 3: ADHD-Optimized UX** - Energy tracking and gentle reschedule prompts
 - [ ] **Phase 4: Cross-Platform Expansion** - Full web and mobile parity
 
@@ -116,7 +116,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Local-First Foundation | 6/6 | Complete | 2026-02-22 |
 | 01.1. UI Polish (gap closure) | 11/11 | Complete    | 2026-02-22 |
-| 2. AI Task Breakdown | 6/7 | In Progress|  |
+| 2. AI Task Breakdown | 7/7 | Complete   | 2026-02-23 |
 | 3. ADHD-Optimized UX | 0/TBD | Not started | - |
 | 4. Cross-Platform Expansion | 0/TBD | Not started | - |
 
