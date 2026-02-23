@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Clock, Pencil } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/database';
 import { useCategoryMap } from '../../db/hooks';
@@ -9,6 +9,8 @@ import { SubtaskReview } from './SubtaskReview';
 import { SubtaskList } from './SubtaskList';
 import { ProviderSetupModal } from '../settings/ProviderSetupModal';
 import { useBreakdown } from '../../hooks/useBreakdown';
+import { useTimeEstimate } from '../../hooks/useTimeEstimate';
+import { formatEstimate, recordCalibration } from '../../utils/estimateCalibration';
 import type { Task } from '../../types';
 
 interface TaskModalProps {
@@ -28,6 +30,11 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
 
   const breakdown = useBreakdown();
   const categoryMap = useCategoryMap();
+  const { triggerEstimate } = useTimeEstimate();
+
+  // Override editing state
+  const [isEditingOverride, setIsEditingOverride] = useState(false);
+  const [overrideInput, setOverrideInput] = useState<string>('');
 
   // Derive viewingTask synchronously — no useEffect timing issue.
   const viewingTask = navigationOverride ?? task;
@@ -89,13 +96,19 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
         ...data,
         updatedAt: new Date(),
       });
+      // Trigger re-estimation on edit only if title changed
+      if (data.title !== currentTask.title) {
+        triggerEstimate(currentTask.id, data.title, data.description, data.categoryId);
+      }
     } else {
-      await db.tasks.add({
+      const newId = await db.tasks.add({
         ...data,
         depth: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
+      // Trigger background estimation for new tasks
+      triggerEstimate(newId as number, data.title, data.description, data.categoryId);
     }
     onClose();
   };
@@ -209,6 +222,72 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
           onDelete={currentTask?.id ? handleDelete : undefined}
           submitLabel={currentTask?.id ? 'Save' : 'Create'}
         />
+
+        {/* Time estimate display — shown for saved tasks with an estimate */}
+        {isEditing && currentTask && (() => {
+          const effectiveEstimate = currentTask.timeEstimateOverride ?? currentTask.timeEstimate;
+          if (!effectiveEstimate) return null;
+
+          const handleOverrideSave = async () => {
+            const minutes = parseInt(overrideInput, 10);
+            if (!isNaN(minutes) && minutes >= 5 && minutes <= 480 && currentTask.id) {
+              await db.tasks.update(currentTask.id, {
+                timeEstimateOverride: minutes,
+                updatedAt: new Date(),
+              });
+              recordCalibration(
+                currentTask.categoryId,
+                currentTask.timeEstimate ?? 0,
+                minutes,
+              );
+            }
+            setIsEditingOverride(false);
+          };
+
+          return (
+            <div className="mt-3 flex items-center gap-2 text-sm text-slate-500">
+              <Clock className="w-4 h-4 flex-shrink-0 text-slate-400" />
+              <span>
+                Estimated:{' '}
+                <span className="font-medium text-slate-700">
+                  ~{formatEstimate(effectiveEstimate)}
+                </span>
+                {currentTask.timeEstimateOverride && (
+                  <span className="ml-1 text-xs text-slate-400">(overridden)</span>
+                )}
+              </span>
+              {isEditingOverride ? (
+                <input
+                  type="number"
+                  step={5}
+                  min={5}
+                  max={480}
+                  value={overrideInput}
+                  onChange={(e) => setOverrideInput(e.target.value)}
+                  onBlur={handleOverrideSave}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') void handleOverrideSave();
+                    if (e.key === 'Escape') setIsEditingOverride(false);
+                  }}
+                  autoFocus
+                  className="w-20 text-xs border border-slate-300 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                  placeholder="min"
+                />
+              ) : (
+                <button
+                  onClick={() => {
+                    setOverrideInput(String(effectiveEstimate));
+                    setIsEditingOverride(true);
+                  }}
+                  className="ml-auto text-slate-400 hover:text-slate-600 transition-colors"
+                  title="Override estimate"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          );
+        })()}
 
         {/* Breakdown button - only for saved tasks */}
         {isEditing && currentTask && (

@@ -3,6 +3,7 @@ import { Battery, BatteryMedium, Zap } from 'lucide-react';
 import clsx from 'clsx';
 import { CATEGORY_ICONS, STATUS_COLORS } from '../../utils/categories';
 import { ParentBadge } from './ParentBadge';
+import { formatEstimate } from '../../utils/estimateCalibration';
 import type { Task, Category, EnergyLevel } from '../../types';
 
 interface TaskCardProps {
@@ -25,6 +26,7 @@ export function TaskCard({ task, categoryMap, onClick }: TaskCardProps) {
     : CATEGORY_ICONS['folder'];
 
   const energy = task.energyLevel ? ENERGY_DISPLAY[task.energyLevel] : null;
+  const effectiveEstimate = task.timeEstimateOverride ?? task.timeEstimate;
 
   return (
     <button
@@ -46,6 +48,11 @@ export function TaskCard({ task, categoryMap, onClick }: TaskCardProps) {
         <span className={clsx('flex items-center gap-0.5 text-[10px] flex-shrink-0', energy.color)}>
           <energy.icon className="w-3 h-3" />
           {energy.label}
+        </span>
+      )}
+      {effectiveEstimate && (
+        <span className="text-[10px] text-slate-400 flex-shrink-0 whitespace-nowrap">
+          ~{formatEstimate(effectiveEstimate)}
         </span>
       )}
       {task.id && <ParentBadge taskId={task.id} />}
