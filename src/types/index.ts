@@ -1,5 +1,6 @@
 export type TaskStatus = 'todo' | 'in-progress' | 'done';
-export type ViewMode = 'calendar' | 'list';
+export type ViewMode = 'calendar' | 'list' | 'someday';
+export type EnergyLevel = 'low' | 'medium' | 'high';
 export type CalendarView = 'month' | 'week';
 export type AIProviderName = 'anthropic' | 'gemini';
 
@@ -30,6 +31,10 @@ export interface Task {
   parentId?: number; // links subtask to parent task (undefined = root task)
   depth: number; // 0 for root tasks, 1-3 for subtasks
   sortOrder?: number; // ordering within siblings (used for subtask reorder)
+  energyLevel?: EnergyLevel | null; // energy tag for ADHD-optimized filtering
+  timeEstimate?: number | null; // AI-generated estimate in minutes
+  timeEstimateOverride?: number | null; // user-set override in minutes
+  isSomeday?: boolean; // true = archived to Someday list, not on calendar
   createdAt: Date;
   updatedAt: Date;
 }

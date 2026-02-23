@@ -1,6 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from './database';
 import type { Category } from '../types';
+import { formatDateKey } from '../utils/dates';
 
 /**
  * Returns tasks for a specific date.
@@ -11,9 +12,9 @@ export function useTasksByDate(date: string, showCompleted: boolean) {
     () => {
       const query = db.tasks.where('date').equals(date);
       if (!showCompleted) {
-        return query.filter((t) => t.status !== 'done').toArray();
+        return query.filter((t) => t.status !== 'done' && !t.isSomeday).toArray();
       }
-      return query.toArray();
+      return query.filter((t) => !t.isSomeday).toArray();
     },
     [date, showCompleted]
   );
@@ -34,9 +35,9 @@ export function useTasksByDateRange(
         .where('date')
         .between(startDate, endDate, true, true);
       if (!showCompleted) {
-        return query.filter((t) => t.status !== 'done').toArray();
+        return query.filter((t) => t.status !== 'done' && !t.isSomeday).toArray();
       }
-      return query.toArray();
+      return query.filter((t) => !t.isSomeday).toArray();
     },
     [startDate, endDate, showCompleted]
   );
@@ -97,5 +98,30 @@ export function useSubtaskCount(taskId: number | undefined) {
         ? db.tasks.where('parentId').equals(taskId).count()
         : 0,
     [taskId]
+  );
+}
+
+/**
+ * Returns all overdue incomplete root tasks (past today's date, not someday).
+ */
+export function useOverdueTasks() {
+  const today = formatDateKey(new Date());
+  return useLiveQuery(
+    () =>
+      db.tasks
+        .where('date')
+        .below(today)
+        .filter((t) => t.status !== 'done' && !t.isSomeday && !t.parentId)
+        .toArray(),
+    [today],
+  );
+}
+
+/**
+ * Returns all tasks in the Someday list (root tasks only).
+ */
+export function useSomedayTasks() {
+  return useLiveQuery(
+    () => db.tasks.filter((t) => !!t.isSomeday && !t.parentId).toArray(),
   );
 }

@@ -26,6 +26,21 @@ db.version(2).stores({
   });
 });
 
+// v3: Add energy level index and ADHD-optimized fields
+db.version(3).stores({
+  tasks: '++id, date, status, categoryId, parentId, depth, energyLevel',
+  categories: '++id, name',
+  aiSettings: '++id, key',
+}).upgrade((tx) => {
+  // Existing tasks get safe defaults for new fields
+  return tx.table('tasks').toCollection().modify((task) => {
+    task.energyLevel = null;
+    task.timeEstimate = null;
+    task.timeEstimateOverride = null;
+    task.isSomeday = false;
+  });
+});
+
 // Seed default categories on first use
 db.on('populate', (tx) => {
   tx.table('categories').bulkAdd([
