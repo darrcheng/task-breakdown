@@ -13,9 +13,9 @@ export function useTasksByDate(date: string, showCompleted: boolean, energyFilte
     () => {
       const query = db.tasks.where('date').equals(date);
       if (!showCompleted) {
-        return query.filter((t) => t.status !== 'done' && !t.isSomeday && (!energyFilter || t.energyLevel === energyFilter)).toArray();
+        return query.filter((t) => t.status !== 'done' && !t.isSomeday && !t.parentId && (!energyFilter || t.energyLevel === energyFilter)).toArray();
       }
-      return query.filter((t) => !t.isSomeday && (!energyFilter || t.energyLevel === energyFilter)).toArray();
+      return query.filter((t) => !t.isSomeday && !t.parentId && (!energyFilter || t.energyLevel === energyFilter)).toArray();
     },
     [date, showCompleted, energyFilter]
   );
@@ -38,9 +38,9 @@ export function useTasksByDateRange(
         .where('date')
         .between(startDate, endDate, true, true);
       if (!showCompleted) {
-        return query.filter((t) => t.status !== 'done' && !t.isSomeday && (!energyFilter || t.energyLevel === energyFilter)).toArray();
+        return query.filter((t) => t.status !== 'done' && !t.isSomeday && !t.parentId && (!energyFilter || t.energyLevel === energyFilter)).toArray();
       }
-      return query.filter((t) => !t.isSomeday && (!energyFilter || t.energyLevel === energyFilter)).toArray();
+      return query.filter((t) => !t.isSomeday && !t.parentId && (!energyFilter || t.energyLevel === energyFilter)).toArray();
     },
     [startDate, endDate, showCompleted, energyFilter]
   );

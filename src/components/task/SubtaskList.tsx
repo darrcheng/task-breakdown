@@ -94,9 +94,21 @@ function SubtaskRow({
   onOpenSubtask,
   isStartHere,
 }: SubtaskRowProps) {
-  const [departing, setDeparting] = useState(false);
+  const [departingPhase, setDepartingPhase] = useState<'ring' | 'fade' | null>(null);
   const [displayStatus, setDisplayStatus] = useState<TaskStatus>(subtask.status);
   const departureTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const departing = departingPhase !== null;
+
+  // Two-frame animation: ring phase → requestAnimationFrame → fade phase
+  useEffect(() => {
+    if (departingPhase === 'ring') {
+      const rafId = requestAnimationFrame(() => {
+        setDepartingPhase('fade');
+      });
+      return () => cancelAnimationFrame(rafId);
+    }
+  }, [departingPhase]);
 
   // Sync display status when task status changes externally
   useEffect(() => {
@@ -130,7 +142,7 @@ function SubtaskRow({
         clearTimeout(departureTimeout.current);
         departureTimeout.current = null;
       }
-      setDeparting(false);
+      setDepartingPhase(null);
       setDisplayStatus('todo');
       await db.tasks.update(subtask.id, {
         status: 'todo',
@@ -147,7 +159,7 @@ function SubtaskRow({
     const nextStatus = nextMap[subtask.status];
 
     if (nextStatus === 'done') {
-      setDeparting(true);
+      setDepartingPhase('ring');
       setDisplayStatus('done');
       departureTimeout.current = setTimeout(async () => {
         await db.tasks.update(subtask.id!, {
@@ -155,7 +167,7 @@ function SubtaskRow({
           updatedAt: new Date(),
         });
         departureTimeout.current = null;
-        setDeparting(false);
+        setDepartingPhase(null);
       }, 1500);
     } else {
       setDisplayStatus(nextStatus);
@@ -170,7 +182,8 @@ function SubtaskRow({
     <div
       className={clsx(
         'flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-slate-50 transition-colors group',
-        departing && 'ring-2 ring-emerald-400 ring-offset-1 opacity-0 transition-all duration-[1500ms]',
+        departingPhase === 'ring' && 'ring-2 ring-emerald-400 ring-offset-1 transition-all duration-[1500ms]',
+        departingPhase === 'fade' && 'ring-2 ring-emerald-400 ring-offset-1 opacity-0 transition-all duration-[1500ms]',
         isStartHere && !departing && 'ring-2 ring-violet-400 ring-offset-1 rounded-md',
       )}
       style={{ marginLeft: indent > 0 ? indent : 0 }}

@@ -20,9 +20,22 @@ interface TaskListItemProps {
 }
 
 export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) {
-  const [departing, setDeparting] = useState(false);
+  const [departingPhase, setDepartingPhase] = useState<'ring' | 'fade' | null>(null);
   const [displayStatus, setDisplayStatus] = useState<TaskStatus>(task.status);
   const departureTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const departing = departingPhase !== null;
+
+  // Two-frame animation: ring phase → requestAnimationFrame → fade phase
+  useEffect(() => {
+    if (departingPhase === 'ring') {
+      const rafId = requestAnimationFrame(() => {
+        setDepartingPhase('fade');
+      });
+      return () => cancelAnimationFrame(rafId);
+    }
+  }, [departingPhase]);
+
   const colors = STATUS_COLORS[task.status];
   const category = categoryMap?.get(task.categoryId);
   const IconComponent = category
@@ -55,7 +68,7 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
         clearTimeout(departureTimeout.current);
         departureTimeout.current = null;
       }
-      setDeparting(false);
+      setDepartingPhase(null);
       setDisplayStatus('todo');
       await db.tasks.update(task.id, {
         status: 'todo',
@@ -66,7 +79,7 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
 
     const nextStatus = getNextStatus(task.status);
     if (nextStatus === 'done') {
-      setDeparting(true);
+      setDepartingPhase('ring');
       setDisplayStatus('done');
       departureTimeout.current = setTimeout(async () => {
         await db.tasks.update(task.id!, {
@@ -74,6 +87,7 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
           updatedAt: new Date(),
         });
         departureTimeout.current = null;
+        setDepartingPhase(null);
       }, 1500);
     } else {
       setDisplayStatus(nextStatus);
@@ -92,7 +106,9 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
         colors.bg,
         colors.border,
         'hover:opacity-80',
-        departing && 'ring-2 ring-emerald-400 ring-offset-1 line-through decoration-green-600 text-green-600 opacity-0 transition-all duration-[1500ms]'
+        departing && 'line-through decoration-green-600 text-green-600',
+        departingPhase === 'ring' && 'ring-2 ring-emerald-400 ring-offset-1 transition-all duration-[1500ms]',
+        departingPhase === 'fade' && 'ring-2 ring-emerald-400 ring-offset-1 opacity-0 transition-all duration-[1500ms]',
       )}
     >
       {/* Status indicator - clickable to cycle */}
