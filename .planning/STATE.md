@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 2 of 4 (AI Task Breakdown)
-Plan: All 5 plans code complete
-Status: Code complete — awaiting UAT human verification (Plan 02-05 checkpoint)
-Last activity: 2026-02-22 — All 3 waves complete. 5/5 plans implemented. Checkpoint awaiting user testing.
+Plan: 02-06 complete (gap closure plans 02-05 and 02-06 done)
+Status: Code complete — 7 plans implemented, gap closures done
+Last activity: 2026-02-22 — Gap closure 02-06 done. TaskModal data-flow bugs fixed (Tests 11, 13, 15).
 
 Progress: [██████████░░░░░░░░░░] 25%
 
@@ -41,6 +41,7 @@ Progress: [██████████░░░░░░░░░░] 25%
 | Phase 01.1-09 P09 | 2 | 3 tasks | 3 files |
 | Phase 01.1 P10 | 2 | 3 tasks | 5 files |
 | Phase 01.1 P11 | 2 | 2 tasks | 2 files |
+| Phase 02 P06 | 2 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,9 @@ Recent decisions affecting current work:
 - [Phase 01.1-11]: displayStatus local state pattern — drives checkbox color independently of DB/prop during optimistic departure transition
 - [Phase 01.1-11]: departureTimeout useRef — store setTimeout return value in ref for cancellable async; clear on re-click or unmount
 - [Phase 01.1-11]: CategoryCombobox in inline create: drop useCategories hook entirely, CategoryCombobox is self-contained
+- [Phase 02]: navigationOverride ?? task derivation pattern in TaskModal — eliminates stale first-render by deriving viewingTask synchronously from props
+- [Phase 02]: key={entity.id ?? 'new'} on TaskForm forces remount on task identity change — useState initializers re-run with fresh data
+- [Phase 02]: useLiveQuery for parentTask via parentId — reactive breadcrumb for subtasks opened from calendar/board without prop threading
 
 ### Pending Todos
 
@@ -86,6 +90,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-22 (completed 01.1-11-PLAN.md — green checkbox + CategoryCombobox inline create)
-Stopped at: Completed 01.1-11-PLAN.md; Phase 01.1 fully done (all 11 plans + gap closures), ready to plan Phase 2
+Last session: 2026-02-22 (completed 02-06-PLAN.md — TaskModal data-flow bug fixes)
+Stopped at: Completed 02-06-PLAN.md; gap closures 02-05 (Gemini provider) and 02-06 (TaskModal) complete
 Resume file: None

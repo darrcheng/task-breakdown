@@ -23,9 +23,9 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **AI-01**: User can tap a button to generate subtasks for any task
 - [ ] **AI-02**: User can edit AI-generated subtasks
 - [ ] **AI-03**: User can reorder AI-generated subtasks
-- [ ] **AI-04**: User can delete individual AI-generated subtasks
+- [x] **AI-04**: User can delete individual AI-generated subtasks
 - [ ] **AI-05**: User can regenerate all subtasks for a task
-- [ ] **AI-06**: User can recursively break down subtasks (up to 3 levels deep)
+- [x] **AI-06**: User can recursively break down subtasks (up to 3 levels deep)
 - [ ] **AI-07**: AI provider is swappable (start with free tier, support Claude/OpenAI/Gemini)
 
 ### ADHD-Friendly Polish
@@ -93,9 +93,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AI-01 | Phase 2 | Pending |
 | AI-02 | Phase 2 | Pending |
 | AI-03 | Phase 2 | Pending |
-| AI-04 | Phase 2 | Pending |
+| AI-04 | Phase 2 | Complete |
 | AI-05 | Phase 2 | Pending |
-| AI-06 | Phase 2 | Pending |
+| AI-06 | Phase 2 | Complete |
 | AI-07 | Phase 2 | Pending |
 | TASK-07 | Phase 3 | Pending |
 | TASK-08 | Phase 3 | Pending |
