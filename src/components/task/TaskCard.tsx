@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import { CATEGORY_ICONS, STATUS_COLORS } from '../../utils/categories';
+import { ParentBadge } from './ParentBadge';
 import type { Task, Category } from '../../types';
 
 interface TaskCardProps {
@@ -31,6 +32,7 @@ export function TaskCard({ task, categoryMap, onClick }: TaskCardProps) {
     >
       {IconComponent && <IconComponent className="w-3 h-3 flex-shrink-0" />}
       <span className="text-xs font-medium truncate">{task.title}</span>
+      {task.id && <ParentBadge taskId={task.id} />}
     </button>
   );
 }

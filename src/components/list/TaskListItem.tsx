@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import clsx from 'clsx';
 import { CATEGORY_ICONS, STATUS_COLORS, getNextStatus } from '../../utils/categories';
+import { ParentBadge } from '../task/ParentBadge';
 import { db } from '../../db/database';
 import type { Task, Category, TaskStatus } from '../../types';
 
@@ -105,6 +106,7 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
       <span className={clsx('flex-1 font-medium text-sm', departing ? 'text-green-600' : colors.text)}>
         {task.title}
       </span>
+      {task.id && <ParentBadge taskId={task.id} />}
       <span
         className={clsx(
           'text-xs px-2 py-0.5 rounded-full font-medium',
