@@ -23,7 +23,7 @@ export type BreakdownState =
 
 export function useBreakdown() {
   const [state, setState] = useState<BreakdownState>({ status: 'idle' });
-  const { isConfigured, getProvider, configureProvider } = useAIProvider();
+  const { getProvider, configureProvider } = useAIProvider();
   const pendingTaskRef = useRef<Task | null>(null);
   const stateRef = useRef(state);
 
@@ -34,7 +34,8 @@ export function useBreakdown() {
 
   const startBreakdown = useCallback(
     async (task: Task) => {
-      if (!isConfigured) {
+      const provider = await getProvider();
+      if (!provider) {
         pendingTaskRef.current = task;
         setState({ status: 'configuring' });
         return;
@@ -43,12 +44,6 @@ export function useBreakdown() {
       setState({ status: 'generating', subtasks: [], progress: 0 });
 
       try {
-        const provider = await getProvider();
-        if (!provider) {
-          setState({ status: 'error', message: 'Failed to load AI provider.' });
-          return;
-        }
-
         const subtasks: ReviewSubtask[] = [];
 
         await provider.generateSubtasks(
@@ -84,7 +79,7 @@ export function useBreakdown() {
         setState({ status: 'error', message });
       }
     },
-    [isConfigured, getProvider],
+    [getProvider],
   );
 
   const onProviderConfigured = useCallback(() => {

@@ -105,6 +105,14 @@ function App() {
           e.preventDefault();
           setModalState({ isOpen: true, date: formatDateKey(new Date()) });
           break;
+        case 'Enter': // Inline create in list view
+          e.preventDefault();
+          if (viewMode === 'list') {
+            window.dispatchEvent(new CustomEvent('taskbreaker:inline-create', {
+              detail: { date: formatDateKey(new Date()) }
+            }));
+          }
+          break;
         case '?': // Open settings
           e.preventDefault();
           setIsSettingsOpen(true);

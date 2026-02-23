@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { isToday } from '../../utils/dates';
@@ -24,6 +24,18 @@ export function DayGroup({
 }: DayGroupProps) {
   const [isCreating, setIsCreating] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
+
+  // Listen for Enter-key inline create event dispatched from App.tsx
+  useEffect(() => {
+    const handleInlineCreate = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail.date === date) {
+        setIsCreating(true);
+      }
+    };
+    window.addEventListener('taskbreaker:inline-create', handleInlineCreate);
+    return () => window.removeEventListener('taskbreaker:inline-create', handleInlineCreate);
+  }, [date]);
 
   const dateObj = parseISO(date);
   const today = isToday(dateObj);
