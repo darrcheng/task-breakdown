@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** Turn vague, paralyzing tasks into small, concrete steps you can start right now
-**Current focus:** Phase 2: AI Task Breakdown
+**Current focus:** Phase 02.1: Gemini Model Selector
 
 ## Current Position
 
-Phase: 2 of 4 (AI Task Breakdown)
-Plan: 02-07 complete (provider setup loop bug fixed — UAT Test 3)
-Status: Code complete — 8 plans implemented, all gap closures done
-Last activity: 2026-02-23 — Gap closure 02-07 done. Provider setup loop fixed (UAT Test 3).
+Phase: 02.1 (Gemini Model Selector)
+Plan: 02.1-01 complete (model selector with 5 toggles)
+Status: Code complete — 1/1 plans implemented
+Last activity: 2026-02-23 — Phase 02.1 plan 01 done. GeminiModelId type, provider plumbing, model toggle UI.
 
 Progress: [██████████░░░░░░░░░░] 25%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 12
+- Total plans completed: 13
 - Average duration: ~4 min
-- Total execution time: ~47 min
+- Total execution time: ~51 min
 
 **By Phase:**
 
@@ -43,6 +43,7 @@ Progress: [██████████░░░░░░░░░░] 25%
 | Phase 01.1 P11 | 2 | 2 tasks | 2 files |
 | Phase 02 P06 | 2 | 1 tasks | 1 files |
 | Phase 02-ai-task-breakdown P07 | 2 | 1 tasks | 3 files |
+| Phase 02.1 P01 | 1 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -78,6 +79,8 @@ Recent decisions affecting current work:
 - [Phase 02]: useLiveQuery for parentTask via parentId — reactive breadcrumb for subtasks opened from calendar/board without prop threading
 - [Phase 02-ai-task-breakdown]: Pass configureProvider as prop to ProviderSetupModal instead of duplicating useAIProvider hook — single instance pattern eliminates state desync
 - [Phase 02-ai-task-breakdown]: onProviderConfigured bypasses startBreakdown and stale isConfigured by inlining generation logic using getProvider() directly
+- [Phase 02.1]: GeminiModelId type with 5 models, model parameter threaded through GeminiProvider/factory/hook with localStorage persistence
+- [Phase 02.1]: Model selector visible only when Gemini is active provider AND has saved API key AND key input is not shown — no API call on model switch
 
 ### Pending Todos
 
@@ -86,6 +89,7 @@ None.
 ### Roadmap Evolution
 
 - Phase 01.1 inserted after Phase 1: UI polish — implement 12 enhancement todos from Phase 1 UAT (COMPLETE)
+- Phase 02.1 inserted after Phase 2: Gemini model selector — add toggles for Flash Lite, Gemini 3 Flash, Gemma 3 12B, Gemma 3 27B (URGENT)
 
 ### Blockers/Concerns
 
@@ -93,6 +97,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-23 (completed 02-07-PLAN.md — provider setup loop fix)
-Stopped at: Completed 02-07-PLAN.md; all 4 gap closure plans done (02-04 through 02-07)
+Last session: 2026-02-23 (completed 02.1-01-PLAN.md — Gemini model selector)
+Stopped at: Completed 02.1-01-PLAN.md; phase 02.1 code complete, pending verification
 Resume file: None

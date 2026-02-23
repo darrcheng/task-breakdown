@@ -83,7 +83,7 @@ Plans:
 
 **Goal:** User can select from 5 Gemini/Gemma models in Settings; selected model is used for AI subtask generation and persists across refresh
 **Depends on:** Phase 2
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 - [ ] 02.1-01-PLAN.md — GeminiModelId type, provider plumbing, model toggle UI in AIProviderSettings
@@ -126,7 +126,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Local-First Foundation | 6/6 | Complete | 2026-02-22 |
 | 01.1. UI Polish (gap closure) | 11/11 | Complete    | 2026-02-22 |
 | 2. AI Task Breakdown | 7/7 | Complete   | 2026-02-23 |
-| 02.1. Gemini Model Selector | 0/1 | Planning complete | - |
+| 02.1. Gemini Model Selector | 1/1 | Complete   | 2026-02-23 |
 | 3. ADHD-Optimized UX | 0/TBD | Not started | - |
 | 4. Cross-Platform Expansion | 0/TBD | Not started | - |
 
