@@ -72,3 +72,30 @@ export function useCategoryMap() {
 export function useTaskCount() {
   return useLiveQuery(() => db.tasks.count());
 }
+
+/**
+ * Returns subtasks for a given parent task, sorted by sortOrder.
+ */
+export function useSubtasks(parentId: number | undefined) {
+  return useLiveQuery(
+    () =>
+      parentId !== undefined
+        ? db.tasks.where('parentId').equals(parentId).sortBy('sortOrder')
+        : [],
+    [parentId]
+  );
+}
+
+/**
+ * Returns the count of subtasks for a given task.
+ * Used for displaying parent badges.
+ */
+export function useSubtaskCount(taskId: number | undefined) {
+  return useLiveQuery(
+    () =>
+      taskId !== undefined
+        ? db.tasks.where('parentId').equals(taskId).count()
+        : 0,
+    [taskId]
+  );
+}

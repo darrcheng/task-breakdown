@@ -28,6 +28,7 @@ export function TaskInlineCreate({ date, onClose }: TaskInlineCreateProps) {
       date,
       status: 'todo',
       categoryId: finalCategoryId,
+      depth: 0,
       createdAt: new Date(),
       updatedAt: new Date(),
     });

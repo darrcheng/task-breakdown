@@ -41,6 +41,7 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
       // Create new task
       await db.tasks.add({
         ...data,
+        depth: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
