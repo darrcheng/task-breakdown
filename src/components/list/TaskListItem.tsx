@@ -83,7 +83,7 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
         colors.bg,
         colors.border,
         'hover:opacity-80',
-        departing && 'line-through decoration-green-600 text-green-600 opacity-0 transition-all duration-[1500ms]'
+        departing && 'ring-2 ring-emerald-400 ring-offset-1 line-through decoration-green-600 text-green-600 opacity-0 transition-all duration-[1500ms]'
       )}
     >
       {/* Status indicator - clickable to cycle */}

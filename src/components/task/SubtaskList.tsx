@@ -166,7 +166,7 @@ function SubtaskRow({
     <div
       className={clsx(
         'flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-slate-50 transition-colors group',
-        departing && 'opacity-50',
+        departing && 'ring-2 ring-emerald-400 ring-offset-1 opacity-0 transition-all duration-[1500ms]',
       )}
       style={{ marginLeft: indent > 0 ? indent : 0 }}
     >
