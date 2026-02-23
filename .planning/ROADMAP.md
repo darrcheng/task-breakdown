@@ -79,6 +79,15 @@ Plans:
 - [ ] 02-06-PLAN.md — Gap closure: blank subtask modal, stale status display, breadcrumb direct open
 - [ ] 02-07-PLAN.md — Gap closure: provider setup loop fix
 
+### Phase 02.1: Gemini model selector — add toggles for Flash Lite, Gemini 3 Flash, Gemma 3 12B, Gemma 3 27B (INSERTED)
+
+**Goal:** User can select from 5 Gemini/Gemma models in Settings; selected model is used for AI subtask generation and persists across refresh
+**Depends on:** Phase 2
+**Plans:** 1 plan
+
+Plans:
+- [ ] 02.1-01-PLAN.md — GeminiModelId type, provider plumbing, model toggle UI in AIProviderSettings
+
 ### Phase 3: ADHD-Optimized UX
 **Goal**: App supports ADHD-specific needs with energy tracking and positive feedback
 **Depends on**: Phase 2
@@ -117,6 +126,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Local-First Foundation | 6/6 | Complete | 2026-02-22 |
 | 01.1. UI Polish (gap closure) | 11/11 | Complete    | 2026-02-22 |
 | 2. AI Task Breakdown | 7/7 | Complete   | 2026-02-23 |
+| 02.1. Gemini Model Selector | 0/1 | Planning complete | - |
 | 3. ADHD-Optimized UX | 0/TBD | Not started | - |
 | 4. Cross-Platform Expansion | 0/TBD | Not started | - |
 
