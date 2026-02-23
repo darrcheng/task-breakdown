@@ -30,7 +30,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### ADHD-Friendly Polish
 
-- [ ] **ADHD-01**: User can tag tasks by energy level (low/medium/high)
+- [x] **ADHD-01**: User can tag tasks by energy level (low/medium/high)
 - [ ] **ADHD-02**: User can see AI-suggested time estimates for tasks
 - [x] **ADHD-03**: Completing tasks shows positive celebration animation
 - [ ] **ADHD-04**: Overdue tasks show gentle reschedule prompts (not guilt)
@@ -99,7 +99,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AI-07 | Phase 2 | Complete |
 | TASK-07 | Phase 3 | Complete |
 | TASK-08 | Phase 3 | Pending |
-| ADHD-01 | Phase 3 | Pending |
+| ADHD-01 | Phase 3 | Complete |
 | ADHD-02 | Phase 3 | Pending |
 | ADHD-03 | Phase 3 | Complete |
 | ADHD-04 | Phase 3 | Pending |

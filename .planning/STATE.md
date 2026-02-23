@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 3 of 4 (ADHD-Optimized UX)
-Plan: 1 of 5 complete
+Plan: 2 of 5 complete
 Status: In Progress
-Last activity: 2026-02-23 — Phase 03 Plan 01 complete. Data model extension + celebration animation + start-here ring shipped.
+Last activity: 2026-02-23 — Phase 03 Plan 02 complete. Energy level tagging (TaskForm chip selector + TaskCard/TaskListItem badges) + global energy filter in App header.
 
 Progress: [████████████████████] 25/25 plans (100%)
 
@@ -45,6 +45,7 @@ Progress: [████████████████████] 25/25 p
 | Phase 02-ai-task-breakdown P07 | 2 | 1 tasks | 3 files |
 | Phase 02.1 P01 | 1 | 2 tasks | 5 files |
 | Phase 03-adhd-optimized-ux P01 | 8 | 3 tasks | 5 files |
+| Phase 03-adhd-optimized-ux P02 | 3 | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -85,6 +86,7 @@ Recent decisions affecting current work:
 - [Phase 03-adhd-optimized-ux]: Dexie v3 upgrade sets all new fields to null/false defaults — no data loss for existing tasks
 - [Phase 03-adhd-optimized-ux]: Start-here ring uses violet-400 to visually distinguish from emerald celebration ring
 - [Phase 03-adhd-optimized-ux]: isSomeday filter applied to both branches of useTasksByDate/Range to exclude Someday tasks from calendar/list views
+- [Phase 03-adhd-optimized-ux]: ENERGY_DISPLAY record defined locally in TaskCard and TaskListItem — avoids cross-component import coupling
 
 ### Pending Todos
 
@@ -101,6 +103,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-23 (Phase 03 Plan 01 complete — data model + animations)
-Stopped at: Completed 03-adhd-optimized-ux-01-PLAN.md
+Last session: 2026-02-23 (Phase 03 Plan 02 complete — energy tagging + energy filter)
+Stopped at: Completed 03-adhd-optimized-ux-02-PLAN.md
 Resume file: None
