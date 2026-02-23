@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { X } from 'lucide-react';
 import clsx from 'clsx';
 import type { Settings } from '../../hooks/useSettings';
+import { AIProviderSettings } from '../settings/AIProviderSettings';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -85,6 +86,11 @@ export function SettingsModal({ isOpen, onClose, settings, onUpdateSettings }: S
                 Monday
               </button>
             </div>
+          </div>
+
+          {/* AI Provider */}
+          <div className="border-t border-slate-200 pt-6">
+            <AIProviderSettings />
           </div>
 
           {/* Keyboard shortcuts */}
