@@ -4,6 +4,7 @@ import { addMonths, subMonths, addWeeks, subWeeks } from 'date-fns';
 import { CalendarGrid } from './components/calendar/CalendarGrid';
 import { WeekView } from './components/calendar/WeekView';
 import { MonthNavigation } from './components/calendar/MonthNavigation';
+import { OverdueBanner } from './components/calendar/OverdueBanner';
 import { ListView } from './components/list/ListView';
 import { TaskModal } from './components/task/TaskModal';
 import { ViewToggle } from './components/ui/ViewToggle';
@@ -11,7 +12,9 @@ import { EmptyState } from './components/ui/EmptyState';
 import { CategoryManager } from './components/ui/CategoryManager';
 import { SettingsModal } from './components/ui/SettingsModal';
 import { DndProvider } from './components/dnd/DndProvider';
-import { useCategoryMap, useTaskCount } from './db/hooks';
+import { OverdueQuickPicker } from './components/overdue/OverdueQuickPicker';
+import { SomedayView } from './components/overdue/SomedayView';
+import { useCategoryMap, useTaskCount, useOverdueTasks } from './db/hooks';
 import { useSettings } from './hooks/useSettings';
 import { formatDateKey } from './utils/dates';
 import type { ViewMode, CalendarView, Task, EnergyLevel } from './types';
@@ -37,6 +40,7 @@ function App() {
   const [energyFilter, setEnergyFilter] = useState<EnergyLevel | null>(null);
   const [isCategoryManagerOpen, setIsCategoryManagerOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isQuickPickerOpen, setIsQuickPickerOpen] = useState(false);
   const [modalState, setModalState] = useState<ModalState>({
     isOpen: false,
     date: '',
@@ -44,6 +48,7 @@ function App() {
 
   const categoryMap = useCategoryMap();
   const taskCount = useTaskCount();
+  const overdueTasks = useOverdueTasks();
   const { settings, updateSettings } = useSettings();
 
   // Global keyboard shortcuts
@@ -55,7 +60,7 @@ function App() {
       // Guard: don't fire with modifier keys
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       // Guard: don't fire when any modal/overlay is open
-      if (modalState.isOpen || isCategoryManagerOpen || isSettingsOpen) return;
+      if (modalState.isOpen || isCategoryManagerOpen || isSettingsOpen || isQuickPickerOpen) return;
 
       switch (e.key) {
         case 'j': // Next period
@@ -92,6 +97,10 @@ function App() {
           e.preventDefault();
           setViewMode('list');
           break;
+        case 's': // Someday view
+          e.preventDefault();
+          setViewMode('someday');
+          break;
         case 'n': // New task (defaults to today)
           e.preventDefault();
           setModalState({ isOpen: true, date: formatDateKey(new Date()) });
@@ -105,7 +114,7 @@ function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [calendarView, viewMode, modalState.isOpen, isCategoryManagerOpen, isSettingsOpen]);
+  }, [calendarView, viewMode, modalState.isOpen, isCategoryManagerOpen, isSettingsOpen, isQuickPickerOpen]);
 
   const handleDayClick = (date: string, clickPosition?: { x: number; y: number }) => {
     if (viewMode === 'calendar') {
@@ -199,7 +208,7 @@ function App() {
         </div>
       </header>
 
-      {/* Calendar navigation */}
+      {/* Calendar navigation — only shown in calendar view */}
       {viewMode === 'calendar' && (
         <MonthNavigation
           currentMonth={currentMonth}
@@ -209,45 +218,59 @@ function App() {
         />
       )}
 
+      {/* Overdue banner — only shown in calendar view */}
+      {viewMode === 'calendar' && overdueTasks && overdueTasks.length > 0 && (
+        <OverdueBanner
+          taskCount={overdueTasks.length}
+          onOpenPicker={() => setIsQuickPickerOpen(true)}
+        />
+      )}
+
       {/* Empty state hint (overlaid, not replacing views) */}
       {isEmpty && <EmptyState viewMode={viewMode} />}
 
       {/* Main content */}
-      <DndProvider categoryMap={categoryMap}>
+      {viewMode === 'someday' ? (
         <main className="flex-1 flex flex-col overflow-hidden">
-          {viewMode === 'calendar' ? (
-            calendarView === 'month' ? (
-              <CalendarGrid
-                month={currentMonth}
-                showCompleted={showCompleted}
-                categoryMap={categoryMap}
-                onDayClick={handleDayClick}
-                onTaskClick={handleTaskClickCalendar}
-                weekStartsOn={settings.weekStartsOn}
-                energyFilter={energyFilter}
-              />
-            ) : (
-              <WeekView
-                currentDate={currentMonth}
-                showCompleted={showCompleted}
-                categoryMap={categoryMap}
-                onDayClick={handleDayClick}
-                onTaskClick={handleTaskClickCalendar}
-                weekStartsOn={settings.weekStartsOn}
-                energyFilter={energyFilter}
-              />
-            )
-          ) : (
-            <ListView
-              showCompleted={showCompleted}
-              categoryMap={categoryMap}
-              onDayClick={handleDayClick}
-              onTaskClick={handleTaskClickList}
-              energyFilter={energyFilter}
-            />
-          )}
+          <SomedayView categoryMap={categoryMap} />
         </main>
-      </DndProvider>
+      ) : (
+        <DndProvider categoryMap={categoryMap}>
+          <main className="flex-1 flex flex-col overflow-hidden">
+            {viewMode === 'calendar' ? (
+              calendarView === 'month' ? (
+                <CalendarGrid
+                  month={currentMonth}
+                  showCompleted={showCompleted}
+                  categoryMap={categoryMap}
+                  onDayClick={handleDayClick}
+                  onTaskClick={handleTaskClickCalendar}
+                  weekStartsOn={settings.weekStartsOn}
+                  energyFilter={energyFilter}
+                />
+              ) : (
+                <WeekView
+                  currentDate={currentMonth}
+                  showCompleted={showCompleted}
+                  categoryMap={categoryMap}
+                  onDayClick={handleDayClick}
+                  onTaskClick={handleTaskClickCalendar}
+                  weekStartsOn={settings.weekStartsOn}
+                  energyFilter={energyFilter}
+                />
+              )
+            ) : (
+              <ListView
+                showCompleted={showCompleted}
+                categoryMap={categoryMap}
+                onDayClick={handleDayClick}
+                onTaskClick={handleTaskClickList}
+                energyFilter={energyFilter}
+              />
+            )}
+          </main>
+        </DndProvider>
+      )}
 
       {/* Task modal (calendar view create/edit) */}
       <TaskModal
@@ -270,6 +293,13 @@ function App() {
         onClose={() => setIsSettingsOpen(false)}
         settings={settings}
         onUpdateSettings={updateSettings}
+      />
+
+      {/* Overdue quick picker */}
+      <OverdueQuickPicker
+        isOpen={isQuickPickerOpen}
+        onClose={() => setIsQuickPickerOpen(false)}
+        tasks={overdueTasks ?? []}
       />
     </div>
   );

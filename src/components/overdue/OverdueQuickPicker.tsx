@@ -11,7 +11,7 @@ interface OverdueQuickPickerProps {
   tasks: Task[];
 }
 
-function OverdueTaskRow({ task, onClose }: { task: Task; onClose: () => void }) {
+function OverdueTaskRow({ task }: { task: Task }) {
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const handleReschedule = async (newDate: string) => {
@@ -124,7 +124,7 @@ export function OverdueQuickPicker({ isOpen, onClose, tasks }: OverdueQuickPicke
             </div>
           ) : (
             tasks.map(task => (
-              <OverdueTaskRow key={task.id} task={task} onClose={onClose} />
+              <OverdueTaskRow key={task.id} task={task} />
             ))
           )}
         </div>

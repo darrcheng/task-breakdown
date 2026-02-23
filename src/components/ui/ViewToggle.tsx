@@ -1,4 +1,4 @@
-import { Calendar, List } from 'lucide-react';
+import { Calendar, List, Archive } from 'lucide-react';
 import clsx from 'clsx';
 import type { ViewMode } from '../../types';
 
@@ -35,6 +35,19 @@ export function ViewToggle({ viewMode, onViewModeChange }: ViewToggleProps) {
       >
         <List className="w-4 h-4" />
         <span>List</span>
+      </button>
+      <button
+        onClick={() => onViewModeChange('someday')}
+        className={clsx(
+          'flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded transition-colors',
+          viewMode === 'someday'
+            ? 'bg-white text-slate-800 shadow-sm'
+            : 'text-slate-500 hover:text-slate-700'
+        )}
+        aria-label="Someday view"
+      >
+        <Archive className="w-4 h-4" />
+        <span className="hidden sm:inline">Someday</span>
       </button>
     </div>
   );
