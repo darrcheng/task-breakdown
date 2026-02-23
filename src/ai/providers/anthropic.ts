@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { AIProvider, StreamCallbacks, SubtaskSuggestion } from './types';
-import { buildSubtaskPrompt } from '../prompts';
+import { buildSubtaskPrompt, buildTimeEstimatePrompt } from '../prompts';
 
 function parseSubtaskLines(buffer: string): {
   complete: SubtaskSuggestion[];
@@ -85,6 +85,33 @@ export class AnthropicProvider implements AIProvider {
       callbacks.onError(
         error instanceof Error ? error : new Error(String(error)),
       );
+    }
+  }
+
+  async estimateTime(
+    taskTitle: string,
+    taskDescription: string,
+    calibrationHint: string,
+  ): Promise<number | null> {
+    const prompt = buildTimeEstimatePrompt(taskTitle, taskDescription, calibrationHint);
+    try {
+      const response = await this.client.messages.create({
+        model: 'claude-sonnet-4-5-20250929',
+        max_tokens: 50,
+        messages: [{ role: 'user', content: prompt }],
+      });
+      const content = response.content[0];
+      if (content.type !== 'text') return null;
+      const text = content.text.trim();
+      // Strip markdown code fences if present
+      const clean = text.replace(/```(?:json)?\s*/gi, '').replace(/```/g, '').trim();
+      const parsed = JSON.parse(clean);
+      if (typeof parsed.minutes === 'number' && parsed.minutes > 0) {
+        return parsed.minutes;
+      }
+      return null;
+    } catch {
+      return null;
     }
   }
 

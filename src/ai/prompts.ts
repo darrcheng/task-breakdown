@@ -36,6 +36,30 @@ Now generate subtasks for the task above:`;
 }
 
 /**
+ * Builds a prompt for time estimation.
+ * Returns a constrained prompt that requests only a JSON {"minutes": N} response.
+ */
+export function buildTimeEstimatePrompt(
+  taskTitle: string,
+  taskDescription: string,
+  calibrationHint: string,
+): string {
+  return `Estimate how long this task will take in minutes.
+
+**Task:** ${taskTitle}
+${taskDescription ? `**Description:** ${taskDescription}` : ''}
+${calibrationHint ? `**Calibration note:** ${calibrationHint}` : ''}
+
+**Rules:**
+- Return ONLY a JSON object: {"minutes": <number>}
+- Round to nearest: 5, 10, 15, 20, 30, 45, 60, 90, 120, 180, 240
+- If the task is vague or could vary greatly, pick the median realistic estimate
+- Do not explain your answer
+
+Example: {"minutes": 30}`;
+}
+
+/**
  * Builds a prompt for regeneration that excludes pinned subtask titles.
  * Generates only enough new subtasks to fill the target count.
  */

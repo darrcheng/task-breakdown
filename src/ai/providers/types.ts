@@ -17,5 +17,10 @@ export interface AIProvider {
     parentContext: string,
     callbacks: StreamCallbacks,
   ): Promise<void>;
+  estimateTime(
+    taskTitle: string,
+    taskDescription: string,
+    calibrationHint: string,
+  ): Promise<number | null>;
   testConnection(): Promise<boolean>;
 }

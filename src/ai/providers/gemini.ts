@@ -1,6 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import type { AIProvider, StreamCallbacks, SubtaskSuggestion } from './types';
-import { buildSubtaskPrompt } from '../prompts';
+import { buildSubtaskPrompt, buildTimeEstimatePrompt } from '../prompts';
 import { GEMINI_DEFAULT_MODEL } from '../../types';
 
 function parseSubtaskLines(buffer: string): {
@@ -101,6 +101,30 @@ export class GeminiProvider implements AIProvider {
           error instanceof Error ? error : new Error(message),
         );
       }
+    }
+  }
+
+  async estimateTime(
+    taskTitle: string,
+    taskDescription: string,
+    calibrationHint: string,
+  ): Promise<number | null> {
+    const prompt = buildTimeEstimatePrompt(taskTitle, taskDescription, calibrationHint);
+    try {
+      const response = await this.ai.models.generateContent({
+        model: this.model,
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      });
+      const text = (response.text ?? '').trim();
+      // Strip markdown code fences if present
+      const clean = text.replace(/```(?:json)?\s*/gi, '').replace(/```/g, '').trim();
+      const parsed = JSON.parse(clean);
+      if (typeof parsed.minutes === 'number' && parsed.minutes > 0) {
+        return parsed.minutes;
+      }
+      return null;
+    } catch {
+      return null;
     }
   }
 
