@@ -20,7 +20,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### AI Task Breakdown
 
-- [ ] **AI-01**: User can tap a button to generate subtasks for any task
+- [x] **AI-01**: User can tap a button to generate subtasks for any task
 - [ ] **AI-02**: User can edit AI-generated subtasks
 - [ ] **AI-03**: User can reorder AI-generated subtasks
 - [x] **AI-04**: User can delete individual AI-generated subtasks
@@ -90,7 +90,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TASK-05 | Phase 1 | Complete |
 | TASK-06 | Phase 1 | Complete |
 | PLAT-03 | Phase 1 | Complete |
-| AI-01 | Phase 2 | Pending |
+| AI-01 | Phase 2 | Complete |
 | AI-02 | Phase 2 | Pending |
 | AI-03 | Phase 2 | Pending |
 | AI-04 | Phase 2 | Complete |

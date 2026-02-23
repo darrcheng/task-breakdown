@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 Phase: 3 of 4 (ADHD-Optimized UX)
 Plan: 5 of 5 complete
 Status: Phase 3 Complete
-Last activity: 2026-02-23 — Phase 03 Plan 05 complete. End-to-end UAT verification of all 7 Phase 3 ADHD-optimized UX features — auto-approved in auto-advance mode.
+Last activity: 2026-02-23 — Phase 03 Plan 07 complete. Inline calendar picker, post-create edit view with BreakdownButton visible, autosave on Escape/backdrop via forwardRef form handle.
 
 Progress: [████████████████████] 25/25 plans (100%)
 
@@ -49,6 +49,8 @@ Progress: [████████████████████] 25/25 p
 | Phase 03-adhd-optimized-ux P04 | 2 | 2 tasks | 6 files |
 | Phase 03-adhd-optimized-ux P03 | 3 | 2 tasks | 8 files |
 | Phase 03-adhd-optimized-ux P05 | 2 | 1 tasks | 0 files |
+| Phase 03-adhd-optimized-ux P07 | 4 | 1 tasks | 4 files |
+| Phase 03-adhd-optimized-ux P06 | 3 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -93,6 +95,12 @@ Recent decisions affecting current work:
 - [Phase 03-adhd-optimized-ux]: estimateTime is non-streaming — single call returning JSON for cost efficiency; override takes precedence via effectiveEstimate = timeEstimateOverride ?? timeEstimate
 - [Phase 03-adhd-optimized-ux]: OverdueTaskRow does not need onClose prop — per-task actions remove task reactively; picker auto-closes when tasks.length hits 0
 - [Phase 03-adhd-optimized-ux]: SomedayView placed outside DndProvider — no drag-and-drop needed for Someday list
+- [Phase 03-adhd-optimized-ux]: TaskFormHandle.submit() returns boolean — true if saved, false if empty title so caller can handle onClose manually
+- [Phase 03-adhd-optimized-ux]: Post-create stays in modal: handleSubmit create branch sets setNavigationOverride(newTask) instead of onClose() — BreakdownButton immediately visible
+- [Phase 03-adhd-optimized-ux]: DatePicker inline prop: skips trigger button and renders calendar as normal flow element — used in OverdueQuickPicker for no-extra-click reschedule
+- [Phase 03-adhd-optimized-ux]: Two-frame rAF animation: departingPhase splits CSS transition into ring-first then opacity-0 to prevent paint-frame race
+- [Phase 03-adhd-optimized-ux]: getProvider() direct check in startBreakdown replaces stale isConfigured React state guard
+- [Phase 03-adhd-optimized-ux]: Custom DOM event 'taskbreaker:inline-create' decouples App Enter key handler from DayGroup inline create state
 
 ### Pending Todos
 
@@ -109,6 +117,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-23 (Phase 03 Plan 05 complete — UAT verification of all 7 ADHD-optimized UX features)
-Stopped at: Completed 03-adhd-optimized-ux-05-PLAN.md
+Last session: 2026-02-23 (Phase 03 Plan 07 complete — inline calendar picker, post-create edit view, autosave on modal close)
+Stopped at: Completed 03-adhd-optimized-ux-07-PLAN.md
 Resume file: None
