@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 3 of 4 (ADHD-Optimized UX)
-Plan: 2 of 5 complete
+Plan: 4 of 5 complete
 Status: In Progress
-Last activity: 2026-02-23 — Phase 03 Plan 02 complete. Energy level tagging (TaskForm chip selector + TaskCard/TaskListItem badges) + global energy filter in App header.
+Last activity: 2026-02-23 — Phase 03 Plan 04 complete. Overdue banner + OverdueQuickPicker modal with per-task/bulk actions + SomedayView with three-way ViewToggle.
 
 Progress: [████████████████████] 25/25 plans (100%)
 
@@ -46,6 +46,8 @@ Progress: [████████████████████] 25/25 p
 | Phase 02.1 P01 | 1 | 2 tasks | 5 files |
 | Phase 03-adhd-optimized-ux P01 | 8 | 3 tasks | 5 files |
 | Phase 03-adhd-optimized-ux P02 | 3 | 2 tasks | 11 files |
+| Phase 03-adhd-optimized-ux P04 | 2 | 2 tasks | 6 files |
+| Phase 03-adhd-optimized-ux P03 | 3 | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -87,6 +89,9 @@ Recent decisions affecting current work:
 - [Phase 03-adhd-optimized-ux]: Start-here ring uses violet-400 to visually distinguish from emerald celebration ring
 - [Phase 03-adhd-optimized-ux]: isSomeday filter applied to both branches of useTasksByDate/Range to exclude Someday tasks from calendar/list views
 - [Phase 03-adhd-optimized-ux]: ENERGY_DISPLAY record defined locally in TaskCard and TaskListItem — avoids cross-component import coupling
+- [Phase 03-adhd-optimized-ux]: estimateTime is non-streaming — single call returning JSON for cost efficiency; override takes precedence via effectiveEstimate = timeEstimateOverride ?? timeEstimate
+- [Phase 03-adhd-optimized-ux]: OverdueTaskRow does not need onClose prop — per-task actions remove task reactively; picker auto-closes when tasks.length hits 0
+- [Phase 03-adhd-optimized-ux]: SomedayView placed outside DndProvider — no drag-and-drop needed for Someday list
 
 ### Pending Todos
 
@@ -103,6 +108,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-23 (Phase 03 Plan 02 complete — energy tagging + energy filter)
-Stopped at: Completed 03-adhd-optimized-ux-02-PLAN.md
+Last session: 2026-02-23 (Phase 03 Plan 04 complete — overdue banner + quick picker + Someday view)
+Stopped at: Completed 03-adhd-optimized-ux-04-PLAN.md
 Resume file: None
