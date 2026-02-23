@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** Turn vague, paralyzing tasks into small, concrete steps you can start right now
-**Current focus:** Phase 02.1: Gemini Model Selector
+**Current focus:** Phase 3: ADHD-Optimized UX
 
 ## Current Position
 
-Phase: 02.1 (Gemini Model Selector)
-Plan: 02.1-01 complete (model selector with 5 toggles)
-Status: Code complete — 1/1 plans implemented
-Last activity: 2026-02-23 — Phase 02.1 plan 01 done. GeminiModelId type, provider plumbing, model toggle UI.
+Phase: 3 of 4 (ADHD-Optimized UX)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-02-23 — Phase 02.1 complete. Gemini model selector with 5 model toggles shipped.
 
-Progress: [██████████░░░░░░░░░░] 25%
+Progress: [████████████████████] 25/25 plans (100%)
 
 ## Performance Metrics
 
@@ -89,7 +89,7 @@ None.
 ### Roadmap Evolution
 
 - Phase 01.1 inserted after Phase 1: UI polish — implement 12 enhancement todos from Phase 1 UAT (COMPLETE)
-- Phase 02.1 inserted after Phase 2: Gemini model selector — add toggles for Flash Lite, Gemini 3 Flash, Gemma 3 12B, Gemma 3 27B (URGENT)
+- Phase 02.1 inserted after Phase 2: Gemini model selector — add toggles for Flash Lite, Gemini 3 Flash, Gemma 3 12B, Gemma 3 27B (COMPLETE)
 
 ### Blockers/Concerns
 
@@ -97,6 +97,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-23 (completed 02.1-01-PLAN.md — Gemini model selector)
-Stopped at: Completed 02.1-01-PLAN.md; phase 02.1 code complete, pending verification
+Last session: 2026-02-23 (Phase 02.1 complete — Gemini model selector)
+Stopped at: Phase 02.1 complete, ready to plan Phase 3
 Resume file: None
