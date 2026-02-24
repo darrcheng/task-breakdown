@@ -1,9 +1,10 @@
 import { type LucideIcon } from 'lucide-react';
-import { Battery, BatteryMedium, Zap } from 'lucide-react';
+import { Battery, BatteryMedium, Zap, ListTree } from 'lucide-react';
 import clsx from 'clsx';
 import { CATEGORY_ICONS, STATUS_COLORS } from '../../utils/categories';
 import { ParentBadge } from './ParentBadge';
 import { formatEstimate } from '../../utils/estimateCalibration';
+import { useSubtasks } from '../../db/hooks';
 import type { Task, Category, EnergyLevel } from '../../types';
 
 interface TaskCardProps {
@@ -27,6 +28,10 @@ export function TaskCard({ task, categoryMap, onClick }: TaskCardProps) {
 
   const energy = task.energyLevel ? ENERGY_DISPLAY[task.energyLevel] : null;
   const effectiveEstimate = task.timeEstimateOverride ?? task.timeEstimate;
+
+  const subtasks = useSubtasks(task.id ?? 0);
+  const subtaskCount = subtasks?.length ?? 0;
+  const subtaskDoneCount = subtasks?.filter(s => s.status === 'done').length ?? 0;
 
   return (
     <button
@@ -53,6 +58,12 @@ export function TaskCard({ task, categoryMap, onClick }: TaskCardProps) {
       {effectiveEstimate && (
         <span className="text-[10px] text-slate-400 flex-shrink-0 whitespace-nowrap">
           ~{formatEstimate(effectiveEstimate)}
+        </span>
+      )}
+      {subtaskCount > 0 && (
+        <span className="flex items-center gap-0.5 text-[10px] text-slate-400 flex-shrink-0">
+          <ListTree className="w-3 h-3" />
+          {subtaskDoneCount}/{subtaskCount}
         </span>
       )}
       {task.id && <ParentBadge taskId={task.id} />}

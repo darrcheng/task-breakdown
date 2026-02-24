@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { type LucideIcon } from 'lucide-react';
-import { Battery, BatteryMedium, Zap, Archive } from 'lucide-react';
+import { Battery, BatteryMedium, Zap, Archive, ListTree } from 'lucide-react';
 import clsx from 'clsx';
 import { CATEGORY_ICONS, STATUS_COLORS, getNextStatus } from '../../utils/categories';
 import { ParentBadge } from '../task/ParentBadge';
 import { db } from '../../db/database';
+import { useSubtasks } from '../../db/hooks';
 import type { Task, Category, TaskStatus, EnergyLevel } from '../../types';
 
 const ENERGY_DISPLAY: Record<EnergyLevel, { icon: LucideIcon; color: string; label: string }> = {
@@ -54,6 +55,10 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
     ? CATEGORY_ICONS[category.icon]
     : CATEGORY_ICONS['folder'];
   const energy = task.energyLevel ? ENERGY_DISPLAY[task.energyLevel] : null;
+
+  const subtasks = useSubtasks(task.id ?? 0);
+  const subtaskCount = subtasks?.length ?? 0;
+  const subtaskDoneCount = subtasks?.filter(s => s.status === 'done').length ?? 0;
 
   const statusLabel =
     displayStatus === 'todo'
@@ -150,6 +155,12 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
         <span className={clsx('flex items-center gap-0.5 text-xs flex-shrink-0', energy.color)}>
           <energy.icon className="w-3.5 h-3.5" />
           {energy.label}
+        </span>
+      )}
+      {subtaskCount > 0 && (
+        <span className="flex items-center gap-1 text-xs text-slate-400 flex-shrink-0">
+          <ListTree className="w-3.5 h-3.5" />
+          {subtaskDoneCount}/{subtaskCount}
         </span>
       )}
       <button
