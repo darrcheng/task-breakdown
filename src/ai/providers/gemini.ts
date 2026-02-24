@@ -40,6 +40,10 @@ export class GeminiProvider implements AIProvider {
     this.model = model;
   }
 
+  private isGemmaModel(): boolean {
+    return this.model.startsWith('gemma-');
+  }
+
   async generateSubtasks(
     taskTitle: string,
     taskDescription: string,
@@ -51,12 +55,16 @@ export class GeminiProvider implements AIProvider {
       'You are a task breakdown assistant helping users with ADHD break overwhelming tasks into small, actionable steps. Output each subtask as a separate JSON line with "title" and "description" fields. Do not output anything else.';
 
     try {
+      const isGemma = this.isGemmaModel();
+      const contents = isGemma
+        ? [{ role: 'user' as const, parts: [{ text: systemPrompt + '\n\n' + prompt }] }]
+        : [{ role: 'user' as const, parts: [{ text: prompt }] }];
+      const config = isGemma ? {} : { systemInstruction: systemPrompt };
+
       const response = await this.ai.models.generateContentStream({
         model: this.model,
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        config: {
-          systemInstruction: systemPrompt,
-        },
+        contents,
+        config,
       });
 
       let buffer = '';
@@ -130,10 +138,18 @@ export class GeminiProvider implements AIProvider {
 
   async testConnection(): Promise<boolean> {
     try {
-      await this.ai.models.generateContent({
-        model: this.model,
-        contents: 'Hi',
-      });
+      if (this.isGemmaModel()) {
+        await this.ai.models.generateContent({
+          model: this.model,
+          contents: 'Hi',
+        });
+      } else {
+        await this.ai.models.generateContent({
+          model: this.model,
+          contents: [{ role: 'user', parts: [{ text: 'Hi' }] }],
+          config: { systemInstruction: 'Reply with OK' },
+        });
+      }
       return true;
     } catch {
       return false;
