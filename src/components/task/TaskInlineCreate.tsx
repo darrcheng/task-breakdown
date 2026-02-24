@@ -42,6 +42,14 @@ export function TaskInlineCreate({ date, onClose }: TaskInlineCreateProps) {
     if (e.key === 'Escape') {
       onClose();
     }
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (!title.trim()) return;
+      const form = inputRef.current?.closest('form');
+      if (form) {
+        form.requestSubmit();
+      }
+    }
   };
 
   return (
@@ -59,6 +67,12 @@ export function TaskInlineCreate({ date, onClose }: TaskInlineCreateProps) {
         <div className="flex-[1] min-w-[160px]">
           <CategoryCombobox value={categoryId} onChange={setCategoryId} />
         </div>
+        <button
+          type="submit"
+          className="px-3 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors flex-shrink-0"
+        >
+          Add
+        </button>
       </div>
     </form>
   );

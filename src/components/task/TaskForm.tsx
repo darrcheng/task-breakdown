@@ -232,7 +232,7 @@ export const TaskForm = forwardRef<TaskFormHandle, TaskFormProps>(function TaskF
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-between pt-2">
+      <div className="flex items-center justify-between pt-3 pb-1 sticky bottom-0 bg-white border-t border-slate-100 -mx-6 px-6 mt-2">
         <div>
           {onDelete && (
             <button
