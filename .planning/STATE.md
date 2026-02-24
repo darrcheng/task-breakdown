@@ -54,8 +54,10 @@ Progress: [████████████████████] 25/25 p
 | Phase 03-adhd-optimized-ux P09 | 2 | 2 tasks | 3 files |
 | Phase 03-adhd-optimized-ux P08 | 2 | 2 tasks | 2 files |
 | Phase 03-adhd-optimized-ux P10 | 2 | 2 tasks | 3 files |
+| Phase 03-adhd-optimized-ux P11 | 2 | 2 tasks | 2 files |
 | Phase 03-adhd-optimized-ux P12 | 5 | 1 tasks | 2 files |
 | Phase 03-adhd-optimized-ux P14 | 1 | 1 tasks | 2 files |
+| Phase 03-adhd-optimized-ux P13 | 2 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -115,8 +117,13 @@ Recent decisions affecting current work:
 - [Phase 03-adhd-optimized-ux]: useSubtasks(task.id ?? 0) pattern — 0 fallback returns empty array safely; subtask badge shown only when count > 0
 - [Phase 03-adhd-optimized-ux]: handleTaskClickList calls setModalState without clickPosition — uses centered modal positioning for list view (no-op replaced)
 - [Phase 03-adhd-optimized-ux]: DayGroup delegates onTaskClick prop directly to TaskListItem.onClick — removed editingTaskId state and TaskInlineEdit for list view modal parity
+- [Phase 03-adhd-optimized-ux P11]: settling phase pattern — departingPhase='settling' for 400ms after animation completes; keeps transition-all active so ring fades smoothly before null resets component
+- [Phase 03-adhd-optimized-ux P11]: transition-colors removed from base class of TaskListItem/SubtaskRow, conditionally applied only when !departing — resolves Tailwind v4 CSS specificity conflict where transition-colors overrides transition-all
 - [Phase 03-adhd-optimized-ux P12]: CategoryCombobox !isOpen branch: only ArrowDown reopens dropdown — Enter propagates to form for submission
 - [Phase 03-adhd-optimized-ux P12]: Form-level onKeyDown on TaskInlineCreate with aria-expanded gate delegates Enter to CategoryCombobox when open, submits form when closed
+- [Phase 03-adhd-optimized-ux]: Actions bar hidden entirely in edit mode when onDelete is not provided — avoids empty sticky bar at form bottom
+- [Phase 03-adhd-optimized-ux]: Someday button moved inside TaskForm near DatePicker with shorter label 'Someday' vs 'Send to Someday'
+- [Phase 03-adhd-optimized-ux]: Enter-to-create guard \!isEditing prevents accidental submission while editing existing tasks
 
 ### Pending Todos
 
@@ -133,6 +140,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-23 (Phase 03 Plan 12 gap closure — Enter key after category selection now submits inline create form)
-Stopped at: Completed 03-adhd-optimized-ux-12-PLAN.md
+Last session: 2026-02-24 (Phase 03 Plan 11 gap closure — celebration animation CSS specificity fix and settling phase for smooth ring fade-out in TaskListItem and SubtaskRow)
+Stopped at: Completed 03-adhd-optimized-ux-11-PLAN.md
 Resume file: None
