@@ -34,6 +34,7 @@ export function TaskInlineCreate({ date, onClose }: TaskInlineCreateProps) {
     });
 
     setTitle('');
+    setCategoryId(0);
     // Stay open for rapid entry
     inputRef.current?.focus();
   };
