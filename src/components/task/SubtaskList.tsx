@@ -94,9 +94,10 @@ function SubtaskRow({
   onOpenSubtask,
   isStartHere,
 }: SubtaskRowProps) {
-  const [departingPhase, setDepartingPhase] = useState<'ring' | 'fade' | null>(null);
+  const [departingPhase, setDepartingPhase] = useState<'ring' | 'fade' | 'settling' | null>(null);
   const [displayStatus, setDisplayStatus] = useState<TaskStatus>(subtask.status);
   const departureTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const settlingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const innerRafRef = useRef<number | null>(null);
 
   const departing = departingPhase !== null;
@@ -132,6 +133,9 @@ function SubtaskRow({
       if (departureTimeout.current) {
         clearTimeout(departureTimeout.current);
       }
+      if (settlingTimeout.current) {
+        clearTimeout(settlingTimeout.current);
+      }
     };
   }, []);
 
@@ -151,6 +155,10 @@ function SubtaskRow({
       if (departureTimeout.current) {
         clearTimeout(departureTimeout.current);
         departureTimeout.current = null;
+      }
+      if (settlingTimeout.current) {
+        clearTimeout(settlingTimeout.current);
+        settlingTimeout.current = null;
       }
       setDepartingPhase(null);
       setDisplayStatus('todo');
@@ -173,13 +181,17 @@ function SubtaskRow({
       setDisplayStatus('done');
       departureTimeout.current = setTimeout(async () => {
         departureTimeout.current = null;
-        // Reset FIRST to prevent Dexie liveQuery race condition where
-        // the re-render sees opacity-0 before the phase resets
-        setDepartingPhase(null);
-        await db.tasks.update(subtask.id!, {
-          status: 'done',
-          updatedAt: new Date(),
-        });
+        // Enter settling phase: removes ring/opacity classes but keeps transition-all
+        // so the ring fades out smoothly instead of disappearing abruptly.
+        setDepartingPhase('settling');
+        settlingTimeout.current = setTimeout(async () => {
+          settlingTimeout.current = null;
+          setDepartingPhase(null);
+          await db.tasks.update(subtask.id!, {
+            status: 'done',
+            updatedAt: new Date(),
+          });
+        }, 400);
       }, 1500);
     } else {
       setDisplayStatus(nextStatus);
@@ -193,9 +205,11 @@ function SubtaskRow({
   return (
     <div
       className={clsx(
-        'flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-slate-50 transition-colors group',
+        'flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-slate-50 group',
+        !departing && 'transition-colors',
         departingPhase === 'ring' && 'ring-2 ring-emerald-400 ring-offset-1 transition-all duration-[1500ms]',
         departingPhase === 'fade' && 'ring-2 ring-emerald-400 ring-offset-1 opacity-0 transition-all duration-[1500ms]',
+        departingPhase === 'settling' && 'transition-all duration-300',
         isStartHere && !departing && 'ring-2 ring-violet-400 ring-offset-1 rounded-md',
       )}
       style={{ marginLeft: indent > 0 ? indent : 0 }}
@@ -224,7 +238,7 @@ function SubtaskRow({
         onClick={() => onOpenSubtask(subtask)}
         className={clsx(
           'flex-1 text-sm text-left truncate transition-colors',
-          departing
+          (departingPhase === 'ring' || departingPhase === 'fade')
             ? 'text-green-600 line-through'
             : displayStatus === 'done'
               ? 'text-slate-400 line-through'
