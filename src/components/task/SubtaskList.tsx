@@ -208,7 +208,7 @@ function SubtaskRow({
         'flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-slate-50 group',
         !departing && 'transition-colors',
         departingPhase === 'ring' && 'ring-2 ring-emerald-400 ring-offset-1 transition-all duration-[1500ms]',
-        departingPhase === 'fade' && 'ring-2 ring-emerald-400 ring-offset-1 opacity-0 transition-all duration-[1500ms]',
+        departingPhase === 'fade' && 'ring-2 ring-emerald-400 ring-offset-1 bg-emerald-50 transition-all duration-[1500ms]',
         departingPhase === 'settling' && 'transition-all duration-300',
         isStartHere && !departing && 'ring-2 ring-violet-400 ring-offset-1 rounded-md',
       )}
