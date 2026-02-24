@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { type LucideIcon } from 'lucide-react';
-import { Battery, BatteryMedium, Zap } from 'lucide-react';
+import { Battery, BatteryMedium, Zap, Archive } from 'lucide-react';
 import clsx from 'clsx';
 import { CATEGORY_ICONS, STATUS_COLORS, getNextStatus } from '../../utils/categories';
 import { ParentBadge } from '../task/ParentBadge';
@@ -117,7 +117,7 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
     <div
       onClick={() => onClick?.(task)}
       className={clsx(
-        'w-full flex items-center gap-3 px-4 py-3 rounded-lg border text-left cursor-pointer transition-colors',
+        'group w-full flex items-center gap-3 px-4 py-3 rounded-lg border text-left cursor-pointer transition-colors',
         colors.bg,
         colors.border,
         'hover:opacity-80',
@@ -152,6 +152,21 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
           {energy.label}
         </span>
       )}
+      <button
+        onClick={async (e) => {
+          e.stopPropagation();
+          if (task.id) {
+            await db.tasks.update(task.id, {
+              isSomeday: true,
+              updatedAt: new Date(),
+            });
+          }
+        }}
+        className="opacity-0 group-hover:opacity-100 p-1 text-slate-300 hover:text-amber-500 transition-all flex-shrink-0"
+        title="Send to Someday"
+      >
+        <Archive className="w-4 h-4" />
+      </button>
       {task.id && <ParentBadge taskId={task.id} />}
       <span
         className={clsx(
