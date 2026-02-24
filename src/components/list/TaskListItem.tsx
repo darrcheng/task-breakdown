@@ -21,9 +21,10 @@ interface TaskListItemProps {
 }
 
 export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) {
-  const [departingPhase, setDepartingPhase] = useState<'ring' | 'fade' | null>(null);
+  const [departingPhase, setDepartingPhase] = useState<'ring' | 'fade' | 'settling' | null>(null);
   const [displayStatus, setDisplayStatus] = useState<TaskStatus>(task.status);
   const departureTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const settlingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const innerRafRef = useRef<number | null>(null);
 
   const departing = departingPhase !== null;
@@ -72,6 +73,9 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
       if (departureTimeout.current) {
         clearTimeout(departureTimeout.current);
       }
+      if (settlingTimeout.current) {
+        clearTimeout(settlingTimeout.current);
+      }
     };
   }, []);
 
@@ -84,6 +88,10 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
       if (departureTimeout.current) {
         clearTimeout(departureTimeout.current);
         departureTimeout.current = null;
+      }
+      if (settlingTimeout.current) {
+        clearTimeout(settlingTimeout.current);
+        settlingTimeout.current = null;
       }
       setDepartingPhase(null);
       setDisplayStatus('todo');
@@ -100,14 +108,17 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
       setDisplayStatus('done');
       departureTimeout.current = setTimeout(async () => {
         departureTimeout.current = null;
-        // Reset FIRST so component shows green done state if show-completed is on.
-        // Prevents Dexie liveQuery re-render from finding component with opacity-0
-        // and causing a disappear-then-reappear flash.
-        setDepartingPhase(null);
-        await db.tasks.update(task.id!, {
-          status: 'done',
-          updatedAt: new Date(),
-        });
+        // Enter settling phase: removes ring/opacity classes but keeps transition-all
+        // so the ring fades out smoothly instead of disappearing abruptly.
+        setDepartingPhase('settling');
+        settlingTimeout.current = setTimeout(async () => {
+          settlingTimeout.current = null;
+          setDepartingPhase(null);
+          await db.tasks.update(task.id!, {
+            status: 'done',
+            updatedAt: new Date(),
+          });
+        }, 400);
       }, 1500);
     } else {
       setDisplayStatus(nextStatus);
@@ -122,13 +133,15 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
     <div
       onClick={() => onClick?.(task)}
       className={clsx(
-        'group w-full flex items-center gap-3 px-4 py-3 rounded-lg border text-left cursor-pointer transition-colors',
+        'group w-full flex items-center gap-3 px-4 py-3 rounded-lg border text-left cursor-pointer',
+        !departing && 'transition-colors',
         colors.bg,
         colors.border,
         'hover:opacity-80',
-        departing && 'line-through decoration-green-600 text-green-600',
+        (departingPhase === 'ring' || departingPhase === 'fade') && 'line-through decoration-green-600 text-green-600',
         departingPhase === 'ring' && 'ring-2 ring-emerald-400 ring-offset-1 transition-all duration-[1500ms]',
         departingPhase === 'fade' && 'ring-2 ring-emerald-400 ring-offset-1 opacity-0 transition-all duration-[1500ms]',
+        departingPhase === 'settling' && 'transition-all duration-300',
       )}
     >
       {/* Status indicator - clickable to cycle */}
@@ -146,9 +159,9 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
       />
 
       {IconComponent && (
-        <IconComponent className={clsx('w-4 h-4 flex-shrink-0', departing ? 'text-green-600' : colors.text)} />
+        <IconComponent className={clsx('w-4 h-4 flex-shrink-0', (departingPhase === 'ring' || departingPhase === 'fade') ? 'text-green-600' : colors.text)} />
       )}
-      <span className={clsx('flex-1 font-medium text-sm', departing ? 'text-green-600' : colors.text)}>
+      <span className={clsx('flex-1 font-medium text-sm', (departingPhase === 'ring' || departingPhase === 'fade') ? 'text-green-600' : colors.text)}>
         {task.title}
       </span>
       {energy && (
@@ -183,7 +196,7 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
         className={clsx(
           'text-xs px-2 py-0.5 rounded-full font-medium',
           colors.bg,
-          departing ? 'text-green-600' : colors.text,
+          (departingPhase === 'ring' || departingPhase === 'fade') ? 'text-green-600' : colors.text,
           'border',
           colors.border
         )}
