@@ -165,7 +165,7 @@ export const TaskForm = forwardRef<TaskFormHandle, TaskFormProps>(function TaskF
             className="mt-1 flex items-center gap-1.5 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50 px-2 py-1 rounded-md transition-colors"
           >
             <Archive className="w-3.5 h-3.5" />
-            Someday
+            Save for Someday
           </button>
         )}
       </div>

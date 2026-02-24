@@ -36,6 +36,9 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
   // Ref to TaskForm — used for auto-save on Escape/backdrop click
   const formRef = useRef<TaskFormHandle>(null);
 
+  // Flag to distinguish dismiss-triggered submit (backdrop/Escape) from explicit submit (Enter/Create button)
+  const closingRef = useRef(false);
+
   // Override editing state
   const [isEditingOverride, setIsEditingOverride] = useState(false);
   const [overrideInput, setOverrideInput] = useState<string>('');
@@ -79,9 +82,13 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
           handleBackToParent();
         } else {
           // Final close — auto-save form data first
+          closingRef.current = true;
           const saved = formRef.current?.submit();
-          if (!saved) onClose();
-          // If saved is true, handleSubmit will call onClose after saving
+          if (!saved) {
+            closingRef.current = false;
+            onClose();
+          }
+          // If saved is true, handleSubmit will check closingRef and close
         }
       }
     };
@@ -118,12 +125,19 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
       });
       // Trigger background estimation for new tasks
       triggerEstimate(newId as number, data.title, data.description, data.categoryId);
-      // Stay in modal — switch to editing the new task so BreakdownButton is visible
-      const newTask = await db.tasks.get(newId as number);
-      if (newTask) {
-        setNavigationOverride(newTask);
-      } else {
+
+      // If dismiss-triggered (backdrop/Escape), close instead of staying in modal
+      if (closingRef.current) {
+        closingRef.current = false;
         onClose();
+      } else {
+        // Explicit submit — stay in modal to show BreakdownButton
+        const newTask = await db.tasks.get(newId as number);
+        if (newTask) {
+          setNavigationOverride(newTask);
+        } else {
+          onClose();
+        }
       }
     }
   };
@@ -210,9 +224,13 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
 
   // Backdrop click handler — auto-save form data before closing
   const handleBackdropClick = () => {
+    closingRef.current = true;
     const saved = formRef.current?.submit();
-    if (!saved) onClose();
-    // If saved is true, handleSubmit will call onClose after saving
+    if (!saved) {
+      closingRef.current = false;
+      onClose();
+    }
+    // If saved is true, handleSubmit will check closingRef and close
   };
 
   return (
