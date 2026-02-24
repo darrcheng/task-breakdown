@@ -97,16 +97,26 @@ function SubtaskRow({
   const [departingPhase, setDepartingPhase] = useState<'ring' | 'fade' | null>(null);
   const [displayStatus, setDisplayStatus] = useState<TaskStatus>(subtask.status);
   const departureTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const innerRafRef = useRef<number | null>(null);
 
   const departing = departingPhase !== null;
 
-  // Two-frame animation: ring phase → requestAnimationFrame → fade phase
+  // Two-frame animation: ring phase → double-rAF → fade phase
+  // Double-rAF guarantees browser paints the ring state before applying opacity-0
   useEffect(() => {
     if (departingPhase === 'ring') {
       const rafId = requestAnimationFrame(() => {
-        setDepartingPhase('fade');
+        const innerRafId = requestAnimationFrame(() => {
+          setDepartingPhase('fade');
+        });
+        innerRafRef.current = innerRafId;
       });
-      return () => cancelAnimationFrame(rafId);
+      return () => {
+        cancelAnimationFrame(rafId);
+        if (innerRafRef.current !== null) {
+          cancelAnimationFrame(innerRafRef.current);
+        }
+      };
     }
   }, [departingPhase]);
 
@@ -162,12 +172,14 @@ function SubtaskRow({
       setDepartingPhase('ring');
       setDisplayStatus('done');
       departureTimeout.current = setTimeout(async () => {
+        departureTimeout.current = null;
+        // Reset FIRST to prevent Dexie liveQuery race condition where
+        // the re-render sees opacity-0 before the phase resets
+        setDepartingPhase(null);
         await db.tasks.update(subtask.id!, {
           status: 'done',
           updatedAt: new Date(),
         });
-        departureTimeout.current = null;
-        setDepartingPhase(null);
       }, 1500);
     } else {
       setDisplayStatus(nextStatus);
