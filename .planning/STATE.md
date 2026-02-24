@@ -52,6 +52,7 @@ Progress: [████████████████████] 25/25 p
 | Phase 03-adhd-optimized-ux P07 | 4 | 1 tasks | 4 files |
 | Phase 03-adhd-optimized-ux P06 | 3 | 2 tasks | 6 files |
 | Phase 03-adhd-optimized-ux P09 | 2 | 2 tasks | 3 files |
+| Phase 03-adhd-optimized-ux P08 | 2 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -104,6 +105,9 @@ Recent decisions affecting current work:
 - [Phase 03-adhd-optimized-ux]: Custom DOM event 'taskbreaker:inline-create' decouples App Enter key handler from DayGroup inline create state
 - [Phase 03-adhd-optimized-ux]: isGemmaModel() helper using model.startsWith('gemma-') centralizes Gemma detection; system prompt prepended to user message for Gemma instead of systemInstruction config
 - [Phase 03-adhd-optimized-ux]: form.requestSubmit() used in TaskInlineCreate Enter handler — triggers native form validation and onSubmit correctly; visible 'Add' button chosen over sr-only for UX affordance
+- [Phase 03-adhd-optimized-ux]: Double-rAF pattern: nested requestAnimationFrame guarantees browser composites ring state before opacity-0 — single rAF can be coalesced
+- [Phase 03-adhd-optimized-ux]: STATUS_COLORS[displayStatus] instead of STATUS_COLORS[task.status] so background turns green immediately on click (optimistic), not amber/yellow during 1500ms DB write window
+- [Phase 03-adhd-optimized-ux]: setDepartingPhase(null) BEFORE db.tasks.update in 1500ms timeout — prevents Dexie liveQuery re-render from seeing opacity-0 component and causing disappear-reappear flash with show-completed on
 
 ### Pending Todos
 
@@ -120,6 +124,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-24 (Phase 03 Plan 09 complete — Gemma AI breakdown fix, inline create Enter submission, sticky form buttons)
-Stopped at: Completed 03-adhd-optimized-ux-09-PLAN.md
+Last session: 2026-02-24 (Phase 03 Plan 08 complete — Fixed celebration animation triple-bug: green background via displayStatus, double-rAF for visible fade, no disappear-reappear with show-completed)
+Stopped at: Completed 03-adhd-optimized-ux-08-PLAN.md
 Resume file: None
