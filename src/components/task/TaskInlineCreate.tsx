@@ -38,29 +38,31 @@ export function TaskInlineCreate({ date, onClose }: TaskInlineCreateProps) {
     inputRef.current?.focus();
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
     if (e.key === 'Escape') {
       onClose();
     }
     if (e.key === 'Enter') {
+      // Don't intercept Enter when category dropdown is open (it's selecting an item)
+      const target = e.target as HTMLElement;
+      const combobox = target.closest('[role="combobox"]');
+      if (combobox && combobox.getAttribute('aria-expanded') === 'true') {
+        return; // Let CategoryCombobox handle Enter for selection
+      }
       e.preventDefault();
       if (!title.trim()) return;
-      const form = inputRef.current?.closest('form');
-      if (form) {
-        form.requestSubmit();
-      }
+      (e.currentTarget as HTMLFormElement).requestSubmit();
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="px-4 py-2">
+    <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="px-4 py-2">
       <div className="flex gap-2">
         <input
           ref={inputRef}
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          onKeyDown={handleKeyDown}
           placeholder="Add a task... (Enter to create, Esc to close)"
           className="flex-[3] px-3 py-2 border border-blue-300 rounded-md text-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none bg-blue-50/50"
         />

@@ -110,7 +110,7 @@ export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (!isOpen) {
-      if (e.key === 'ArrowDown' || e.key === 'Enter') {
+      if (e.key === 'ArrowDown') {
         setIsOpen(true);
         e.preventDefault();
       }
