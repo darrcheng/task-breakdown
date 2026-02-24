@@ -1,9 +1,9 @@
 ---
-status: complete
+status: diagnosed
 phase: 03-adhd-optimized-ux
 source: 03-06-SUMMARY.md, 03-07-SUMMARY.md, 03-08-SUMMARY.md, 03-09-SUMMARY.md, 03-10-SUMMARY.md
 started: 2026-02-23T22:30:00Z
-updated: 2026-02-24T00:45:00Z
+updated: 2026-02-24T01:00:00Z
 ---
 
 ## Current Test
@@ -97,57 +97,89 @@ skipped: 0
   reason: "User reported: can the ring glow around the box fade out? so with the show completed on it isn't a sudden loss of the ring glow"
   severity: cosmetic
   test: 1
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "When departingPhase transitions from 'fade' to null, all ring and transition CSS classes are removed in one render — no transition exists to animate the ring removal. Need a 'settling' phase that keeps transition-all while removing ring classes."
+  artifacts:
+    - path: "src/components/list/TaskListItem.tsx"
+      issue: "setDepartingPhase(null) strips all animation classes instantly — lines 101-111, 124-132"
+  missing:
+    - "Add a settling phase that restores opacity-1 and removes ring classes while keeping transition-all, then set null after transition completes"
+  debug_session: ".planning/debug/ring-glow-abrupt-disappear.md"
 
 - truth: "Completing a subtask shows emerald ring glow + fade celebration animation"
   status: failed
   reason: "User reported: Nope the task still disappears"
   severity: major
   test: 2
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "CSS specificity conflict in Tailwind v4 — transition-colors (always-present base class) appears AFTER transition-all in generated CSS. Equal specificity + later position = transition-colors wins, overriding transition-property to exclude opacity and box-shadow. The 1500ms opacity fade never plays."
+  artifacts:
+    - path: "src/components/task/SubtaskList.tsx"
+      issue: "Base class has transition-colors; ring/fade phases add transition-all but it's overridden — lines 195-200"
+    - path: "src/components/list/TaskListItem.tsx"
+      issue: "Same pattern, same bug — lines 124-132"
+  missing:
+    - "Conditionally apply transition-colors only when NOT departing; let transition-all be sole transition class during animation"
+  debug_session: ".planning/debug/subtask-anim-css-conflict.md"
 
 - truth: "Enter after category selection in inline create submits the form"
   status: failed
   reason: "User reported: enter after category select reopens the selection instead of creating the task"
   severity: major
   test: 9
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "CategoryCombobox.handleKeyDown reopens dropdown on Enter when isOpen===false (line 113) and calls e.preventDefault() blocking form submission. Focus stays trapped in combobox after selection. Form-level Enter handler only bound to title input."
+  artifacts:
+    - path: "src/components/task/CategoryCombobox.tsx"
+      issue: "Enter reopens dropdown when closed (line 113); handleSelect doesn't move focus (lines 74-80)"
+    - path: "src/components/task/TaskInlineCreate.tsx"
+      issue: "handleKeyDown/requestSubmit only bound to title input, not form-level (line 63)"
+  missing:
+    - "Remove Enter from dropdown-reopen trigger in CategoryCombobox (keep ArrowDown only)"
+    - "Move Enter-to-submit handler to form level in TaskInlineCreate"
+  debug_session: ".planning/debug/enter-reopens-category-dropdown.md"
 
 - truth: "Task modal should not need explicit Save/Create buttons — auto-create on title entry"
   status: failed
   reason: "User reported: Why do we have the save button still? Why can't we autocreate once we type a task name in?"
   severity: minor
   test: 10
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Save button redundant because auto-save on Escape/backdrop is implemented. Create button triggers post-create edit flow (stays in modal for BreakdownButton). Removing both requires: (1) hide Save in edit mode, (2) add Enter-in-title to trigger create in new task mode."
+  artifacts:
+    - path: "src/components/task/TaskForm.tsx"
+      issue: "Actions div always renders Save/Cancel — lines 252-266"
+    - path: "src/components/task/TaskModal.tsx"
+      issue: "Auto-save already implemented but Save button still shown"
+  missing:
+    - "Hide Save/Cancel buttons in edit mode (auto-save handles persistence)"
+    - "Add Enter-in-title-field to trigger create for new tasks"
+  debug_session: ".planning/debug/auto-create-remove-save-btn.md"
 
 - truth: "Someday button in modal should be near calendar with shorter label"
   status: failed
   reason: "User reported: button should be by the calendar and just say Someday to take up less space"
   severity: cosmetic
   test: 11
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Someday button is in TaskModal (lines 259-268), outside TaskForm. DatePicker is inside TaskForm (lines 143-149). Need to pass onSendToSomeday callback into TaskForm and render button adjacent to DatePicker."
+  artifacts:
+    - path: "src/components/task/TaskModal.tsx"
+      issue: "Someday button at lines 259-268, far from date picker"
+    - path: "src/components/task/TaskForm.tsx"
+      issue: "DatePicker at lines 143-149, no Someday button nearby"
+  missing:
+    - "Pass onSendToSomeday prop to TaskForm, render compact 'Someday' button next to DatePicker"
+  debug_session: ".planning/debug/someday-button-placement.md"
 
 - truth: "List view has full feature parity with calendar view — subtask tree, AI breakdown"
   status: failed
   reason: "User reported: no subtask tree in list view, no AI breakdown in list view. List view should have all the same features as calendar view."
   severity: major
   test: 14
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "List view uses TaskInlineEdit (bare 46-line TaskForm wrapper) instead of TaskModal. handleTaskClickList in App.tsx is a no-op — clicking a task in list view opens inline edit, not modal. TaskInlineEdit has zero subtask/breakdown features."
+  artifacts:
+    - path: "src/App.tsx"
+      issue: "handleTaskClickList is a no-op (lines 140-143) — never opens TaskModal"
+    - path: "src/components/list/DayGroup.tsx"
+      issue: "Click handler opens TaskInlineEdit instead of TaskModal (line 94)"
+    - path: "src/components/task/TaskInlineEdit.tsx"
+      issue: "Missing all subtask/breakdown features — only wraps TaskForm"
+  missing:
+    - "Change list view to open TaskModal on task click (same as calendar view) for full feature parity"
+  debug_session: ".planning/debug/list-view-missing-subtask-breakdown.md"
