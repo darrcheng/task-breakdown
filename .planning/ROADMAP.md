@@ -108,9 +108,9 @@ Plans:
 - [x] 03-05-PLAN.md — UAT: end-to-end human verification of all Phase 3 features
 - [x] 03-06-PLAN.md — Gap closure: celebration animation CSS race, AI breakdown regression, Enter key inline create
 - [x] 03-07-PLAN.md — Gap closure: quick picker calendar UX, modal autosave, post-create edit view
-- [ ] 03-08-PLAN.md — Gap closure: celebration animation triple-fix (green bg, double-rAF, show-completed race)
-- [ ] 03-09-PLAN.md — Gap closure: Gemma systemInstruction fix, inline create submit, sticky form buttons
-- [ ] 03-10-PLAN.md — Gap closure: Someday buttons on all surfaces, subtask progress indicators
+- [x] 03-08-PLAN.md — Gap closure: celebration animation triple-fix (green bg, double-rAF, show-completed race)
+- [x] 03-09-PLAN.md — Gap closure: Gemma systemInstruction fix, inline create submit, sticky form buttons
+- [x] 03-10-PLAN.md — Gap closure: Someday buttons on all surfaces, subtask progress indicators
 
 ### Phase 4: Cross-Platform Expansion
 **Goal**: App works equally well on web browsers and mobile devices
