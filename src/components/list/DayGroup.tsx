@@ -4,7 +4,6 @@ import { format, parseISO } from 'date-fns';
 import { isToday } from '../../utils/dates';
 import { TaskListItem } from './TaskListItem';
 import { TaskInlineCreate } from '../task/TaskInlineCreate';
-import { TaskInlineEdit } from '../task/TaskInlineEdit';
 import { DraggableTask } from '../dnd/DraggableTask';
 import { DroppableDay } from '../dnd/DroppableDay';
 import type { Task, Category } from '../../types';
@@ -21,9 +20,9 @@ export function DayGroup({
   date,
   tasks,
   categoryMap,
+  onTaskClick,
 }: DayGroupProps) {
   const [isCreating, setIsCreating] = useState(false);
-  const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
 
   // Listen for Enter-key inline create event dispatched from App.tsx
   useEffect(() => {
@@ -79,23 +78,15 @@ export function DayGroup({
           }}
         >
           {tasks.length > 0 ? (
-            tasks.map((task) =>
-              editingTaskId === task.id ? (
-                <TaskInlineEdit
-                  key={task.id}
+            tasks.map((task) => (
+              <DraggableTask key={task.id} task={task}>
+                <TaskListItem
                   task={task}
-                  onClose={() => setEditingTaskId(null)}
+                  categoryMap={categoryMap}
+                  onClick={onTaskClick}
                 />
-              ) : (
-                <DraggableTask key={task.id} task={task}>
-                  <TaskListItem
-                    task={task}
-                    categoryMap={categoryMap}
-                    onClick={(t) => setEditingTaskId(t.id ?? null)}
-                  />
-                </DraggableTask>
-              )
-            )
+              </DraggableTask>
+            ))
           ) : (
             !isCreating && (
               <p className="text-sm text-slate-300 py-2 italic pointer-events-none">

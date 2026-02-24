@@ -137,9 +137,8 @@ function App() {
     setModalState({ isOpen: true, date: task.date, task, clickPosition });
   };
 
-  const handleTaskClickList = (_task: Task) => {
-    // List view: handled inline by DayGroup/TaskInlineEdit
-    // This is a no-op at App level for list view
+  const handleTaskClickList = (task: Task) => {
+    setModalState({ isOpen: true, date: task.date, task });
   };
 
   const closeModal = () => {
