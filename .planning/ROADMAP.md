@@ -98,7 +98,7 @@ Plans:
   3. User experiences satisfying celebration when completing tasks
   4. User sees gentle reschedule prompts for overdue tasks without guilt language
   5. User can identify the first subtask to start with visual highlighting
-**Plans**: 7 plans
+**Plans**: 10 plans
 
 Plans:
 - [x] 03-01-PLAN.md — Schema migration (energyLevel, timeEstimate, isSomeday), celebration animation, start-here highlighting
@@ -106,8 +106,11 @@ Plans:
 - [x] 03-03-PLAN.md — AI time estimation (provider method, background hook, badge display, override, calibration)
 - [x] 03-04-PLAN.md — Overdue banner, quick picker with bulk actions, Someday view
 - [x] 03-05-PLAN.md — UAT: end-to-end human verification of all Phase 3 features
-- [ ] 03-06-PLAN.md — Gap closure: celebration animation CSS race, AI breakdown regression, Enter key inline create
-- [ ] 03-07-PLAN.md — Gap closure: quick picker calendar UX, modal autosave, post-create edit view
+- [x] 03-06-PLAN.md — Gap closure: celebration animation CSS race, AI breakdown regression, Enter key inline create
+- [x] 03-07-PLAN.md — Gap closure: quick picker calendar UX, modal autosave, post-create edit view
+- [ ] 03-08-PLAN.md — Gap closure: celebration animation triple-fix (green bg, double-rAF, show-completed race)
+- [ ] 03-09-PLAN.md — Gap closure: Gemma systemInstruction fix, inline create submit, sticky form buttons
+- [ ] 03-10-PLAN.md — Gap closure: Someday buttons on all surfaces, subtask progress indicators
 
 ### Phase 4: Cross-Platform Expansion
 **Goal**: App works equally well on web browsers and mobile devices
@@ -125,7 +128,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -133,7 +136,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 01.1. UI Polish (gap closure) | 11/11 | Complete    | 2026-02-22 |
 | 2. AI Task Breakdown | 7/7 | Complete   | 2026-02-23 |
 | 02.1. Gemini Model Selector | 1/1 | Complete    | 2026-02-23 |
-| 3. ADHD-Optimized UX | 5/7 | Gap closure | - |
+| 3. ADHD-Optimized UX | 7/10 | Gap closure | - |
 | 4. Cross-Platform Expansion | 0/TBD | Not started | - |
 
 ---
