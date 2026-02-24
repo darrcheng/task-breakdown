@@ -98,7 +98,7 @@ Plans:
   3. User experiences satisfying celebration when completing tasks
   4. User sees gentle reschedule prompts for overdue tasks without guilt language
   5. User can identify the first subtask to start with visual highlighting
-**Plans**: 14 plans
+**Plans**: 16 plans
 
 Plans:
 - [x] 03-01-PLAN.md — Schema migration (energyLevel, timeEstimate, isSomeday), celebration animation, start-here highlighting
@@ -115,6 +115,8 @@ Plans:
 - [ ] 03-12-PLAN.md — Gap closure: Enter-key form submission after category selection
 - [ ] 03-13-PLAN.md — Gap closure: remove Save/Cancel in edit mode, move Someday button near DatePicker
 - [ ] 03-14-PLAN.md — Gap closure: list view opens TaskModal for full feature parity
+- [ ] 03-15-PLAN.md — Gap closure: subtask celebration animation (remove opacity-0, use bg-emerald-50)
+- [ ] 03-16-PLAN.md — Gap closure: category reset after inline create, Someday label rename, auto-close on dismiss-create
 
 ### Phase 4: Cross-Platform Expansion
 **Goal**: App works equally well on web browsers and mobile devices
@@ -140,9 +142,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | 01.1. UI Polish (gap closure) | 11/11 | Complete    | 2026-02-22 |
 | 2. AI Task Breakdown | 7/7 | Complete   | 2026-02-23 |
 | 02.1. Gemini Model Selector | 1/1 | Complete    | 2026-02-23 |
-| 3. ADHD-Optimized UX | 14/14 | Complete   | 2026-02-24 |
+| 3. ADHD-Optimized UX | 14/16 | Gap closure   | - |
 | 4. Cross-Platform Expansion | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-05*
-*Last updated: 2026-02-24*
+*Last updated: 2026-02-23*
