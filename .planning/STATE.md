@@ -54,6 +54,7 @@ Progress: [████████████████████] 25/25 p
 | Phase 03-adhd-optimized-ux P09 | 2 | 2 tasks | 3 files |
 | Phase 03-adhd-optimized-ux P08 | 2 | 2 tasks | 2 files |
 | Phase 03-adhd-optimized-ux P10 | 2 | 2 tasks | 3 files |
+| Phase 03-adhd-optimized-ux P12 | 5 | 1 tasks | 2 files |
 | Phase 03-adhd-optimized-ux P14 | 1 | 1 tasks | 2 files |
 
 ## Accumulated Context
@@ -114,6 +115,8 @@ Recent decisions affecting current work:
 - [Phase 03-adhd-optimized-ux]: useSubtasks(task.id ?? 0) pattern — 0 fallback returns empty array safely; subtask badge shown only when count > 0
 - [Phase 03-adhd-optimized-ux]: handleTaskClickList calls setModalState without clickPosition — uses centered modal positioning for list view (no-op replaced)
 - [Phase 03-adhd-optimized-ux]: DayGroup delegates onTaskClick prop directly to TaskListItem.onClick — removed editingTaskId state and TaskInlineEdit for list view modal parity
+- [Phase 03-adhd-optimized-ux P12]: CategoryCombobox !isOpen branch: only ArrowDown reopens dropdown — Enter propagates to form for submission
+- [Phase 03-adhd-optimized-ux P12]: Form-level onKeyDown on TaskInlineCreate with aria-expanded gate delegates Enter to CategoryCombobox when open, submits form when closed
 
 ### Pending Todos
 
@@ -130,6 +133,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-24 (Phase 03 Plan 14 complete — List view task clicks open TaskModal, full feature parity with calendar view)
-Stopped at: Completed 03-adhd-optimized-ux-14-PLAN.md
+Last session: 2026-02-23 (Phase 03 Plan 12 gap closure — Enter key after category selection now submits inline create form)
+Stopped at: Completed 03-adhd-optimized-ux-12-PLAN.md
 Resume file: None
