@@ -147,6 +147,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-24 (Phase 03 Plan 15 gap closure — SubtaskRow celebration animation fix: opacity-0 replaced with bg-emerald-50 so subtask stays visible throughout animation)
-Stopped at: Completed 03-adhd-optimized-ux-15-PLAN.md
+Last session: 2026-02-24 (Phase 03 Plan 16 gap closure — category reset after inline create, Someday button renamed to "Save for Someday", modal auto-close on dismiss-triggered create)
+Stopped at: Completed 03-adhd-optimized-ux-16-PLAN.md
 Resume file: None
