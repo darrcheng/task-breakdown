@@ -1,5 +1,5 @@
 ---
-status: complete
+status: diagnosed
 phase: 03-adhd-optimized-ux
 source: 03-01-SUMMARY.md, 03-02-SUMMARY.md, 03-03-SUMMARY.md, 03-04-SUMMARY.md, 03-06-SUMMARY.md, 03-07-SUMMARY.md
 started: 2026-02-23T23:30:00Z
@@ -106,61 +106,103 @@ skipped: 0
   reason: "User reported: There is no fade, it just disappears without a fade. Also, the background of the box is still yellow when the fade ends. Shouldn't it turn green?"
   severity: major
   test: 1
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Two issues: (1) STATUS_COLORS[task.status] uses DB prop not local displayStatus — background stays yellow during animation. (2) Single requestAnimationFrame unreliable — opacity-0 applied in same compositor frame as ring classes, no CSS transition fires."
+  artifacts:
+    - path: "src/components/list/TaskListItem.tsx"
+      issue: "Line 39: STATUS_COLORS[task.status] should be STATUS_COLORS[displayStatus]. Lines 31-36: single rAF unreliable, needs double rAF."
+  missing:
+    - "Use STATUS_COLORS[displayStatus] for immediate green background on complete"
+    - "Double requestAnimationFrame to guarantee paint between ring and fade phases"
+  debug_session: ".planning/debug/celebration-anim-still-broken.md"
 - truth: "Completing a subtask shows emerald ring glow then fade animation"
   status: failed
   reason: "User reported: No animation, it just disappears. Perhaps this is to do with the filter that all done tasks are not shown? Also my subtasks are no longer displayed on the calendar. Subtasks are still not displayed in list view"
   severity: major
   test: 2
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Same single-rAF timing bug as TaskListItem. SubtaskList only rendered inside TaskModal — not shown inline in TaskCard or TaskListItem."
+  artifacts:
+    - path: "src/components/task/SubtaskList.tsx"
+      issue: "Lines 104-111: single rAF unreliable, needs double rAF"
+    - path: "src/components/task/TaskCard.tsx"
+      issue: "No subtask rendering — SubtaskList only in TaskModal"
+    - path: "src/components/list/TaskListItem.tsx"
+      issue: "No subtask rendering inline"
+  missing:
+    - "Double rAF in SubtaskList departure animation"
+    - "Add subtask count/progress indicator to TaskCard and TaskListItem"
+  debug_session: ".planning/debug/celebration-anim-still-broken.md"
 - truth: "Completed task transitions to done state when show-completed is on"
   status: failed
   reason: "User reported: the celebration animation happens then it disappears then reappears. this makes no sense. it should just transition to the final done state"
   severity: major
   test: 3
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Dexie liveQuery re-render races with local state reset. DB write triggers re-render with departingPhase still 'fade' (invisible), then setDepartingPhase(null) fires and element pops back visible."
+  artifacts:
+    - path: "src/components/list/TaskListItem.tsx"
+      issue: "Lines 84-91: setDepartingPhase(null) fires after DB write triggers Dexie re-render — element disappears then reappears"
+  missing:
+    - "When showCompleted=true, skip fade-to-invisible and transition to done color scheme instead"
+    - "Or reset departingPhase before DB write so component is in final state when Dexie re-renders"
+  debug_session: ".planning/debug/celebration-anim-still-broken.md"
 - truth: "Users can send any task to Someday from calendar/list view"
   status: failed
   reason: "User reported: Can't send a task to someday. We should have a button on the calendar or next to the calendar that does that. I don't think it needs to be overdue to send to someday"
   severity: major
   test: 12
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Send-to-Someday action only exists in OverdueQuickPicker. Never added to TaskModal, TaskListItem, or TaskCard. Missing feature, not regression."
+  artifacts:
+    - path: "src/components/task/TaskModal.tsx"
+      issue: "No someday/archive button"
+    - path: "src/components/list/TaskListItem.tsx"
+      issue: "No someday/archive button"
+    - path: "src/components/overdue/OverdueQuickPicker.tsx"
+      issue: "Has the working pattern: db.tasks.update(task.id!, { isSomeday: true })"
+  missing:
+    - "Add Archive button to TaskModal (near delete/breakdown area)"
+    - "Add Archive quick-action button to TaskListItem"
+  debug_session: ".planning/debug/no-someday-button-on-task-cards.md"
 - truth: "AI breakdown generates subtasks for the selected model"
   status: failed
   reason: "User reported: error - Developer instruction is not enabled for models/gemma-3-27b-it"
   severity: blocker
   test: 13
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "GeminiProvider.generateSubtasks() unconditionally passes systemInstruction in API config (line 58). Gemma models (gemma-3-12b-it, gemma-3-27b-it) don't support systemInstruction. testConnection() doesn't use systemInstruction so gives false confidence."
+  artifacts:
+    - path: "src/ai/providers/gemini.ts"
+      issue: "Line 58: systemInstruction sent unconditionally — fails for Gemma models"
+    - path: "src/types/index.ts"
+      issue: "Both Gemma model IDs offered with no warning about limitations"
+  missing:
+    - "Detect Gemma models (model.startsWith('gemma-')) and prepend system prompt to user message instead of using systemInstruction"
+    - "Update testConnection() to test with system instruction for accurate validation"
+  debug_session: ".planning/debug/gemma-system-instruction-400.md"
 - truth: "New task creation modal has a save button and stays open in edit view after save"
   status: failed
   reason: "User reported: There is no save button when first creating the task."
   severity: major
   test: 14
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Create button IS rendered but pushed below visible area. TaskModal applies maxHeight:700px when opened via calendar click. 7-section form + modal chrome exceeds viewport, button requires scrolling."
+  artifacts:
+    - path: "src/components/task/TaskModal.tsx"
+      issue: "Line 185: maxHeight:700px clips form actions below fold"
+    - path: "src/components/task/TaskForm.tsx"
+      issue: "Action buttons not sticky — scroll past viewport edge"
+  missing:
+    - "Make action buttons sticky at bottom of modal form"
+    - "Or reduce form section spacing to fit within maxHeight"
+  debug_session: ".planning/debug/save-btn-and-inline-create.md"
 - truth: "Enter key inline create in list view submits the new task"
   status: failed
   reason: "User reported: Pressing enter allows me to create an item, but there's no way to actually create it. pressing enter doesn't keep it neither is there a button"
   severity: major
   test: 16
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "TaskInlineCreate form has TWO text inputs (title + CategoryCombobox) but ZERO submit buttons. HTML spec blocks implicit form submission when multiple text inputs exist without a submit button."
+  artifacts:
+    - path: "src/components/task/TaskInlineCreate.tsx"
+      issue: "No <button type='submit'> in form, and no onKeyDown Enter handler on title input"
+    - path: "src/components/task/CategoryCombobox.tsx"
+      issue: "Second text input in form blocks implicit submission; Enter is intercepted by e.preventDefault()"
+  missing:
+    - "Add submit button to TaskInlineCreate (visible or sr-only)"
+    - "Add explicit Enter keydown handler on title input to call handleSubmit"
+  debug_session: ".planning/debug/save-btn-and-inline-create.md"
