@@ -23,20 +23,32 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
   const [departingPhase, setDepartingPhase] = useState<'ring' | 'fade' | null>(null);
   const [displayStatus, setDisplayStatus] = useState<TaskStatus>(task.status);
   const departureTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const innerRafRef = useRef<number | null>(null);
 
   const departing = departingPhase !== null;
 
-  // Two-frame animation: ring phase → requestAnimationFrame → fade phase
+  // Two-frame animation: ring phase → double-rAF → fade phase
+  // Double-rAF guarantees browser paints the ring state before applying opacity-0
   useEffect(() => {
     if (departingPhase === 'ring') {
       const rafId = requestAnimationFrame(() => {
-        setDepartingPhase('fade');
+        const innerRafId = requestAnimationFrame(() => {
+          setDepartingPhase('fade');
+        });
+        innerRafRef.current = innerRafId;
       });
-      return () => cancelAnimationFrame(rafId);
+      return () => {
+        cancelAnimationFrame(rafId);
+        if (innerRafRef.current !== null) {
+          cancelAnimationFrame(innerRafRef.current);
+        }
+      };
     }
   }, [departingPhase]);
 
-  const colors = STATUS_COLORS[task.status];
+  // Fix: use displayStatus so background turns green immediately at click time,
+  // not amber/yellow (task.status still reflects DB state during 1500ms window)
+  const colors = STATUS_COLORS[displayStatus];
   const category = categoryMap?.get(task.categoryId);
   const IconComponent = category
     ? CATEGORY_ICONS[category.icon]
@@ -82,12 +94,15 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
       setDepartingPhase('ring');
       setDisplayStatus('done');
       departureTimeout.current = setTimeout(async () => {
+        departureTimeout.current = null;
+        // Reset FIRST so component shows green done state if show-completed is on.
+        // Prevents Dexie liveQuery re-render from finding component with opacity-0
+        // and causing a disappear-then-reappear flash.
+        setDepartingPhase(null);
         await db.tasks.update(task.id!, {
           status: 'done',
           updatedAt: new Date(),
         });
-        departureTimeout.current = null;
-        setDepartingPhase(null);
       }, 1500);
     } else {
       setDisplayStatus(nextStatus);
