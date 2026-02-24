@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, Clock, Pencil, Archive } from 'lucide-react';
+import { ChevronLeft, Clock, Pencil } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/database';
 import { useCategoryMap } from '../../db/hooks';
@@ -254,18 +254,9 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
           onCancel={onClose}
           onDelete={currentTask?.id ? handleDelete : undefined}
           submitLabel={currentTask?.id ? 'Save' : 'Create'}
+          isEditing={isEditing}
+          onSendToSomeday={isEditing ? handleSendToSomeday : undefined}
         />
-
-        {/* Send to Someday — only for saved tasks */}
-        {isEditing && currentTask && (
-          <button
-            onClick={handleSendToSomeday}
-            className="mt-3 flex items-center gap-2 text-sm text-amber-600 hover:text-amber-700 hover:bg-amber-50 px-3 py-1.5 rounded-md transition-colors w-full"
-          >
-            <Archive className="w-4 h-4" />
-            Send to Someday
-          </button>
-        )}
 
         {/* Time estimate display — shown for saved tasks with an estimate */}
         {isEditing && currentTask && (() => {

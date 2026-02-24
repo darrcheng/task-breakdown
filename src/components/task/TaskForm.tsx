@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
-import { Trash2, Battery, BatteryMedium, Zap } from 'lucide-react';
+import { Trash2, Battery, BatteryMedium, Zap, Archive } from 'lucide-react';
 import clsx from 'clsx';
 import { STATUS_COLORS } from '../../utils/categories';
 import { CategoryCombobox } from './CategoryCombobox';
@@ -24,6 +24,8 @@ interface TaskFormProps {
   onCancel: () => void;
   onDelete?: () => void;
   submitLabel?: string;
+  isEditing?: boolean;
+  onSendToSomeday?: () => void;
 }
 
 const ENERGY_OPTIONS: { value: EnergyLevel; label: string; icon: typeof Battery; selected: string; unselected: string }[] = [
@@ -58,6 +60,8 @@ export const TaskForm = forwardRef<TaskFormHandle, TaskFormProps>(function TaskF
     onCancel,
     onDelete,
     submitLabel = 'Save',
+    isEditing = false,
+    onSendToSomeday,
   },
   ref
 ) {
@@ -134,6 +138,14 @@ export const TaskForm = forwardRef<TaskFormHandle, TaskFormProps>(function TaskF
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !isEditing) {
+              e.preventDefault();
+              if (title.trim()) {
+                onSubmit({ title: title.trim(), description, status, categoryId, date, energyLevel });
+              }
+            }
+          }}
           placeholder="What needs to be done?"
           className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none"
           required
@@ -146,6 +158,16 @@ export const TaskForm = forwardRef<TaskFormHandle, TaskFormProps>(function TaskF
           Date
         </label>
         <DatePicker value={date} onChange={setDate} required />
+        {onSendToSomeday && (
+          <button
+            type="button"
+            onClick={onSendToSomeday}
+            className="mt-1 flex items-center gap-1.5 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50 px-2 py-1 rounded-md transition-colors"
+          >
+            <Archive className="w-3.5 h-3.5" />
+            Someday
+          </button>
+        )}
       </div>
 
       {/* Status */}
@@ -231,40 +253,44 @@ export const TaskForm = forwardRef<TaskFormHandle, TaskFormProps>(function TaskF
         />
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center justify-between pt-3 pb-1 sticky bottom-0 bg-white border-t border-slate-100 -mx-6 px-6 mt-2">
-        <div>
-          {onDelete && (
-            <button
-              type="button"
-              onClick={handleDelete}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                confirmDelete
-                  ? 'bg-red-600 text-white hover:bg-red-700'
-                  : 'text-red-600 hover:bg-red-50'
-              }`}
-            >
-              <Trash2 className="w-4 h-4" />
-              {confirmDelete ? 'Click to confirm' : 'Delete'}
-            </button>
+      {/* Actions — hidden entirely in edit mode when there's no delete button */}
+      {(!isEditing || onDelete) && (
+        <div className="flex items-center justify-between pt-3 pb-1 sticky bottom-0 bg-white border-t border-slate-100 -mx-6 px-6 mt-2">
+          <div>
+            {onDelete && (
+              <button
+                type="button"
+                onClick={handleDelete}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                  confirmDelete
+                    ? 'bg-red-600 text-white hover:bg-red-700'
+                    : 'text-red-600 hover:bg-red-50'
+                }`}
+              >
+                <Trash2 className="w-4 h-4" />
+                {confirmDelete ? 'Click to confirm' : 'Delete'}
+              </button>
+            )}
+          </div>
+          {!isEditing && (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onCancel}
+                className="px-4 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-md transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+              >
+                {submitLabel}
+              </button>
+            </div>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-md transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="px-4 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
-          >
-            {submitLabel}
-          </button>
-        </div>
-      </div>
+      )}
     </form>
   );
 });
