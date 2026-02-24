@@ -103,7 +103,7 @@ function SubtaskRow({
   const departing = departingPhase !== null;
 
   // Two-frame animation: ring phase → double-rAF → fade phase
-  // Double-rAF guarantees browser paints the ring state before applying opacity-0
+  // Double-rAF guarantees browser paints the ring state before applying bg-emerald-50
   useEffect(() => {
     if (departingPhase === 'ring') {
       const rafId = requestAnimationFrame(() => {

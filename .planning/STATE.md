@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 Phase: 3 of 4 (ADHD-Optimized UX)
 Plan: 5 of 5 complete
 Status: Phase 3 Complete
-Last activity: 2026-02-24 — Phase 03 Plan 14 complete. List view task clicks now open TaskModal for full feature parity (subtask tree, AI breakdown, time estimates).
+Last activity: 2026-02-24 — Phase 03 Plan 15 complete. SubtaskRow celebration animation fixed: opacity-0 replaced with bg-emerald-50 so subtask stays visible throughout ring glow + green background animation.
 
 Progress: [████████████████████] 25/25 plans (100%)
 
@@ -60,6 +60,7 @@ Progress: [████████████████████] 25/25 p
 | Phase 03-adhd-optimized-ux P13 | 2 | 1 tasks | 2 files |
 | Phase 03-adhd-optimized-ux P17 | 2 | 1 tasks | 1 files |
 | Phase 03-adhd-optimized-ux P15 | 1 | 1 tasks | 1 files |
+| Phase 03-adhd-optimized-ux P16 | 2 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -128,6 +129,8 @@ Recent decisions affecting current work:
 - [Phase 03-adhd-optimized-ux]: Enter-to-create guard \!isEditing prevents accidental submission while editing existing tasks
 - [Phase 03-adhd-optimized-ux]: Removed !t.parentId from useTasksByDate and useTasksByDateRange so subtasks with a date appear in calendar and list views; preserved !t.parentId in useOverdueTasks and useSomedayTasks
 - [Phase 03-adhd-optimized-ux]: Replace opacity-0 with bg-emerald-50 in SubtaskRow fade phase — subtasks never leave the tree so opacity-0 causes visible disappear-then-reappear glitch
+- [Phase 03-adhd-optimized-ux]: closingRef pattern in TaskModal: useRef(false) flag set before formRef.current?.submit() in backdrop/Escape handlers; async handleSubmit checks it after DB write to decide close vs stay
+- [Phase 03-adhd-optimized-ux]: Someday button renamed 'Save for Someday' in TaskForm for UAT clarity; setCategoryId(0) reset after inline create for rapid multi-task entry
 
 ### Pending Todos
 
@@ -144,6 +147,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-24 (Phase 03 Plan 17 gap closure — restored subtask visibility in calendar and list views by removing !t.parentId from date query hooks)
-Stopped at: Completed 03-adhd-optimized-ux-17-PLAN.md
+Last session: 2026-02-24 (Phase 03 Plan 15 gap closure — SubtaskRow celebration animation fix: opacity-0 replaced with bg-emerald-50 so subtask stays visible throughout animation)
+Stopped at: Completed 03-adhd-optimized-ux-15-PLAN.md
 Resume file: None
