@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 Phase: 3 of 4 (ADHD-Optimized UX)
 Plan: 5 of 5 complete
 Status: Phase 3 Complete
-Last activity: 2026-02-23 — Phase 03 Plan 06 complete. Two-frame rAF departure animation CSS race fix, AI breakdown stale isConfigured race fix, Enter key inline create in list view.
+Last activity: 2026-02-24 — Phase 03 Plan 10 complete. Send-to-Someday buttons on TaskModal and TaskListItem, subtask progress indicators on TaskCard and TaskListItem.
 
 Progress: [████████████████████] 25/25 plans (100%)
 
@@ -53,6 +53,7 @@ Progress: [████████████████████] 25/25 p
 | Phase 03-adhd-optimized-ux P06 | 3 | 2 tasks | 6 files |
 | Phase 03-adhd-optimized-ux P09 | 2 | 2 tasks | 3 files |
 | Phase 03-adhd-optimized-ux P08 | 2 | 2 tasks | 2 files |
+| Phase 03-adhd-optimized-ux P10 | 2 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -108,6 +109,8 @@ Recent decisions affecting current work:
 - [Phase 03-adhd-optimized-ux]: Double-rAF pattern: nested requestAnimationFrame guarantees browser composites ring state before opacity-0 — single rAF can be coalesced
 - [Phase 03-adhd-optimized-ux]: STATUS_COLORS[displayStatus] instead of STATUS_COLORS[task.status] so background turns green immediately on click (optimistic), not amber/yellow during 1500ms DB write window
 - [Phase 03-adhd-optimized-ux]: setDepartingPhase(null) BEFORE db.tasks.update in 1500ms timeout — prevents Dexie liveQuery re-render from seeing opacity-0 component and causing disappear-reappear flash with show-completed on
+- [Phase 03-adhd-optimized-ux]: Someday button in TaskModal placed between form and time estimate, visible only for saved tasks; list item uses group-hover with stopPropagation
+- [Phase 03-adhd-optimized-ux]: useSubtasks(task.id ?? 0) pattern — 0 fallback returns empty array safely; subtask badge shown only when count > 0
 
 ### Pending Todos
 
@@ -124,6 +127,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-24 (Phase 03 Plan 08 complete — Fixed celebration animation triple-bug: green background via displayStatus, double-rAF for visible fade, no disappear-reappear with show-completed)
-Stopped at: Completed 03-adhd-optimized-ux-08-PLAN.md
+Last session: 2026-02-24 (Phase 03 Plan 10 complete — Send-to-Someday buttons on TaskModal and TaskListItem, subtask count/progress indicators on TaskCard and TaskListItem)
+Stopped at: Completed 03-adhd-optimized-ux-10-PLAN.md
 Resume file: None

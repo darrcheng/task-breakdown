@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Local-First Foundation** - Core task management with calendar view (completed 2026-02-22)
 - [x] **Phase 2: AI Task Breakdown** - AI-powered subtask generation with controls (completed 2026-02-23)
-- [ ] **Phase 3: ADHD-Optimized UX** - Energy tracking and gentle reschedule prompts (gap closure in progress)
+- [x] **Phase 3: ADHD-Optimized UX** - Energy tracking and gentle reschedule prompts (gap closure in progress) (completed 2026-02-24)
 - [ ] **Phase 4: Cross-Platform Expansion** - Full web and mobile parity
 
 ## Phase Details
@@ -136,7 +136,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | 01.1. UI Polish (gap closure) | 11/11 | Complete    | 2026-02-22 |
 | 2. AI Task Breakdown | 7/7 | Complete   | 2026-02-23 |
 | 02.1. Gemini Model Selector | 1/1 | Complete    | 2026-02-23 |
-| 3. ADHD-Optimized UX | 9/10 | In Progress|  |
+| 3. ADHD-Optimized UX | 10/10 | Complete   | 2026-02-24 |
 | 4. Cross-Platform Expansion | 0/TBD | Not started | - |
 
 ---
