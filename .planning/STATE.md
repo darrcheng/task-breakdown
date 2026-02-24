@@ -51,6 +51,7 @@ Progress: [████████████████████] 25/25 p
 | Phase 03-adhd-optimized-ux P05 | 2 | 1 tasks | 0 files |
 | Phase 03-adhd-optimized-ux P07 | 4 | 1 tasks | 4 files |
 | Phase 03-adhd-optimized-ux P06 | 3 | 2 tasks | 6 files |
+| Phase 03-adhd-optimized-ux P09 | 2 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -101,6 +102,8 @@ Recent decisions affecting current work:
 - [Phase 03-adhd-optimized-ux]: Two-frame rAF animation: departingPhase splits CSS transition into ring-first then opacity-0 to prevent paint-frame race
 - [Phase 03-adhd-optimized-ux]: getProvider() direct check in startBreakdown replaces stale isConfigured React state guard
 - [Phase 03-adhd-optimized-ux]: Custom DOM event 'taskbreaker:inline-create' decouples App Enter key handler from DayGroup inline create state
+- [Phase 03-adhd-optimized-ux]: isGemmaModel() helper using model.startsWith('gemma-') centralizes Gemma detection; system prompt prepended to user message for Gemma instead of systemInstruction config
+- [Phase 03-adhd-optimized-ux]: form.requestSubmit() used in TaskInlineCreate Enter handler — triggers native form validation and onSubmit correctly; visible 'Add' button chosen over sr-only for UX affordance
 
 ### Pending Todos
 
@@ -117,6 +120,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-23 (Phase 03 Plan 06 complete — celebration animation CSS race fix, AI breakdown stale state fix, Enter key inline create)
-Stopped at: Completed 03-adhd-optimized-ux-06-PLAN.md
+Last session: 2026-02-24 (Phase 03 Plan 09 complete — Gemma AI breakdown fix, inline create Enter submission, sticky form buttons)
+Stopped at: Completed 03-adhd-optimized-ux-09-PLAN.md
 Resume file: None
