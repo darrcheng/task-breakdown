@@ -58,6 +58,8 @@ Progress: [████████████████████] 25/25 p
 | Phase 03-adhd-optimized-ux P12 | 5 | 1 tasks | 2 files |
 | Phase 03-adhd-optimized-ux P14 | 1 | 1 tasks | 2 files |
 | Phase 03-adhd-optimized-ux P13 | 2 | 1 tasks | 2 files |
+| Phase 03-adhd-optimized-ux P17 | 2 | 1 tasks | 1 files |
+| Phase 03-adhd-optimized-ux P15 | 1 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -124,6 +126,8 @@ Recent decisions affecting current work:
 - [Phase 03-adhd-optimized-ux]: Actions bar hidden entirely in edit mode when onDelete is not provided — avoids empty sticky bar at form bottom
 - [Phase 03-adhd-optimized-ux]: Someday button moved inside TaskForm near DatePicker with shorter label 'Someday' vs 'Send to Someday'
 - [Phase 03-adhd-optimized-ux]: Enter-to-create guard \!isEditing prevents accidental submission while editing existing tasks
+- [Phase 03-adhd-optimized-ux]: Removed !t.parentId from useTasksByDate and useTasksByDateRange so subtasks with a date appear in calendar and list views; preserved !t.parentId in useOverdueTasks and useSomedayTasks
+- [Phase 03-adhd-optimized-ux]: Replace opacity-0 with bg-emerald-50 in SubtaskRow fade phase — subtasks never leave the tree so opacity-0 causes visible disappear-then-reappear glitch
 
 ### Pending Todos
 
@@ -140,6 +144,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-24 (Phase 03 Plan 11 gap closure — celebration animation CSS specificity fix and settling phase for smooth ring fade-out in TaskListItem and SubtaskRow)
-Stopped at: Completed 03-adhd-optimized-ux-11-PLAN.md
+Last session: 2026-02-24 (Phase 03 Plan 17 gap closure — restored subtask visibility in calendar and list views by removing !t.parentId from date query hooks)
+Stopped at: Completed 03-adhd-optimized-ux-17-PLAN.md
 Resume file: None
