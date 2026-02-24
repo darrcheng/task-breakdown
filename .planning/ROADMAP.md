@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Local-First Foundation** - Core task management with calendar view (completed 2026-02-22)
 - [x] **Phase 2: AI Task Breakdown** - AI-powered subtask generation with controls (completed 2026-02-23)
-- [x] **Phase 3: ADHD-Optimized UX** - Energy tracking and gentle reschedule prompts (gap closure in progress) (completed 2026-02-24)
+- [ ] **Phase 3: ADHD-Optimized UX** - Energy tracking and gentle reschedule prompts (gap closure in progress)
 - [ ] **Phase 4: Cross-Platform Expansion** - Full web and mobile parity
 
 ## Phase Details
@@ -98,7 +98,7 @@ Plans:
   3. User experiences satisfying celebration when completing tasks
   4. User sees gentle reschedule prompts for overdue tasks without guilt language
   5. User can identify the first subtask to start with visual highlighting
-**Plans**: 10 plans
+**Plans**: 14 plans
 
 Plans:
 - [x] 03-01-PLAN.md — Schema migration (energyLevel, timeEstimate, isSomeday), celebration animation, start-here highlighting
@@ -111,6 +111,10 @@ Plans:
 - [x] 03-08-PLAN.md — Gap closure: celebration animation triple-fix (green bg, double-rAF, show-completed race)
 - [x] 03-09-PLAN.md — Gap closure: Gemma systemInstruction fix, inline create submit, sticky form buttons
 - [x] 03-10-PLAN.md — Gap closure: Someday buttons on all surfaces, subtask progress indicators
+- [ ] 03-11-PLAN.md — Gap closure: CSS transition specificity fix, ring glow settling phase
+- [ ] 03-12-PLAN.md — Gap closure: Enter-key form submission after category selection
+- [ ] 03-13-PLAN.md — Gap closure: remove Save/Cancel in edit mode, move Someday button near DatePicker
+- [ ] 03-14-PLAN.md — Gap closure: list view opens TaskModal for full feature parity
 
 ### Phase 4: Cross-Platform Expansion
 **Goal**: App works equally well on web browsers and mobile devices
@@ -136,9 +140,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | 01.1. UI Polish (gap closure) | 11/11 | Complete    | 2026-02-22 |
 | 2. AI Task Breakdown | 7/7 | Complete   | 2026-02-23 |
 | 02.1. Gemini Model Selector | 1/1 | Complete    | 2026-02-23 |
-| 3. ADHD-Optimized UX | 10/10 | Complete   | 2026-02-24 |
+| 3. ADHD-Optimized UX | 10/14 | Gap closure   | - |
 | 4. Cross-Platform Expansion | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-05*
-*Last updated: 2026-02-23*
+*Last updated: 2026-02-24*
