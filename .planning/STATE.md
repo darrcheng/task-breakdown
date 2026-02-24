@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 Phase: 3 of 4 (ADHD-Optimized UX)
 Plan: 5 of 5 complete
 Status: Phase 3 Complete
-Last activity: 2026-02-24 — Phase 03 Plan 10 complete. Send-to-Someday buttons on TaskModal and TaskListItem, subtask progress indicators on TaskCard and TaskListItem.
+Last activity: 2026-02-24 — Phase 03 Plan 14 complete. List view task clicks now open TaskModal for full feature parity (subtask tree, AI breakdown, time estimates).
 
 Progress: [████████████████████] 25/25 plans (100%)
 
@@ -54,6 +54,7 @@ Progress: [████████████████████] 25/25 p
 | Phase 03-adhd-optimized-ux P09 | 2 | 2 tasks | 3 files |
 | Phase 03-adhd-optimized-ux P08 | 2 | 2 tasks | 2 files |
 | Phase 03-adhd-optimized-ux P10 | 2 | 2 tasks | 3 files |
+| Phase 03-adhd-optimized-ux P14 | 1 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -111,6 +112,8 @@ Recent decisions affecting current work:
 - [Phase 03-adhd-optimized-ux]: setDepartingPhase(null) BEFORE db.tasks.update in 1500ms timeout — prevents Dexie liveQuery re-render from seeing opacity-0 component and causing disappear-reappear flash with show-completed on
 - [Phase 03-adhd-optimized-ux]: Someday button in TaskModal placed between form and time estimate, visible only for saved tasks; list item uses group-hover with stopPropagation
 - [Phase 03-adhd-optimized-ux]: useSubtasks(task.id ?? 0) pattern — 0 fallback returns empty array safely; subtask badge shown only when count > 0
+- [Phase 03-adhd-optimized-ux]: handleTaskClickList calls setModalState without clickPosition — uses centered modal positioning for list view (no-op replaced)
+- [Phase 03-adhd-optimized-ux]: DayGroup delegates onTaskClick prop directly to TaskListItem.onClick — removed editingTaskId state and TaskInlineEdit for list view modal parity
 
 ### Pending Todos
 
@@ -127,6 +130,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-24 (Phase 03 Plan 10 complete — Send-to-Someday buttons on TaskModal and TaskListItem, subtask count/progress indicators on TaskCard and TaskListItem)
-Stopped at: Completed 03-adhd-optimized-ux-10-PLAN.md
+Last session: 2026-02-24 (Phase 03 Plan 14 complete — List view task clicks open TaskModal, full feature parity with calendar view)
+Stopped at: Completed 03-adhd-optimized-ux-14-PLAN.md
 Resume file: None
