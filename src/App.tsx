@@ -15,6 +15,7 @@ import { DndProvider } from './components/dnd/DndProvider';
 import { OverdueQuickPicker } from './components/overdue/OverdueQuickPicker';
 import { SomedayView } from './components/overdue/SomedayView';
 import { MobileLayout } from './components/mobile/MobileLayout';
+import { MobileCalendarView } from './components/mobile/MobileCalendarView';
 import { useCategoryMap, useTaskCount, useOverdueTasks } from './db/hooks';
 import { useSettings } from './hooks/useSettings';
 import { useIsMobile } from './hooks/useMediaQuery';
@@ -193,14 +194,11 @@ function App() {
           ) : (
             <DndProvider categoryMap={categoryMap}>
               {viewMode === 'calendar' ? (
-                /* Mobile calendar — WeekView as placeholder, replaced by MobileCalendarView in Plan 03 */
-                <WeekView
-                  currentDate={currentMonth}
+                <MobileCalendarView
                   showCompleted={showCompleted}
                   categoryMap={categoryMap}
-                  onDayClick={handleDayClick}
-                  onTaskClick={handleTaskClickCalendar}
-                  weekStartsOn={settings.weekStartsOn}
+                  onTaskClick={(task) => handleTaskClickList(task)}
+                  onAddTask={(date) => setModalState({ isOpen: true, date })}
                   energyFilter={energyFilter}
                 />
               ) : (
