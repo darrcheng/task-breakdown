@@ -4,6 +4,7 @@ import { Battery, BatteryMedium, Zap, Archive, ListTree } from 'lucide-react';
 import clsx from 'clsx';
 import { CATEGORY_ICONS, STATUS_COLORS, getNextStatus } from '../../utils/categories';
 import { ParentBadge } from '../task/ParentBadge';
+import { hapticFeedback } from '../../utils/haptics';
 import { db } from '../../db/database';
 import { useSubtasks } from '../../db/hooks';
 import type { Task, Category, TaskStatus, EnergyLevel } from '../../types';
@@ -106,6 +107,7 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
     if (nextStatus === 'done') {
       setDepartingPhase('ring');
       setDisplayStatus('done');
+      hapticFeedback(10);
       departureTimeout.current = setTimeout(async () => {
         departureTimeout.current = null;
         // Enter settling phase: removes ring/opacity classes but keeps transition-all

@@ -9,8 +9,10 @@ import { BreakdownButton } from './BreakdownButton';
 import { SubtaskReview } from './SubtaskReview';
 import { SubtaskList } from './SubtaskList';
 import { ProviderSetupModal } from '../settings/ProviderSetupModal';
+import { BottomSheet } from '../mobile/BottomSheet';
 import { useBreakdown } from '../../hooks/useBreakdown';
 import { useTimeEstimate } from '../../hooks/useTimeEstimate';
+import { useIsMobile } from '../../hooks/useMediaQuery';
 import { formatEstimate, recordCalibration } from '../../utils/estimateCalibration';
 import type { Task } from '../../types';
 
@@ -32,6 +34,7 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
   const breakdown = useBreakdown();
   const categoryMap = useCategoryMap();
   const { triggerEstimate } = useTimeEstimate();
+  const isMobile = useIsMobile();
 
   // Ref to TaskForm — used for auto-save on Escape/backdrop click
   const formRef = useRef<TaskFormHandle>(null);
@@ -233,6 +236,173 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
     // If saved is true, handleSubmit will check closingRef and close
   };
 
+  // Shared modal content for both desktop and mobile
+  const modalContent = (
+    <>
+      {/* Back to parent breadcrumb — shown when navigating via drill-down OR
+          when opening a subtask directly from calendar/board view */}
+      {(parentStack.length > 0 || parentTask) && (
+        <button
+          onClick={handleBackToParent}
+          className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 mb-3 -mt-1"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Back to {breadcrumbTitle}
+        </button>
+      )}
+
+      <h2 className="text-lg font-semibold text-slate-800 mb-4">
+        {currentTask?.id ? 'Edit Task' : 'New Task'}
+      </h2>
+
+      {/* key prop forces TaskForm to remount when task identity changes,
+          ensuring useState initializers run fresh with up-to-date data */}
+      <TaskForm
+        ref={formRef}
+        key={currentTask?.id ?? 'new'}
+        initialData={currentTask}
+        initialDate={currentTask?.date ?? date}
+        onSubmit={handleSubmit}
+        onCancel={onClose}
+        onDelete={currentTask?.id ? handleDelete : undefined}
+        submitLabel={currentTask?.id ? 'Save' : 'Create'}
+        isEditing={isEditing}
+        onSendToSomeday={isEditing ? handleSendToSomeday : undefined}
+      />
+
+      {/* Time estimate display — shown for saved tasks with an estimate */}
+      {isEditing && currentTask && (() => {
+        const effectiveEstimate = currentTask.timeEstimateOverride ?? currentTask.timeEstimate;
+        if (!effectiveEstimate) return null;
+
+        const handleOverrideSave = async () => {
+          const minutes = parseInt(overrideInput, 10);
+          if (!isNaN(minutes) && minutes >= 5 && minutes <= 480 && currentTask.id) {
+            await db.tasks.update(currentTask.id, {
+              timeEstimateOverride: minutes,
+              updatedAt: new Date(),
+            });
+            recordCalibration(
+              currentTask.categoryId,
+              currentTask.timeEstimate ?? 0,
+              minutes,
+            );
+          }
+          setIsEditingOverride(false);
+        };
+
+        return (
+          <div className="mt-3 flex items-center gap-2 text-sm text-slate-500">
+            <Clock className="w-4 h-4 flex-shrink-0 text-slate-400" />
+            <span>
+              Estimated:{' '}
+              <span className="font-medium text-slate-700">
+                ~{formatEstimate(effectiveEstimate)}
+              </span>
+              {currentTask.timeEstimateOverride && (
+                <span className="ml-1 text-xs text-slate-400">(overridden)</span>
+              )}
+            </span>
+            {isEditingOverride ? (
+              <input
+                type="number"
+                step={5}
+                min={5}
+                max={480}
+                value={overrideInput}
+                onChange={(e) => setOverrideInput(e.target.value)}
+                onBlur={handleOverrideSave}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') void handleOverrideSave();
+                  if (e.key === 'Escape') setIsEditingOverride(false);
+                }}
+                autoFocus
+                className="w-20 text-xs border border-slate-300 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                placeholder="min"
+              />
+            ) : (
+              <button
+                onClick={() => {
+                  setOverrideInput(String(effectiveEstimate));
+                  setIsEditingOverride(true);
+                }}
+                className="ml-auto text-slate-400 hover:text-slate-600 transition-colors"
+                title="Override estimate"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* Breakdown button - only for saved tasks */}
+      {isEditing && currentTask && (
+        <div className="mt-4 pt-4 border-t border-slate-200">
+          <BreakdownButton
+            task={currentTask}
+            onStartBreakdown={() => breakdown.startBreakdown(currentTask)}
+            isGenerating={isGenerating}
+          />
+        </div>
+      )}
+
+      {/* Error message */}
+      {breakdown.state.status === 'error' && (
+        <div className="mt-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+          {breakdown.state.message}
+        </div>
+      )}
+
+      {/* Subtask review panel */}
+      {showReview && currentTask && (
+        <SubtaskReview
+          state={breakdown.state}
+          onAccept={() => breakdown.acceptSubtasks(currentTask)}
+          onCancel={breakdown.cancelBreakdown}
+          onRegenerate={() => breakdown.regenerateSubtasks(currentTask)}
+          onEdit={breakdown.editSubtask}
+          onEditDescription={breakdown.editSubtaskDescription}
+          onRemove={breakdown.removeSubtask}
+          onReorder={breakdown.reorderSubtasks}
+          onTogglePin={breakdown.togglePin}
+        />
+      )}
+
+      {/* Existing subtasks list */}
+      {isEditing && currentTask?.id && !showReview && (
+        <SubtaskList
+          parentId={currentTask.id}
+          parentDepth={currentTask.depth ?? 0}
+          categoryMap={categoryMap}
+          onOpenSubtask={handleOpenSubtask}
+        />
+      )}
+    </>
+  );
+
+  // Mobile: render in BottomSheet
+  if (isMobile) {
+    return (
+      <>
+        <BottomSheet isOpen={isOpen} onClose={handleBackdropClick}>
+          {modalContent}
+        </BottomSheet>
+
+        {/* Provider setup modal (overlay on top) */}
+        {showSetupModal && (
+          <ProviderSetupModal
+            isOpen={true}
+            onClose={breakdown.cancelBreakdown}
+            onConfigured={breakdown.onProviderConfigured}
+            configureProvider={breakdown.configureProvider}
+          />
+        )}
+      </>
+    );
+  }
+
+  // Desktop: render as positioned popover
   return (
     <div className="fixed inset-0 z-50">
       {/* Backdrop */}
@@ -245,145 +415,7 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
         className="fixed bg-white rounded-lg shadow-xl p-6 overflow-y-auto"
         style={positionStyle}
       >
-        {/* Back to parent breadcrumb — shown when navigating via drill-down OR
-            when opening a subtask directly from calendar/board view */}
-        {(parentStack.length > 0 || parentTask) && (
-          <button
-            onClick={handleBackToParent}
-            className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 mb-3 -mt-1"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            Back to {breadcrumbTitle}
-          </button>
-        )}
-
-        <h2 className="text-lg font-semibold text-slate-800 mb-4">
-          {currentTask?.id ? 'Edit Task' : 'New Task'}
-        </h2>
-
-        {/* key prop forces TaskForm to remount when task identity changes,
-            ensuring useState initializers run fresh with up-to-date data */}
-        <TaskForm
-          ref={formRef}
-          key={currentTask?.id ?? 'new'}
-          initialData={currentTask}
-          initialDate={currentTask?.date ?? date}
-          onSubmit={handleSubmit}
-          onCancel={onClose}
-          onDelete={currentTask?.id ? handleDelete : undefined}
-          submitLabel={currentTask?.id ? 'Save' : 'Create'}
-          isEditing={isEditing}
-          onSendToSomeday={isEditing ? handleSendToSomeday : undefined}
-        />
-
-        {/* Time estimate display — shown for saved tasks with an estimate */}
-        {isEditing && currentTask && (() => {
-          const effectiveEstimate = currentTask.timeEstimateOverride ?? currentTask.timeEstimate;
-          if (!effectiveEstimate) return null;
-
-          const handleOverrideSave = async () => {
-            const minutes = parseInt(overrideInput, 10);
-            if (!isNaN(minutes) && minutes >= 5 && minutes <= 480 && currentTask.id) {
-              await db.tasks.update(currentTask.id, {
-                timeEstimateOverride: minutes,
-                updatedAt: new Date(),
-              });
-              recordCalibration(
-                currentTask.categoryId,
-                currentTask.timeEstimate ?? 0,
-                minutes,
-              );
-            }
-            setIsEditingOverride(false);
-          };
-
-          return (
-            <div className="mt-3 flex items-center gap-2 text-sm text-slate-500">
-              <Clock className="w-4 h-4 flex-shrink-0 text-slate-400" />
-              <span>
-                Estimated:{' '}
-                <span className="font-medium text-slate-700">
-                  ~{formatEstimate(effectiveEstimate)}
-                </span>
-                {currentTask.timeEstimateOverride && (
-                  <span className="ml-1 text-xs text-slate-400">(overridden)</span>
-                )}
-              </span>
-              {isEditingOverride ? (
-                <input
-                  type="number"
-                  step={5}
-                  min={5}
-                  max={480}
-                  value={overrideInput}
-                  onChange={(e) => setOverrideInput(e.target.value)}
-                  onBlur={handleOverrideSave}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') void handleOverrideSave();
-                    if (e.key === 'Escape') setIsEditingOverride(false);
-                  }}
-                  autoFocus
-                  className="w-20 text-xs border border-slate-300 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                  placeholder="min"
-                />
-              ) : (
-                <button
-                  onClick={() => {
-                    setOverrideInput(String(effectiveEstimate));
-                    setIsEditingOverride(true);
-                  }}
-                  className="ml-auto text-slate-400 hover:text-slate-600 transition-colors"
-                  title="Override estimate"
-                >
-                  <Pencil className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
-          );
-        })()}
-
-        {/* Breakdown button - only for saved tasks */}
-        {isEditing && currentTask && (
-          <div className="mt-4 pt-4 border-t border-slate-200">
-            <BreakdownButton
-              task={currentTask}
-              onStartBreakdown={() => breakdown.startBreakdown(currentTask)}
-              isGenerating={isGenerating}
-            />
-          </div>
-        )}
-
-        {/* Error message */}
-        {breakdown.state.status === 'error' && (
-          <div className="mt-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-            {breakdown.state.message}
-          </div>
-        )}
-
-        {/* Subtask review panel */}
-        {showReview && currentTask && (
-          <SubtaskReview
-            state={breakdown.state}
-            onAccept={() => breakdown.acceptSubtasks(currentTask)}
-            onCancel={breakdown.cancelBreakdown}
-            onRegenerate={() => breakdown.regenerateSubtasks(currentTask)}
-            onEdit={breakdown.editSubtask}
-            onEditDescription={breakdown.editSubtaskDescription}
-            onRemove={breakdown.removeSubtask}
-            onReorder={breakdown.reorderSubtasks}
-            onTogglePin={breakdown.togglePin}
-          />
-        )}
-
-        {/* Existing subtasks list */}
-        {isEditing && currentTask?.id && !showReview && (
-          <SubtaskList
-            parentId={currentTask.id}
-            parentDepth={currentTask.depth ?? 0}
-            categoryMap={categoryMap}
-            onOpenSubtask={handleOpenSubtask}
-          />
-        )}
+        {modalContent}
       </div>
 
       {/* Provider setup modal (overlay on top) */}
