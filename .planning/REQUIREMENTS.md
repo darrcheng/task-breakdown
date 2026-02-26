@@ -38,8 +38,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Cross-Platform
 
-- [ ] **PLAT-01**: App works on web browsers
-- [ ] **PLAT-02**: App works on mobile (iOS and Android)
+- [x] **PLAT-01**: App works on web browsers
+- [x] **PLAT-02**: App works on mobile (iOS and Android)
 - [x] **PLAT-03**: Data persists across sessions
 
 ## v2 Requirements
@@ -104,8 +104,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ADHD-03 | Phase 3 | Complete |
 | ADHD-04 | Phase 3 | Complete |
 | ADHD-05 | Phase 3 | Complete |
-| PLAT-01 | Phase 4 | Pending |
-| PLAT-02 | Phase 4 | Pending |
+| PLAT-01 | Phase 4 | Complete |
+| PLAT-02 | Phase 4 | Complete |
 
 **Coverage:**
 - v1 requirements: 23 total
