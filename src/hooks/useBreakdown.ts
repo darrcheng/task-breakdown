@@ -34,6 +34,12 @@ export function useBreakdown() {
 
   const startBreakdown = useCallback(
     async (task: Task) => {
+      // Check for internet connectivity before attempting AI API call
+      if (!navigator.onLine) {
+        setState({ status: 'error', message: 'No internet connection. Connect to a network to use AI breakdown.' });
+        return;
+      }
+
       const provider = await getProvider();
       if (!provider) {
         pendingTaskRef.current = task;

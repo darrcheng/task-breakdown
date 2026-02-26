@@ -30,6 +30,24 @@ dialog::backdrop {
   backdrop-filter: blur(2px);
 }
 
+/* Mobile PWA install banner animation */
+@keyframes slide-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+/* Hide scrollbar for date strip */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
 /* Scrollbar styling for cleaner look */
 @layer base {
   ::-webkit-scrollbar {

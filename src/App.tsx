@@ -16,6 +16,8 @@ import { OverdueQuickPicker } from './components/overdue/OverdueQuickPicker';
 import { SomedayView } from './components/overdue/SomedayView';
 import { MobileLayout } from './components/mobile/MobileLayout';
 import { MobileCalendarView } from './components/mobile/MobileCalendarView';
+import { InstallBanner } from './components/mobile/InstallBanner';
+import { OfflineIndicator } from './components/mobile/OfflineIndicator';
 import { useCategoryMap, useTaskCount, useOverdueTasks } from './db/hooks';
 import { useSettings } from './hooks/useSettings';
 import { useIsMobile } from './hooks/useMediaQuery';
@@ -179,6 +181,9 @@ function App() {
     return (
       <>
         <MobileLayout activeTab={activeMobileTab} onTabChange={handleMobileTabChange}>
+          {/* Offline indicator */}
+          <OfflineIndicator />
+
           {/* Overdue banner on mobile */}
           {viewMode === 'calendar' && overdueTasks && overdueTasks.length > 0 && (
             <OverdueBanner
@@ -237,6 +242,9 @@ function App() {
           onClose={() => setIsQuickPickerOpen(false)}
           tasks={overdueTasks ?? []}
         />
+
+        {/* PWA install banner - appears above tab bar after 3+ visits */}
+        <InstallBanner />
       </>
     );
   }
