@@ -14,10 +14,13 @@ import { SettingsModal } from './components/ui/SettingsModal';
 import { DndProvider } from './components/dnd/DndProvider';
 import { OverdueQuickPicker } from './components/overdue/OverdueQuickPicker';
 import { SomedayView } from './components/overdue/SomedayView';
+import { MobileLayout } from './components/mobile/MobileLayout';
 import { useCategoryMap, useTaskCount, useOverdueTasks } from './db/hooks';
 import { useSettings } from './hooks/useSettings';
+import { useIsMobile } from './hooks/useMediaQuery';
 import { formatDateKey } from './utils/dates';
 import type { ViewMode, CalendarView, Task, EnergyLevel } from './types';
+import type { MobileTab } from './components/mobile/BottomTabBar';
 
 interface ModalState {
   isOpen: boolean;
@@ -50,9 +53,12 @@ function App() {
   const taskCount = useTaskCount();
   const overdueTasks = useOverdueTasks();
   const { settings, updateSettings } = useSettings();
+  const isMobile = useIsMobile();
 
-  // Global keyboard shortcuts
+  // Global keyboard shortcuts (desktop only — mobile uses touch)
   useEffect(() => {
+    if (isMobile) return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
       // Guard: don't fire in inputs
       const tag = (e.target as HTMLElement).tagName;
@@ -122,7 +128,7 @@ function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [calendarView, viewMode, modalState.isOpen, isCategoryManagerOpen, isSettingsOpen, isQuickPickerOpen]);
+  }, [isMobile, calendarView, viewMode, modalState.isOpen, isCategoryManagerOpen, isSettingsOpen, isQuickPickerOpen]);
 
   const handleDayClick = (date: string, clickPosition?: { x: number; y: number }) => {
     if (viewMode === 'calendar') {
@@ -149,8 +155,95 @@ function App() {
     setEnergyFilter(prev => (prev === value ? null : value));
   };
 
+  // Mobile tab handler
+  const handleMobileTabChange = (tab: MobileTab) => {
+    if (tab === 'settings') {
+      setIsSettingsOpen(true);
+    } else {
+      setViewMode(tab as ViewMode);
+    }
+  };
+
+  // Derive active tab from viewMode for BottomTabBar
+  const activeMobileTab: MobileTab = isSettingsOpen
+    ? 'settings'
+    : viewMode === 'someday' || viewMode === 'list'
+      ? 'list'
+      : 'calendar';
+
   const isEmpty = taskCount === 0;
 
+  // ─── Mobile Layout ───────────────────────────────────────────────
+  if (isMobile) {
+    return (
+      <>
+        <MobileLayout activeTab={activeMobileTab} onTabChange={handleMobileTabChange}>
+          {/* Overdue banner on mobile */}
+          {viewMode === 'calendar' && overdueTasks && overdueTasks.length > 0 && (
+            <OverdueBanner
+              taskCount={overdueTasks.length}
+              onOpenPicker={() => setIsQuickPickerOpen(true)}
+            />
+          )}
+
+          {isEmpty && <EmptyState viewMode={viewMode} />}
+
+          {viewMode === 'someday' ? (
+            <SomedayView categoryMap={categoryMap} />
+          ) : (
+            <DndProvider categoryMap={categoryMap}>
+              {viewMode === 'calendar' ? (
+                /* Mobile calendar — WeekView as placeholder, replaced by MobileCalendarView in Plan 03 */
+                <WeekView
+                  currentDate={currentMonth}
+                  showCompleted={showCompleted}
+                  categoryMap={categoryMap}
+                  onDayClick={handleDayClick}
+                  onTaskClick={handleTaskClickCalendar}
+                  weekStartsOn={settings.weekStartsOn}
+                  energyFilter={energyFilter}
+                />
+              ) : (
+                <ListView
+                  showCompleted={showCompleted}
+                  categoryMap={categoryMap}
+                  onDayClick={handleDayClick}
+                  onTaskClick={handleTaskClickList}
+                  energyFilter={energyFilter}
+                />
+              )}
+            </DndProvider>
+          )}
+        </MobileLayout>
+
+        {/* Modals render outside MobileLayout to overlay everything */}
+        <TaskModal
+          isOpen={modalState.isOpen}
+          onClose={closeModal}
+          date={modalState.date}
+          task={modalState.task}
+          clickPosition={modalState.clickPosition}
+        />
+        <CategoryManager
+          isOpen={isCategoryManagerOpen}
+          onClose={() => setIsCategoryManagerOpen(false)}
+        />
+        <SettingsModal
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+          settings={settings}
+          onUpdateSettings={updateSettings}
+        />
+        <OverdueQuickPicker
+          isOpen={isQuickPickerOpen}
+          onClose={() => setIsQuickPickerOpen(false)}
+          tasks={overdueTasks ?? []}
+        />
+      </>
+    );
+  }
+
+  // ─── Desktop Layout (unchanged) ──────────────────────────────────
   return (
     <div className="h-screen bg-white flex flex-col">
       {/* Header */}
