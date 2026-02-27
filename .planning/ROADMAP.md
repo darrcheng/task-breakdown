@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Local-First Foundation** - Core task management with calendar view (completed 2026-02-22)
 - [x] **Phase 2: AI Task Breakdown** - AI-powered subtask generation with controls (completed 2026-02-23)
 - [x] **Phase 3: ADHD-Optimized UX** - Energy tracking and gentle reschedule prompts (gap closure in progress) (completed 2026-02-24)
-- [ ] **Phase 4: Cross-Platform Expansion** - Full web and mobile parity
+- [x] **Phase 4: Cross-Platform Expansion** - Full web and mobile parity (completed 2026-02-26)
 
 ## Phase Details
 
@@ -126,10 +126,14 @@ Plans:
   1. User can access full app functionality on web browsers
   2. User can access full app functionality on iOS and Android mobile devices
   3. User experiences consistent UI/UX across web and mobile platforms
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] TBD during planning
+- [x] 04-01-PLAN.md — PWA infrastructure: manifest, service worker, icons, install prompt hook
+- [x] 04-02-PLAN.md — Responsive layout shell: useIsMobile hook, bottom tab bar, mobile/desktop branching
+- [x] 04-03-PLAN.md — Mobile calendar: day swipe view, date strip navigation
+- [x] 04-04-PLAN.md — Touch interactions: bottom sheet modal, swipe-to-reveal actions, haptic feedback
+- [x] 04-05-PLAN.md — Integration and polish: install banner, offline indicator, touch drag, offline AI guard
 
 ## Progress
 
@@ -143,8 +147,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | 2. AI Task Breakdown | 7/7 | Complete   | 2026-02-23 |
 | 02.1. Gemini Model Selector | 1/1 | Complete    | 2026-02-23 |
 | 3. ADHD-Optimized UX | 17/17 | Complete   | 2026-02-24 |
-| 4. Cross-Platform Expansion | 0/TBD | Not started | - |
+| 4. Cross-Platform Expansion | 5/5 | Complete | 2026-02-26 |
 
 ---
 *Roadmap created: 2026-02-05*
-*Last updated: 2026-02-23*
+*Last updated: 2026-02-26*
