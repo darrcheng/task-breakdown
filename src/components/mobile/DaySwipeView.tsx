@@ -3,6 +3,8 @@ import { format, addDays, subDays } from 'date-fns';
 import { Plus } from 'lucide-react';
 import { useTasksByDate } from '../../db/hooks';
 import { TaskListItem } from '../list/TaskListItem';
+import { SwipeableTaskRow } from './SwipeableTaskRow';
+import { db } from '../../db/database';
 import { formatDateKey } from '../../utils/dates';
 import type { Task, Category, EnergyLevel } from '../../types';
 
@@ -66,12 +68,29 @@ export function DaySwipeView({
         ) : (
           <div className="space-y-1">
             {tasks.map((task) => (
-              <TaskListItem
+              <SwipeableTaskRow
                 key={task.id}
-                task={task}
-                categoryMap={categoryMap}
-                onClick={() => onTaskClick(task)}
-              />
+                onComplete={async () => {
+                  if (task.id) {
+                    await db.tasks.update(task.id, {
+                      status: 'done',
+                      updatedAt: new Date(),
+                    });
+                  }
+                }}
+                onDelete={async () => {
+                  if (task.id) {
+                    await db.tasks.delete(task.id);
+                  }
+                }}
+                isCompleted={task.status === 'done'}
+              >
+                <TaskListItem
+                  task={task}
+                  categoryMap={categoryMap}
+                  onClick={() => onTaskClick(task)}
+                />
+              </SwipeableTaskRow>
             ))}
             {/* Add task button at bottom */}
             <button
