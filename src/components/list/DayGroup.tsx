@@ -6,6 +6,9 @@ import { TaskListItem } from './TaskListItem';
 import { TaskInlineCreate } from '../task/TaskInlineCreate';
 import { DraggableTask } from '../dnd/DraggableTask';
 import { DroppableDay } from '../dnd/DroppableDay';
+import { SwipeableTaskRow } from '../mobile/SwipeableTaskRow';
+import { useIsMobile } from '../../hooks/useMediaQuery';
+import { db } from '../../db/database';
 import type { Task, Category } from '../../types';
 
 interface DayGroupProps {
@@ -23,6 +26,7 @@ export function DayGroup({
   onTaskClick,
 }: DayGroupProps) {
   const [isCreating, setIsCreating] = useState(false);
+  const isMobile = useIsMobile();
 
   // Listen for Enter-key inline create event dispatched from App.tsx
   useEffect(() => {
@@ -80,11 +84,36 @@ export function DayGroup({
           {tasks.length > 0 ? (
             tasks.map((task) => (
               <DraggableTask key={task.id} task={task}>
-                <TaskListItem
-                  task={task}
-                  categoryMap={categoryMap}
-                  onClick={onTaskClick}
-                />
+                {isMobile ? (
+                  <SwipeableTaskRow
+                    onComplete={async () => {
+                      if (task.id) {
+                        await db.tasks.update(task.id, {
+                          status: 'done',
+                          updatedAt: new Date(),
+                        });
+                      }
+                    }}
+                    onDelete={async () => {
+                      if (task.id) {
+                        await db.tasks.delete(task.id);
+                      }
+                    }}
+                    isCompleted={task.status === 'done'}
+                  >
+                    <TaskListItem
+                      task={task}
+                      categoryMap={categoryMap}
+                      onClick={onTaskClick}
+                    />
+                  </SwipeableTaskRow>
+                ) : (
+                  <TaskListItem
+                    task={task}
+                    categoryMap={categoryMap}
+                    onClick={onTaskClick}
+                  />
+                )}
               </DraggableTask>
             ))
           ) : (

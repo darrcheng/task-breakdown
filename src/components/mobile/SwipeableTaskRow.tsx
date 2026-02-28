@@ -73,7 +73,7 @@ export function SwipeableTaskRow({ children, onComplete, onDelete, isCompleted }
         {!isCompleted && (
           <button
             onClick={handleComplete}
-            className="w-[70px] flex items-center justify-center bg-emerald-500 text-white"
+            className="w-[70px] flex items-center justify-center bg-emerald-500 text-white rounded-r-lg"
           >
             <Check className="w-5 h-5" />
           </button>
