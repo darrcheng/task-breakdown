@@ -1,9 +1,9 @@
 ---
-status: complete
+status: resolved
 phase: 04-cross-platform-expansion
 source: 04-01-PLAN.md, 04-02-PLAN.md, 04-03-PLAN.md, 04-04-PLAN.md, 04-05-PLAN.md
 started: 2026-02-28T12:00:00Z
-updated: 2026-02-28T12:15:00Z
+updated: 2026-02-28T18:00:00Z
 ---
 
 ## Current Test
@@ -65,10 +65,17 @@ skipped: 0
 ## Gaps
 
 - truth: "Swiping left on a task row reveals Delete and Done action buttons"
-  status: failed
+  status: resolved
   reason: "User reported: The swipe to reveal actions isn't working for me."
   severity: major
   test: 6
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "SwipeableTaskRow was built but never imported/used. DaySwipeView renders bare TaskListItem without wrapping in SwipeableTaskRow."
+  artifacts:
+    - path: "src/components/mobile/SwipeableTaskRow.tsx"
+      issue: "Component exists but is not imported anywhere"
+    - path: "src/components/mobile/DaySwipeView.tsx"
+      issue: "Renders TaskListItem directly without SwipeableTaskRow wrapper"
+  missing:
+    - "Import and wrap TaskListItem in SwipeableTaskRow in DaySwipeView.tsx"
+    - "Add stopPropagation to prevent swipe conflict with day navigation"
+  debug_session: ".planning/debug/swipe-to-reveal-not-working.md"
