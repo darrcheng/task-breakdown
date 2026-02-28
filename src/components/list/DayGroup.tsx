@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Plus } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { isToday } from '../../utils/dates';
@@ -27,6 +27,8 @@ export function DayGroup({
 }: DayGroupProps) {
   const [isCreating, setIsCreating] = useState(false);
   const isMobile = useIsMobile();
+  // Per-task completion trigger refs: swipe-complete invokes TaskListItem's celebration pipeline
+  const completeRefs = useRef<Map<number, () => void>>(new Map());
 
   // Listen for Enter-key inline create event dispatched from App.tsx
   useEffect(() => {
@@ -86,12 +88,9 @@ export function DayGroup({
               <DraggableTask key={task.id} task={task}>
                 {isMobile ? (
                   <SwipeableTaskRow
-                    onComplete={async () => {
+                    onComplete={() => {
                       if (task.id) {
-                        await db.tasks.update(task.id, {
-                          status: 'done',
-                          updatedAt: new Date(),
-                        });
+                        completeRefs.current.get(task.id)?.();
                       }
                     }}
                     onDelete={async () => {
@@ -105,6 +104,9 @@ export function DayGroup({
                       task={task}
                       categoryMap={categoryMap}
                       onClick={onTaskClick}
+                      onRegisterComplete={(fn) => {
+                        if (task.id) completeRefs.current.set(task.id, fn);
+                      }}
                     />
                   </SwipeableTaskRow>
                 ) : (

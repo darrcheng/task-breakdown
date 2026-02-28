@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { useSwipeable } from 'react-swipeable';
 import { format, addDays, subDays } from 'date-fns';
 import { Plus } from 'lucide-react';
@@ -34,6 +35,8 @@ export function DaySwipeView({
 }: DaySwipeViewProps) {
   const dateKey = formatDateKey(currentDate);
   const tasks = useTasksByDate(dateKey, showCompleted, energyFilter);
+  // Per-task completion trigger refs: swipe-complete invokes TaskListItem's celebration pipeline
+  const completeRefs = useRef<Map<number, () => void>>(new Map());
 
   const handlers = useSwipeable({
     onSwipedLeft: () => onDateChange(addDays(currentDate, 1)),
@@ -70,12 +73,9 @@ export function DaySwipeView({
             {tasks.map((task) => (
               <SwipeableTaskRow
                 key={task.id}
-                onComplete={async () => {
+                onComplete={() => {
                   if (task.id) {
-                    await db.tasks.update(task.id, {
-                      status: 'done',
-                      updatedAt: new Date(),
-                    });
+                    completeRefs.current.get(task.id)?.();
                   }
                 }}
                 onDelete={async () => {
@@ -89,6 +89,9 @@ export function DaySwipeView({
                   task={task}
                   categoryMap={categoryMap}
                   onClick={() => onTaskClick(task)}
+                  onRegisterComplete={(fn) => {
+                    if (task.id) completeRefs.current.set(task.id, fn);
+                  }}
                 />
               </SwipeableTaskRow>
             ))}
