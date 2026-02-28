@@ -24,6 +24,7 @@ export function SwipeableTaskRow({ children, onComplete, onDelete, isCompleted }
 
   const handlers = useSwipeable({
     onSwiping: (eventData) => {
+      eventData.event.stopPropagation();
       if (eventData.dir === 'Left') {
         setSwiping(true);
         setSwipeOffset(Math.min(eventData.absX, ACTION_WIDTH));
@@ -50,6 +51,7 @@ export function SwipeableTaskRow({ children, onComplete, onDelete, isCompleted }
     delta: 20,
     trackTouch: true,
     trackMouse: false,
+    touchEventOptions: { passive: false },
   });
 
   const handleComplete = useCallback(() => {
