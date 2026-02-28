@@ -1,9 +1,9 @@
 ---
 status: resolved
 phase: 04-cross-platform-expansion
-source: 04-01-PLAN.md, 04-02-PLAN.md, 04-03-PLAN.md, 04-04-PLAN.md, 04-05-PLAN.md
+source: 04-01-PLAN.md, 04-02-PLAN.md, 04-03-PLAN.md, 04-04-PLAN.md, 04-05-PLAN.md, 04-06-SUMMARY.md
 started: 2026-02-28T12:00:00Z
-updated: 2026-02-28T18:00:00Z
+updated: 2026-02-28T20:00:00Z
 ---
 
 ## Current Test
@@ -34,9 +34,7 @@ result: pass
 
 ### 6. Swipe-to-Reveal Actions on Task Rows
 expected: On mobile, swipe left on a task row. Delete (red) and Done (green) action buttons are revealed behind the row. Swiping right hides them again. Tapping Done completes the task. Tapping Delete removes it.
-result: issue
-reported: "The swipe to reveal actions isn't working for me."
-severity: major
+result: pass
 
 ### 7. Desktop Layout Unchanged
 expected: At full desktop width (> 768px), the app renders the original desktop layout: header with ViewToggle, energy filters, show/hide completed, categories, and settings buttons. Calendar grid/week view and list view work as before. Task create/edit opens as a popover modal (not bottom sheet).
@@ -57,8 +55,8 @@ result: pass
 ## Summary
 
 total: 10
-passed: 9
-issues: 1
+passed: 10
+issues: 0
 pending: 0
 skipped: 0
 
@@ -79,3 +77,17 @@ skipped: 0
     - "Import and wrap TaskListItem in SwipeableTaskRow in DaySwipeView.tsx"
     - "Add stopPropagation to prevent swipe conflict with day navigation"
   debug_session: ".planning/debug/swipe-to-reveal-not-working.md"
+
+- truth: "Swipe-to-reveal works on task rows in both calendar and list views on mobile"
+  status: resolved
+  reason: "User reported: swipe-to-reveal only works in calendar view, not list view"
+  severity: major
+  test: 6
+  root_cause: "SwipeableTaskRow only wired into DaySwipeView.tsx (calendar), not DayGroup.tsx (list view)."
+
+- truth: "Action buttons have properly rounded outer corners"
+  status: resolved
+  reason: "User reported: green check mark box on the left has sharp corners"
+  severity: cosmetic
+  test: 6
+  root_cause: "Action buttons had no border-radius. Fixed with rounded-l-lg on green, rounded-r-lg on red."
