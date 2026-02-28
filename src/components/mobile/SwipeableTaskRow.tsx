@@ -67,8 +67,8 @@ export function SwipeableTaskRow({ children, onComplete, onDelete, isCompleted }
   }, [onDelete]);
 
   return (
-    <div className="relative overflow-hidden rounded-lg">
-      {/* Action buttons (behind the row) */}
+    <div className="relative overflow-hidden">
+      {/* Action buttons (behind the row, extend full height) */}
       <div className="absolute inset-y-0 right-0 flex">
         {!isCompleted && (
           <button
@@ -86,11 +86,11 @@ export function SwipeableTaskRow({ children, onComplete, onDelete, isCompleted }
         </button>
       </div>
 
-      {/* Sliding row content */}
+      {/* Sliding row content — rounded corners create convex curves against action buttons */}
       <div
         {...handlers}
         className={clsx(
-          'relative bg-white',
+          'relative bg-white rounded-lg',
           !swiping && 'transition-transform duration-200 ease-out'
         )}
         style={{ transform: `translateX(-${swipeOffset}px)` }}
