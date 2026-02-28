@@ -80,7 +80,7 @@ export function SwipeableTaskRow({ children, onComplete, onDelete, isCompleted }
         )}
         <button
           onClick={handleDelete}
-          className="w-[70px] flex items-center justify-center bg-red-500 text-white rounded-r-lg"
+          className="w-[70px] flex items-center justify-center bg-red-500 text-white rounded-lg"
         >
           <Trash2 className="w-5 h-5" />
         </button>
