@@ -16,6 +16,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: AI Task Breakdown** - AI-powered subtask generation with controls (completed 2026-02-23)
 - [x] **Phase 3: ADHD-Optimized UX** - Energy tracking and gentle reschedule prompts (gap closure in progress) (completed 2026-02-24)
 - [ ] **Phase 4: Cross-Platform Expansion** - Full web and mobile parity (gap closure in progress)
+- [ ] **Phase 5: Swipe-Complete Celebration Pipeline** - Wire swipe-complete through departure animation + haptic (gap closure)
+- [ ] **Phase 6: Mobile Someday Navigation** - Add Someday tab to mobile BottomTabBar (gap closure)
+- [ ] **Phase 7: Secondary Path Polish + Cleanup** - Inline estimate trigger, keyboard toggle, dead code removal (gap closure)
 
 ## Phase Details
 
@@ -136,6 +139,45 @@ Plans:
 - [x] 04-05-PLAN.md — Integration and polish: install banner, offline indicator, touch drag, offline AI guard
 - [ ] 04-06-PLAN.md — Gap closure: wire SwipeableTaskRow into DaySwipeView, fix swipe event conflict
 
+### Phase 5: Wire Swipe-Complete to Celebration Pipeline
+**Goal**: Swipe-to-complete triggers the same celebration animation and haptic feedback as checkbox completion
+**Depends on**: Phase 4
+**Requirements**: TASK-07, ADHD-03
+**Gap Closure:** Closes INT-02 (swipe bypasses celebration), FLOW-03 (missing haptic on swipe)
+**Success Criteria** (what must be TRUE):
+  1. Swiping a task to complete triggers the 4-phase departure animation
+  2. Swiping a task to complete triggers hapticFeedback
+  3. Celebration animation is identical whether completed via checkbox or swipe
+
+Plans:
+- [ ] 05-01-PLAN.md — Route DaySwipeView/DayGroup swipe-complete through celebration pipeline, add haptic
+
+### Phase 6: Mobile Someday Navigation
+**Goal**: Mobile users can access the Someday view via BottomTabBar
+**Depends on**: Phase 4
+**Requirements**: PLAT-02, ADHD-04
+**Gap Closure:** Closes INT-01 (SomedayView unreachable on mobile)
+**Success Criteria** (what must be TRUE):
+  1. BottomTabBar includes a Someday tab
+  2. Tapping Someday tab switches to SomedayView on mobile
+  3. Gentle reschedule prompts in SomedayView are accessible on mobile
+
+Plans:
+- [ ] 06-01-PLAN.md — Add Someday tab to BottomTabBar, wire handleMobileTabChange
+
+### Phase 7: Secondary Path Polish + Cleanup
+**Goal**: Fix remaining secondary path gaps and remove dead code
+**Depends on**: Phase 5
+**Requirements**: ADHD-02
+**Gap Closure:** Closes FLOW-01 (inline create skips estimate), INT-03 (keyboard toggle unwired), FLOW-02 (dead code)
+**Success Criteria** (what must be TRUE):
+  1. Tasks created via inline create receive AI time estimates
+  2. showKeyboardShortcuts toggle controls keyboard handler in App.tsx
+  3. TaskInlineEdit dead code is removed
+
+Plans:
+- [ ] 07-01-PLAN.md — Wire triggerEstimate to inline create, connect shortcuts toggle, delete TaskInlineEdit
+
 ## Progress
 
 **Execution Order:**
@@ -149,6 +191,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | 02.1. Gemini Model Selector | 1/1 | Complete    | 2026-02-23 |
 | 3. ADHD-Optimized UX | 17/17 | Complete   | 2026-02-24 |
 | 4. Cross-Platform Expansion | 1/6 | In Progress|  |
+| 5. Swipe-Complete Celebration | 0/1 | Pending | |
+| 6. Mobile Someday Navigation | 0/1 | Pending | |
+| 7. Secondary Path Polish | 0/1 | Pending | |
 
 ---
 *Roadmap created: 2026-02-05*

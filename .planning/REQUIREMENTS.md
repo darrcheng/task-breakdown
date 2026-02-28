@@ -21,10 +21,10 @@ Requirements for initial release. Each maps to roadmap phases.
 ### AI Task Breakdown
 
 - [x] **AI-01**: User can tap a button to generate subtasks for any task
-- [ ] **AI-02**: User can edit AI-generated subtasks
-- [ ] **AI-03**: User can reorder AI-generated subtasks
+- [x] **AI-02**: User can edit AI-generated subtasks
+- [x] **AI-03**: User can reorder AI-generated subtasks
 - [x] **AI-04**: User can delete individual AI-generated subtasks
-- [ ] **AI-05**: User can regenerate all subtasks for a task
+- [x] **AI-05**: User can regenerate all subtasks for a task
 - [x] **AI-06**: User can recursively break down subtasks (up to 3 levels deep)
 - [x] **AI-07**: AI provider is swappable (start with free tier, support Claude/OpenAI/Gemini)
 
@@ -91,10 +91,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TASK-06 | Phase 1 | Complete |
 | PLAT-03 | Phase 1 | Complete |
 | AI-01 | Phase 2 | Complete |
-| AI-02 | Phase 2 | Pending |
-| AI-03 | Phase 2 | Pending |
+| AI-02 | Phase 2 | Complete |
+| AI-03 | Phase 2 | Complete |
 | AI-04 | Phase 2 | Complete |
-| AI-05 | Phase 2 | Pending |
+| AI-05 | Phase 2 | Complete |
 | AI-06 | Phase 2 | Complete |
 | AI-07 | Phase 2 | Complete |
 | TASK-07 | Phase 3 | Complete |
@@ -114,4 +114,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-05*
-*Last updated: 2026-02-05 after roadmap creation*
+*Last updated: 2026-02-28 after gap closure phase creation*
