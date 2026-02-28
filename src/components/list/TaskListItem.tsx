@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { type LucideIcon } from 'lucide-react';
 import { Battery, BatteryMedium, Zap, Archive, ListTree } from 'lucide-react';
 import clsx from 'clsx';
@@ -19,9 +19,10 @@ interface TaskListItemProps {
   task: Task;
   categoryMap?: Map<number, Category>;
   onClick?: (task: Task) => void;
+  onRegisterComplete?: (triggerFn: () => void) => void;
 }
 
-export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) {
+export function TaskListItem({ task, categoryMap, onClick, onRegisterComplete }: TaskListItemProps) {
   const [departingPhase, setDepartingPhase] = useState<'ring' | 'fade' | 'settling' | null>(null);
   const [displayStatus, setDisplayStatus] = useState<TaskStatus>(task.status);
   const departureTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -80,6 +81,37 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
     };
   }, []);
 
+  // Shared completion trigger: starts the 4-phase departure animation with haptic.
+  // Used by both checkbox click (handleStatusClick) and swipe-complete (via onRegisterComplete).
+  const triggerComplete = useCallback(() => {
+    if (!task.id || departing) return;
+    const nextStatus = getNextStatus(task.status);
+    if (nextStatus === 'done') {
+      setDepartingPhase('ring');
+      setDisplayStatus('done');
+      hapticFeedback(10);
+      departureTimeout.current = setTimeout(async () => {
+        departureTimeout.current = null;
+        // Enter settling phase: removes ring/opacity classes but keeps transition-all
+        // so the ring fades out smoothly instead of disappearing abruptly.
+        setDepartingPhase('settling');
+        settlingTimeout.current = setTimeout(async () => {
+          settlingTimeout.current = null;
+          setDepartingPhase(null);
+          await db.tasks.update(task.id!, {
+            status: 'done',
+            updatedAt: new Date(),
+          });
+        }, 400);
+      }, 1500);
+    }
+  }, [task.id, task.status, departing]);
+
+  // Register triggerComplete with parent so swipe-complete can invoke it
+  useEffect(() => {
+    onRegisterComplete?.(triggerComplete);
+  }, [onRegisterComplete, triggerComplete]);
+
   const handleStatusClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!task.id) return;
@@ -105,23 +137,7 @@ export function TaskListItem({ task, categoryMap, onClick }: TaskListItemProps) 
 
     const nextStatus = getNextStatus(task.status);
     if (nextStatus === 'done') {
-      setDepartingPhase('ring');
-      setDisplayStatus('done');
-      hapticFeedback(10);
-      departureTimeout.current = setTimeout(async () => {
-        departureTimeout.current = null;
-        // Enter settling phase: removes ring/opacity classes but keeps transition-all
-        // so the ring fades out smoothly instead of disappearing abruptly.
-        setDepartingPhase('settling');
-        settlingTimeout.current = setTimeout(async () => {
-          settlingTimeout.current = null;
-          setDepartingPhase(null);
-          await db.tasks.update(task.id!, {
-            status: 'done',
-            updatedAt: new Date(),
-          });
-        }, 400);
-      }, 1500);
+      triggerComplete();
     } else {
       setDisplayStatus(nextStatus);
       await db.tasks.update(task.id, {
