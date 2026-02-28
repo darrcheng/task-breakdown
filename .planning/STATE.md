@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-02-28T14:44:41.749Z"
+last_updated: "2026-02-28T16:10:46.794Z"
 progress:
-  total_phases: 6
-  completed_phases: 5
-  total_plans: 48
-  completed_plans: 43
+  total_phases: 9
+  completed_phases: 6
+  total_plans: 49
+  completed_plans: 44
 ---
 
 # Project State
@@ -156,6 +156,8 @@ Recent decisions affecting current work:
 - [Phase 04-cross-platform]: navigator.onLine check in useBreakdown.startBreakdown before AI API calls
 - [Phase 04-cross-platform]: InstallBanner gated by 3+ visits via localStorage counter, dismissable with persistence
 - [Phase 04-06]: stopPropagation in SwipeableTaskRow onSwiping callback with passive:false prevents task-row swipe events from bubbling to DaySwipeView day-navigation handler
+- [Phase 05]: onRegisterComplete callback prop pattern on TaskListItem — child exposes internal triggerComplete via callback, parent stores in completeRefs Map keyed by task.id
+- [Phase 05]: Swipe-complete routes through same triggerComplete as checkbox — single source of truth for departure animation, haptic, and deferred DB write
 
 ### Pending Todos
 
@@ -172,6 +174,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-28 (Phase 04-06 gap closure — wired SwipeableTaskRow into DaySwipeView, fixed swipe event conflict with stopPropagation + passive:false)
-Stopped at: Completed 04-06-PLAN.md (swipe-to-reveal gap closure)
+Last session: 2026-02-28 (Phase 05 — wired swipe-complete through celebration pipeline via onRegisterComplete/triggerComplete pattern)
+Stopped at: Completed Phase 05 (swipe-complete celebration pipeline)
 Resume file: None
