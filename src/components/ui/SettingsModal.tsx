@@ -97,7 +97,7 @@ export function SettingsModal({ isOpen, onClose, settings, onUpdateSettings }: S
           {/* Keyboard shortcuts */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-medium text-slate-700">Keyboard shortcuts</h3>
+              <h3 className="text-sm font-medium text-slate-700">Enable Keyboard Shortcuts</h3>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"

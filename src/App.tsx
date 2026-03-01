@@ -61,6 +61,7 @@ function App() {
   // Global keyboard shortcuts (desktop only — mobile uses touch)
   useEffect(() => {
     if (isMobile) return;
+    if (!settings.showKeyboardShortcuts) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       // Guard: don't fire in inputs
@@ -131,7 +132,7 @@ function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isMobile, calendarView, viewMode, modalState.isOpen, isCategoryManagerOpen, isSettingsOpen, isQuickPickerOpen]);
+  }, [isMobile, settings.showKeyboardShortcuts, calendarView, viewMode, modalState.isOpen, isCategoryManagerOpen, isSettingsOpen, isQuickPickerOpen]);
 
   const handleDayClick = (date: string, clickPosition?: { x: number; y: number }) => {
     if (viewMode === 'calendar') {
