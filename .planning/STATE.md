@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-02-28T16:10:46.794Z"
+last_updated: "2026-03-01T18:52:14.411Z"
 progress:
   total_phases: 9
   completed_phases: 6
-  total_plans: 49
-  completed_plans: 44
+  total_plans: 50
+  completed_plans: 45
 ---
 
 # Project State
@@ -75,6 +75,7 @@ Progress: [████████████████████] 30/30 p
 | Phase 03-adhd-optimized-ux P15 | 1 | 1 tasks | 1 files |
 | Phase 03-adhd-optimized-ux P16 | 2 | 2 tasks | 3 files |
 | Phase 04 P06 | 1 | 2 tasks | 2 files |
+| Phase 05 P02 | 1 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -158,6 +159,8 @@ Recent decisions affecting current work:
 - [Phase 04-06]: stopPropagation in SwipeableTaskRow onSwiping callback with passive:false prevents task-row swipe events from bubbling to DaySwipeView day-navigation handler
 - [Phase 05]: onRegisterComplete callback prop pattern on TaskListItem — child exposes internal triggerComplete via callback, parent stores in completeRefs Map keyed by task.id
 - [Phase 05]: Swipe-complete routes through same triggerComplete as checkbox — single source of truth for departure animation, haptic, and deferred DB write
+- [Phase 05]: triggerComplete force-complete: removed getNextStatus guard so triggerComplete always marks done regardless of todo/in-progress status
+- [Phase 05]: Settling phase removed: setDepartingPhase(null) + DB write fires directly after 1500ms fade -- settling was causing flash-back by restoring opacity before unmount
 
 ### Pending Todos
 
@@ -174,6 +177,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-28 (Phase 05 — wired swipe-complete through celebration pipeline via onRegisterComplete/triggerComplete pattern)
-Stopped at: Completed Phase 05 (swipe-complete celebration pipeline)
+Last session: 2026-03-01 (Phase 05-02 — fixed triggerComplete to force-complete any status and eliminated flash-back animation)
+Stopped at: Completed 05-02-PLAN.md (triggerComplete fix + settling phase removal)
 Resume file: None
