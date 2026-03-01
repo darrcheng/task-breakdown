@@ -23,7 +23,7 @@ interface TaskListItemProps {
 }
 
 export function TaskListItem({ task, categoryMap, onClick, onRegisterComplete }: TaskListItemProps) {
-  const [departingPhase, setDepartingPhase] = useState<'ring' | 'fade' | 'settling' | null>(null);
+  const [departingPhase, setDepartingPhase] = useState<'ring' | 'fade' | null>(null);
   const [displayStatus, setDisplayStatus] = useState<TaskStatus>(task.status);
   const departureTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const settlingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -81,31 +81,27 @@ export function TaskListItem({ task, categoryMap, onClick, onRegisterComplete }:
     };
   }, []);
 
-  // Shared completion trigger: starts the 4-phase departure animation with haptic.
+  // Shared completion trigger: force-completes any task to done with celebration animation.
   // Used by both checkbox click (handleStatusClick) and swipe-complete (via onRegisterComplete).
+  // No getNextStatus guard -- triggerComplete always means "mark done with celebration."
   const triggerComplete = useCallback(() => {
     if (!task.id || departing) return;
-    const nextStatus = getNextStatus(task.status);
-    if (nextStatus === 'done') {
-      setDepartingPhase('ring');
-      setDisplayStatus('done');
-      hapticFeedback(10);
-      departureTimeout.current = setTimeout(async () => {
-        departureTimeout.current = null;
-        // Enter settling phase: removes ring/opacity classes but keeps transition-all
-        // so the ring fades out smoothly instead of disappearing abruptly.
-        setDepartingPhase('settling');
-        settlingTimeout.current = setTimeout(async () => {
-          settlingTimeout.current = null;
-          setDepartingPhase(null);
-          await db.tasks.update(task.id!, {
-            status: 'done',
-            updatedAt: new Date(),
-          });
-        }, 400);
-      }, 1500);
-    }
-  }, [task.id, task.status, departing]);
+    setDepartingPhase('ring');
+    setDisplayStatus('done');
+    hapticFeedback(10);
+    departureTimeout.current = setTimeout(async () => {
+      departureTimeout.current = null;
+      // DB write FIRST: when showCompleted=false, Dexie liveQuery unmounts
+      // the component immediately, so settling never visually matters.
+      // When showCompleted=true, the component stays and the ring is already
+      // invisible (opacity-0 + 1500ms transition completed), so no settling needed.
+      setDepartingPhase(null);
+      await db.tasks.update(task.id!, {
+        status: 'done',
+        updatedAt: new Date(),
+      });
+    }, 1500);
+  }, [task.id, departing]);
 
   // Register triggerComplete with parent so swipe-complete can invoke it
   useEffect(() => {
@@ -159,7 +155,6 @@ export function TaskListItem({ task, categoryMap, onClick, onRegisterComplete }:
         (departingPhase === 'ring' || departingPhase === 'fade') && 'line-through decoration-green-600 text-green-600',
         departingPhase === 'ring' && 'ring-2 ring-emerald-400 ring-offset-1 transition-all duration-[1500ms]',
         departingPhase === 'fade' && 'ring-2 ring-emerald-400 ring-offset-1 opacity-0 transition-all duration-[1500ms]',
-        departingPhase === 'settling' && 'transition-all duration-300',
       )}
     >
       {/* Status indicator - clickable to cycle */}
