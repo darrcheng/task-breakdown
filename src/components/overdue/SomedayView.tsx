@@ -48,14 +48,14 @@ function SomedayTaskRow({ task, categoryMap }: { task: Task; categoryMap: Map<nu
         <div className="flex items-center gap-1 flex-shrink-0">
           <button
             onClick={() => setShowDatePicker(prev => !prev)}
-            className="p-1.5 rounded-md hover:bg-slate-100 text-slate-500 hover:text-blue-600 transition-colors"
+            className="p-2.5 rounded-md hover:bg-slate-100 text-slate-500 hover:text-blue-600 transition-colors"
             title="Rescue — schedule for a date"
           >
             <CalendarDays className="w-4 h-4" />
           </button>
           <button
             onClick={handleDeleteClick}
-            className={`p-1.5 rounded-md transition-colors ${
+            className={`p-2.5 rounded-md transition-colors ${
               confirmDelete
                 ? 'bg-red-100 text-red-600 hover:bg-red-200'
                 : 'hover:bg-slate-100 text-slate-400 hover:text-red-500'
@@ -82,7 +82,7 @@ export function SomedayView({ categoryMap }: SomedayViewProps) {
   const tasks = useSomedayTasks();
 
   return (
-    <div className="flex-1 overflow-y-auto px-6 py-6 max-w-2xl mx-auto w-full">
+    <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 max-w-2xl mx-auto w-full">
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
