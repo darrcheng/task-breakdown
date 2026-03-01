@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: ADHD-Optimized UX** - Energy tracking and gentle reschedule prompts (gap closure in progress) (completed 2026-02-24)
 - [ ] **Phase 4: Cross-Platform Expansion** - Full web and mobile parity (gap closure in progress)
 - [ ] **Phase 5: Swipe-Complete Celebration Pipeline** - Wire swipe-complete through departure animation + haptic (gap closure)
-- [ ] **Phase 6: Mobile Someday Navigation** - Add Someday tab to mobile BottomTabBar (gap closure)
+- [x] **Phase 6: Mobile Someday Navigation** - Add Someday tab to mobile BottomTabBar (gap closure) (completed 2026-03-01)
 - [ ] **Phase 7: Secondary Path Polish + Cleanup** - Inline estimate trigger, keyboard toggle, dead code removal (gap closure)
 
 ## Phase Details
@@ -166,7 +166,7 @@ Plans:
   3. Gentle reschedule prompts in SomedayView are accessible on mobile
 
 Plans:
-- [ ] 06-01-PLAN.md — Add Someday tab to BottomTabBar, wire handleMobileTabChange
+- [x] 06-01-PLAN.md — Add Someday tab to BottomTabBar, wire handleMobileTabChange
 
 ### Phase 7: Secondary Path Polish + Cleanup
 **Goal**: Fix remaining secondary path gaps and remove dead code
@@ -195,7 +195,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | 3. ADHD-Optimized UX | 17/17 | Complete   | 2026-02-24 |
 | 4. Cross-Platform Expansion | 1/6 | In Progress|  |
 | 5. Swipe-Complete Celebration | 1/2 | In Progress | |
-| 6. Mobile Someday Navigation | 0/1 | Pending | |
+| 6. Mobile Someday Navigation | 1/1 | Complete | 2026-03-01 |
 | 7. Secondary Path Polish | 0/1 | Pending | |
 
 ---
