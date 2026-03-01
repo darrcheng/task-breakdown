@@ -153,7 +153,7 @@ Plans:
 
 Plans:
 - [x] 05-01-PLAN.md — Route DaySwipeView/DayGroup swipe-complete through celebration pipeline, add haptic
-- [ ] 05-02-PLAN.md — Gap closure: fix triggerComplete getNextStatus guard for todo tasks, eliminate settling phase flash-back
+- [x] 05-02-PLAN.md — Gap closure: fix triggerComplete getNextStatus guard for todo tasks, eliminate settling phase flash-back
 
 ### Phase 6: Mobile Someday Navigation
 **Goal**: Mobile users can access the Someday view via BottomTabBar
