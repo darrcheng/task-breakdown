@@ -1,7 +1,7 @@
-import { Calendar, List, Settings } from 'lucide-react';
+import { Archive, Calendar, List, Settings } from 'lucide-react';
 import clsx from 'clsx';
 
-export type MobileTab = 'calendar' | 'list' | 'settings';
+export type MobileTab = 'calendar' | 'list' | 'someday' | 'settings';
 
 interface BottomTabBarProps {
   activeTab: MobileTab;
@@ -11,6 +11,7 @@ interface BottomTabBarProps {
 const TABS: { id: MobileTab; icon: typeof Calendar; label: string }[] = [
   { id: 'calendar', icon: Calendar, label: 'Calendar' },
   { id: 'list', icon: List, label: 'List' },
+  { id: 'someday', icon: Archive, label: 'Someday' },
   { id: 'settings', icon: Settings, label: 'Settings' },
 ];
 

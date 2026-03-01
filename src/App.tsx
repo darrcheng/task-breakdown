@@ -170,9 +170,11 @@ function App() {
   // Derive active tab from viewMode for BottomTabBar
   const activeMobileTab: MobileTab = isSettingsOpen
     ? 'settings'
-    : viewMode === 'someday' || viewMode === 'list'
-      ? 'list'
-      : 'calendar';
+    : viewMode === 'someday'
+      ? 'someday'
+      : viewMode === 'list'
+        ? 'list'
+        : 'calendar';
 
   const isEmpty = taskCount === 0;
 
