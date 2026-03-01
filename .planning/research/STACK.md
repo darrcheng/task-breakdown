@@ -1,343 +1,352 @@
-# Technology Stack
+# Stack Research
 
-**Project:** ADHD-focused To-Do List with AI Task Breakdown
-**Researched:** 2026-02-05
-**Confidence:** MEDIUM (based on training data through Jan 2025, external verification unavailable)
+**Domain:** Firebase deployment, Google Auth, and real-time Firestore sync for existing React + Vite PWA
+**Researched:** 2026-03-01
+**Confidence:** HIGH — verified against Firebase JS SDK release notes (v12.10.0, Feb 27 2026) and official Firebase documentation
 
-## Recommended Stack
+---
 
-### Cross-Platform Framework
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| **React Native + Expo** | Expo SDK 52+ | Cross-platform mobile & web | Best balance of web/mobile parity, vast ecosystem, faster iterations than Flutter. Expo provides web support out-of-box. JavaScript/TypeScript familiarity reduces context switching. |
-| TypeScript | 5.x | Type safety | Essential for AI response parsing, complex state management, reduces runtime errors |
+## Context: What Already Exists (Do Not Re-Research)
 
-**Rationale:**
-- **React Native + Expo over Flutter:** Your requirement for web AND mobile with equal priority strongly favors React Native. Flutter web is still not production-ready for complex interactions (drag-and-drop is notoriously problematic). Expo provides unified web/iOS/Android builds from one codebase.
-- **React Native over PWA-only:** PWAs lack native calendar integration, file system access for offline-first, and app store presence. Given ADHD users need friction-free access, native app experience is critical.
-- **Expo over bare React Native:** Expo Router (file-based routing), EAS Build, OTA updates, and web support are essential for rapid iteration. You can always eject if needed.
+The v1.0 codebase is validated and working:
 
-**Confidence:** HIGH (React Native + Expo is the clear choice for your requirements as of 2025)
+| Technology | Version | Status |
+|------------|---------|--------|
+| React | ^19.2.0 | Locked — do not change |
+| Vite | ^5.4.21 | Locked |
+| Tailwind CSS | ^4.2.0 | Locked |
+| Dexie.js | ^4.3.0 | Locked — primary offline store |
+| dexie-react-hooks | ^4.2.0 | Locked |
+| vite-plugin-pwa | ^1.2.0 | Locked |
+| TypeScript | ~5.9.3 | Locked |
+| @dnd-kit | 6.x / 10.x / 3.x | Locked |
 
-### Backend Framework
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| **Hono** | 4.x | Edge-compatible API server | Ultralight (~12KB), runs on Cloudflare Workers for near-zero cost, faster than Express/Fastify, web-standard Request/Response |
-| Cloudflare Workers | Latest | Serverless hosting | Free tier: 100K requests/day. Perfect for personal use with room to scale. Zero cold starts. |
+The additions below are ONLY for Firebase v1.1 features: Firebase Hosting, Google Auth, and real-time Firestore sync with Dexie.js as the offline cache.
 
-**Rationale:**
-- **Hono over Express/Fastify:** Modern, edge-first design. Express is legacy (callback-based), Fastify is heavier. Hono's middleware system is cleaner and TypeScript-native.
-- **Cloudflare Workers over Vercel/AWS Lambda:** Your "minimize costs" requirement is paramount. CF Workers free tier is generous (100K req/day vs Vercel's 100GB bandwidth). Edge deployment means global speed.
-- **Alternative considered:** Supabase (free tier includes auth + DB + edge functions). Valid option if you want batteries-included, but less control and vendor lock-in.
+---
 
-**Confidence:** HIGH (Hono + CF Workers is optimal for your cost/performance needs)
+## Recommended Stack Additions
 
-### Database
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| **Cloudflare D1** | Latest | SQLite-based edge database | Free tier: 5GB storage, 5M reads/day, 100K writes/day. Relational model suits hierarchical subtasks. Zero-latency reads from edge. |
-| Drizzle ORM | 0.36+ | Type-safe query builder | Best TypeScript DX, generates migrations, works with D1, lighter than Prisma |
+### Core Firebase Technologies
 
-**Rationale:**
-- **D1 over PostgreSQL (Neon/Supabase):** Your usage pattern (personal, <1K tasks) fits D1's free tier perfectly. Relational model is ideal for recursive subtasks. PostgreSQL is overkill and adds hosting costs.
-- **D1 over Firebase/Firestore:** Real-time sync sounds appealing, but Firebase's pricing scales unpredictably. D1 + manual polling or WebSockets (Durable Objects) gives you control.
-- **Drizzle over Prisma:** Prisma's runtime overhead is significant (5-10MB bundle size). Drizzle is edge-compatible and lighter. For D1 specifically, Drizzle has better support.
+| Technology | Version | Purpose | Why Recommended |
+|------------|---------|---------|-----------------|
+| firebase | ^12.10.0 | Firebase SDK (app, auth, firestore) | Current stable release (Feb 27 2026). Modular tree-shaking API means you only pay bundle-cost for what you import. Importing just `firebase/app`, `firebase/auth`, and `firebase/firestore` is far smaller than pulling the full SDK. |
+| firebase-tools | ^15.8.0 | Firebase CLI for Hosting deploy | Required for `firebase deploy`. Install as dev dependency or globally. Current release is 15.8.0 (March 2026). |
 
-**Alternative for consideration:** IndexedDB (client-side) with optional cloud sync. For "personal use first," local-first architecture (CRDT-based) could eliminate backend costs entirely. Libraries: ElectricSQL, Replicache, or PowerSync.
+### Supporting Libraries (No New Installs Needed)
 
-**Confidence:** HIGH (D1 + Drizzle is solid for your scale, but consider local-first for true zero-cost)
+| Library | Status | Reason |
+|---------|--------|--------|
+| dexie ^4.3.0 | Already installed | Acts as the offline-first local cache. Firestore syncs into Dexie on connect; UI reads from Dexie always. No change needed. |
+| dexie-react-hooks ^4.2.0 | Already installed | `useLiveQuery` remains the reactive source for UI — Dexie changes trigger re-renders, Firestore changes just write to Dexie. |
+| vite-plugin-pwa ^1.2.0 | Already installed | Service worker handles asset caching. Firebase Auth persists auth state independently via its own IndexedDB store. No conflict. |
 
-### AI Provider Abstraction
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| **Vercel AI SDK** | 3.x | Unified LLM interface | Provider-agnostic (OpenAI, Anthropic, Google AI), streaming support, React hooks for UI, edge-compatible |
-| Zod | 3.x | Schema validation | Parse AI responses into type-safe structures, essential for subtask generation |
+### What NOT to Install
 
-**Rationale:**
-- **Vercel AI SDK over LangChain:** LangChain is overengineered for your use case. You need simple prompt → structured response, not chains/agents. Vercel AI SDK is lightweight, edge-compatible, and has excellent TypeScript DX.
-- **Vercel AI SDK over direct API calls:** Abstracts away provider differences (OpenAI vs Claude vs Gemini), handles streaming, retries, and errors. Switching providers is a config change, not a rewrite.
-- **Zod for structured outputs:** AI SDK integrates with Zod for type-safe parsing. Define subtask schema once, get validation + TypeScript types + runtime checks.
+| Avoid | Why | Use Instead |
+|-------|-----|-------------|
+| `reactfire` | Last release v4.2.3 (June 2023), marked experimental, not an officially supported Firebase product, React 19 compatibility unknown | Raw Firebase SDK hooks in a thin custom `useFirestore` hook |
+| `firebase/analytics` | Analytics adds ~40KB and has no value for a single-user personal tool | Omit entirely — import only `firebase/app`, `firebase/auth`, `firebase/firestore` |
+| `firebase/functions` | Cloud Functions are not needed for this milestone | Skip |
+| `firebase/storage` | No file storage needed for task data | Skip |
+| `firebase/database` | Realtime Database is the legacy product; Firestore is the current offering | Use Firestore |
+| `firebase/compat/*` | The compat namespace (v8-style API) disables tree-shaking for the entire product it wraps | Always use modular imports from `firebase/auth`, `firebase/firestore` |
+| `firebase/firestore/lite` | Lite removes real-time `onSnapshot` listeners, which are the core of the sync feature | Use full `firebase/firestore` |
 
-**Implementation pattern:**
+---
+
+## Firebase SDK: Modular Import Pattern
+
+Firebase v9+ uses a modular (tree-shakeable) API. Import only the functions you call.
+
+**App initialization** (`src/firebase/config.ts`):
 ```typescript
-import { generateObject } from 'ai';
-import { z } from 'zod';
+import { initializeApp } from 'firebase/app';
+import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+} from 'firebase/firestore';
 
-const subtaskSchema = z.object({
-  subtasks: z.array(z.object({
-    title: z.string(),
-    estimatedMinutes: z.number(),
-    order: z.number(),
-  })),
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+};
+
+export const app = initializeApp(firebaseConfig);
+
+// Firestore with IndexedDB offline persistence (multi-tab aware)
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager(),
+  }),
 });
 
-// Swap providers via config
-const result = await generateObject({
-  model: openai('gpt-4o') || anthropic('claude-3-5-sonnet') || google('gemini-2.0-flash'),
-  schema: subtaskSchema,
-  prompt: `Break down: "${taskTitle}"`,
-});
+export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();
 ```
 
-**Confidence:** HIGH (Vercel AI SDK is the current standard for LLM abstraction as of 2025)
+**Why `initializeFirestore` over `getFirestore`:** `initializeFirestore` must be called before any other Firestore usage and is the only place to configure `localCache`. `getFirestore` retrieves an already-initialized instance.
 
-### State Management
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| **Zustand** | 5.x | Global state | Simpler than Redux, no boilerplate, React Native compatible, <1KB |
-| TanStack Query | 5.x | Server state caching | Handles API calls, caching, optimistic updates, background refetching |
+**Why `persistentMultipleTabManager`:** The app is a PWA that users may open in multiple browser tabs. Multi-tab manager coordinates offline cache across all tabs using IndexedDB. Single-tab manager would fail if the user has the app open in two places simultaneously.
 
-**Rationale:**
-- **Zustand over Redux/MobX:** Redux is verbose (actions, reducers, thunks). MobX's magic is hard to debug. Zustand is transparent, minimal API, perfect for task lists.
-- **TanStack Query over manual fetch:** Your app needs optimistic UI updates (drag task → instant feedback while API syncs). TanStack Query handles this pattern elegantly, plus caching reduces API calls (cost savings).
+---
 
-**Confidence:** HIGH (Zustand + TanStack Query is the modern standard)
+## Firestore Offline Persistence: Role in the Dexie.js Architecture
 
-### UI & Interactions
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| **NativeWind** | 4.x | Styling (Tailwind for RN) | Unified styling syntax across web/mobile, compile-time CSS generation |
-| @dnd-kit | 6.x (web) | Drag-and-drop | Accessible, touch-friendly, works with virtual lists |
-| react-native-draggable-flatlist | 4.x (mobile) | Native drag-and-drop | Native gesture handling, smooth 60fps |
+This is the critical integration decision. Two viable strategies exist:
 
-**Rationale:**
-- **NativeWind over styled-components/Emotion:** Tailwind's utility-first approach is faster for prototyping. NativeWind compiles to native styles (no runtime cost).
-- **@dnd-kit for web:** Modern, accessible, tree-shakeable. Better than react-beautiful-dnd (unmaintained) or react-dnd (complex API).
-- **Separate DnD libraries for web/mobile:** Gesture systems differ fundamentally. Attempting unified abstraction (like react-native-gesture-handler web support) leads to compromises. Accept the platform difference.
+### Strategy A: Firestore-as-source-of-truth with Firestore offline cache (simpler)
 
-**Confidence:** HIGH (NativeWind is standard, but MEDIUM on DnD library versions without verification)
+Firestore's built-in `persistentLocalCache` stores a copy of all queried documents in its own IndexedDB store (separate from Dexie's). The UI reads from Firestore via `onSnapshot`; Firestore serves from cache when offline and syncs on reconnect.
 
-### Calendar/Date Handling
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| **date-fns** | 4.x | Date manipulation | Tree-shakeable, functional API, smaller than Moment/Day.js |
-| react-native-calendars | 1.x | Calendar UI component | Mature, customizable, handles edge cases (week start, localization) |
+**Problem for this project:** The existing UI is tightly coupled to Dexie's `useLiveQuery`. Replacing every data access point would require rewriting all 62 files.
 
-**Rationale:**
-- **date-fns over Moment/Day.js:** Moment is deprecated. Day.js is smaller but date-fns has better TypeScript support and tree-shaking (only import functions you use).
-- **react-native-calendars over custom build:** Calendar UI is deceptively complex (timezones, DST, week boundaries). Don't reinvent.
+### Strategy B: Firestore syncs into Dexie (layered approach — RECOMMENDED)
 
-**Confidence:** HIGH
+Firestore `onSnapshot` listeners write incoming changes into Dexie. The UI continues reading from Dexie via `useLiveQuery` — zero component changes needed. Writes go to Dexie first (instant, offline-safe), then to Firestore when online.
 
-## Supporting Libraries
+```
+Write path:  User action → Dexie (immediate) → Firestore (async, when online)
+Read path:   UI ← useLiveQuery ← Dexie (always)
+Sync path:   Firestore onSnapshot → write to Dexie
+```
 
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| Expo Router | 4.x | File-based navigation | Unified routing for web/mobile, type-safe |
-| Expo Secure Store | Latest | API key storage | Encrypt user's OpenAI/Claude keys on-device |
-| React Hook Form | 7.x | Form handling | Task creation/edit forms, validation |
-| Zod | 3.x | Schema validation | AI responses, form validation, API contracts |
-| clsx | 2.x | Conditional classnames | NativeWind utility |
+**Why Strategy B is correct for this codebase:**
+- Preserves all existing UI code (62 files, 6945 LOC)
+- `useLiveQuery` remains the reactive data source — no change needed
+- Dexie is the offline-first store; Firestore is the cloud mirror
+- Auth-gated: only start Firestore listeners after `onAuthStateChanged` fires with a user
+- Conflict resolution: Firestore's server timestamp wins on conflict (last-write-wins is acceptable for a single-user app)
 
-## Alternatives Considered
+**Important nuance:** With Strategy B, Firestore's own `persistentLocalCache` is still enabled but acts as a secondary safety net. The primary offline store remains Dexie. You can also initialize Firestore without `persistentLocalCache` (memory cache only) and rely purely on Dexie — valid for this single-user case.
 
-| Category | Recommended | Alternative | Why Not |
-|----------|-------------|-------------|---------|
-| **Cross-platform** | React Native + Expo | Flutter | Flutter web is not production-ready for complex interactions. Dart learning curve. Smaller ecosystem. |
-| **Cross-platform** | React Native + Expo | PWA-only | Lacks native integrations (calendar, notifications), poor offline UX, no app store presence |
-| **Backend** | Hono + CF Workers | Next.js API routes | Next.js requires hosting ($$$). Vercel free tier limits are tight. Edge middleware adds complexity. |
-| **Backend** | Hono + CF Workers | Supabase | Vendor lock-in. Less control over caching/performance. Generous free tier, but pricing jumps sharply. VALID alternative if you want auth + DB + functions in one. |
-| **Database** | D1 + Drizzle | PostgreSQL (Neon) | Overkill for personal use. D1's free tier covers your scale. PG adds latency (not edge-colocated). |
-| **Database** | D1 + Drizzle | Local-first (ElectricSQL) | MORE aligned with "zero cost" goal. Consider this seriously. Eliminates backend, works offline-native. Trade-off: no built-in sync UI, more client complexity. |
-| **AI SDK** | Vercel AI SDK | LangChain | Overengineered. Heavy dependencies. You don't need agents/chains, just structured generation. |
-| **State** | Zustand | Redux Toolkit | Boilerplate, even with RTK. Zustand is simpler and sufficient for your state shape. |
-| **Styling** | NativeWind | Tamagui | Tamagui is compelling (animated, typed styles) but immature. Breaking changes common. NativeWind is stable. |
+---
+
+## Firebase Authentication: Google Sign-In
+
+**Recommended pattern for desktop + mobile PWA:**
+
+```typescript
+import {
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+  onAuthStateChanged,
+  signOut,
+  GoogleAuthProvider,
+} from 'firebase/auth';
+
+// Detect mobile for redirect vs popup decision
+const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+
+export async function signInWithGoogle(auth, provider) {
+  if (isMobile) {
+    // Redirect is more reliable on mobile browsers (especially iOS Safari)
+    await signInWithRedirect(auth, provider);
+  } else {
+    await signInWithPopup(auth, provider);
+  }
+}
+
+// On app load, check for redirect result
+const result = await getRedirectResult(auth);
+if (result) {
+  // User just completed redirect sign-in
+}
+```
+
+**Why popup on desktop, redirect on mobile:**
+- `signInWithPopup` is blocked by iOS Safari and some Android browsers in PWA mode
+- `signInWithRedirect` navigates away and back, which works in all browsers including PWA standalone mode
+- As of June 2024, Chrome M115+ requires redirect best practices for third-party cookie phaseout
+- Firebase Auth automatically handles the redirect result on return
+
+**Auth state pattern (React context):**
+```typescript
+import { onAuthStateChanged } from 'firebase/auth';
+import { useEffect, useState } from 'react';
+
+export function useAuth(auth) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      setLoading(false);
+    });
+    return unsubscribe; // cleanup on unmount
+  }, [auth]);
+
+  return { user, loading };
+}
+```
+
+Firebase Auth persists sign-in state to its own IndexedDB store automatically. Users stay signed in across sessions and when offline.
+
+---
+
+## Firebase Hosting Configuration
+
+**firebase.json** (Vite SPA with PWA service worker):
+```json
+{
+  "hosting": {
+    "public": "dist",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "**/*.@(js|css)",
+        "headers": [
+          { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        ]
+      },
+      {
+        "source": "sw.js",
+        "headers": [
+          { "key": "Cache-Control", "value": "no-cache" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Why these settings:**
+- `public: "dist"` — Vite outputs to `dist/`, not `public/`
+- `rewrites: **` → `index.html` — required for client-side routing in a SPA
+- Immutable cache on hashed JS/CSS — Vite adds content hashes, these files never change
+- `no-cache` on `sw.js` — service worker must always be fresh so PWA updates propagate
+
+**.firebaserc** (project linking):
+```json
+{
+  "projects": {
+    "default": "your-firebase-project-id"
+  }
+}
+```
+
+**Deploy workflow:**
+```bash
+npm run build          # Vite outputs to dist/
+firebase deploy --only hosting   # Push dist/ to Firebase CDN
+```
+
+---
+
+## Firestore Security Rules: Single-User Pattern
+
+```firestore
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Tasks collection: user can only access their own tasks
+    match /users/{userId}/tasks/{taskId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Subtasks nested under tasks
+    match /users/{userId}/tasks/{taskId}/subtasks/{subtaskId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Deny all other paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+```
+
+**Firestore data structure recommendation:**
+```
+users/{uid}/tasks/{taskId}  →  { title, date, completed, energyLevel, order, ... }
+users/{uid}/tasks/{taskId}/subtasks/{subtaskId}  →  { title, completed, order, depth, ... }
+```
+
+Scoping all data under `users/{uid}/` means security rules are simple, and the path structure naturally supports multi-user in the future without schema changes.
+
+---
 
 ## Installation
 
-### Initialize Project
 ```bash
-# Create Expo app with TypeScript
-npx create-expo-app@latest task-breakdown --template tabs
+# Production dependency — Firebase SDK
+npm install firebase@^12.10.0
 
-cd task-breakdown
-
-# Install dependencies
-npx expo install react-native-web react-dom
+# Dev dependency — Firebase CLI for deployment
+npm install -D firebase-tools@^15.8.0
 ```
 
-### Core Dependencies
+Add deploy script to `package.json`:
+```json
+{
+  "scripts": {
+    "deploy": "npm run build && firebase deploy --only hosting"
+  }
+}
+```
+
+Add environment variables to `.env.local` (never commit):
 ```bash
-# State & data fetching
-npm install zustand @tanstack/react-query
-
-# Styling
-npm install nativewind
-npm install -D tailwindcss
-
-# AI integration
-npm install ai zod
-npm install @ai-sdk/openai @ai-sdk/anthropic @ai-sdk/google-generative-ai
-
-# Date handling
-npm install date-fns react-native-calendars
-
-# Forms
-npm install react-hook-form @hookform/resolvers
-
-# DnD (install per platform)
-npm install @dnd-kit/core @dnd-kit/sortable  # web only
-npm install react-native-draggable-flatlist  # mobile only
-
-# Navigation
-npx expo install expo-router
-
-# Security
-npx expo install expo-secure-store
-
-# Utilities
-npm install clsx
+VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_AUTH_DOMAIN=...
+VITE_FIREBASE_PROJECT_ID=...
+VITE_FIREBASE_STORAGE_BUCKET=...
+VITE_FIREBASE_MESSAGING_SENDER_ID=...
+VITE_FIREBASE_APP_ID=...
 ```
 
-### Backend Setup (Cloudflare Workers)
-```bash
-# In separate /backend directory
-npm create cloudflare@latest backend -- --framework hono
+---
 
-cd backend
+## Alternatives Considered
 
-# Database ORM
-npm install drizzle-orm
-npm install -D drizzle-kit
+| Recommended | Alternative | When to Use Alternative |
+|-------------|-------------|-------------------------|
+| Raw Firebase SDK hooks | reactfire | reactfire is not an officially supported product, last released June 2023, React 19 compatibility unverified. The raw SDK is 4 functions and a useEffect — no abstraction needed. |
+| `persistentMultipleTabManager` | `persistentSingleTabManager` | Single-tab is acceptable for apps where users never open multiple tabs (e.g., Electron). For a web PWA, multi-tab is the correct default. |
+| Dexie as primary store + Firestore sync | Firestore-only (replace Dexie) | Only viable for a greenfield project. Replacing Dexie would require rewriting all 62 files. |
+| `firebase/firestore` (full) | `firebase/firestore/lite` | Use Lite only when you need one-time reads and no real-time listeners. Real-time sync requires the full SDK. |
+| Environment variables (VITE\_\*) | Hardcoded config | Firebase API keys are not secret (they identify the project, not grant access), but using env vars allows different keys per environment and keeps config out of source control. |
 
-# Wrangler (CF CLI) is included by create-cloudflare
-```
+---
 
-## Architecture Notes
+## Version Compatibility
 
-### Local-First Alternative (Recommended Consideration)
+| Package | Compatible With | Notes |
+|---------|-----------------|-------|
+| firebase@^12.10.0 | React 19, Vite 5, TypeScript 5.9 | Firebase v12 requires Node 20+ and ES2020 targets. Vite 5 defaults satisfy this. No React dependency — Firebase SDK is framework-agnostic. |
+| firebase-tools@^15.8.0 | Node 20+ | CLI only, dev dependency, never shipped to browser |
+| firebase@^12.x | Dexie@^4.3.0 | No conflict — both use IndexedDB internally but in separate stores. Firebase uses `firestore/[project-id]/` namespace; Dexie uses its own DB name. |
+| firebase@^12.x | vite-plugin-pwa@^1.2.0 | No conflict. PWA service worker caches static assets; Firebase Auth uses its own persistence layer. |
 
-For truly minimized costs and ADHD-optimal UX (instant, offline-first), consider **local-first architecture**:
-
-**Pattern:** IndexedDB (client) + optional sync to cheap cloud storage (Cloudflare R2, $0.015/GB/month)
-
-**Libraries:**
-- **Replicache** (MIT license, self-hostable sync server)
-- **ElectricSQL** (Postgres-based sync, overkill but mature)
-- **TinyBase** (in-memory reactive store + persistence)
-
-**Why this matters for ADHD users:**
-- Zero latency (everything is local)
-- Works offline (no "loading" states to break flow)
-- No backend costs for personal use
-- Sync is optional (enable when ready to share)
-
-**Trade-off:** More client complexity, but aligns with "personal use first, shareable later."
-
-### Recursive Subtasks Data Model
-
-```typescript
-// D1 schema (Drizzle)
-export const tasks = sqliteTable('tasks', {
-  id: text('id').primaryKey(),
-  parentId: text('parent_id').references(() => tasks.id), // self-reference
-  title: text('title').notNull(),
-  description: text('description'),
-  scheduledDate: integer('scheduled_date', { mode: 'timestamp' }),
-  completed: integer('completed', { mode: 'boolean' }).default(false),
-  order: integer('order').notNull(),
-  depth: integer('depth').default(0), // track nesting level
-  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
-  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
-});
-
-// Recursive CTE query for subtree
-const subtree = db.execute(sql`
-  WITH RECURSIVE task_tree AS (
-    SELECT * FROM tasks WHERE id = ?
-    UNION ALL
-    SELECT t.* FROM tasks t
-    JOIN task_tree tt ON t.parent_id = tt.id
-    WHERE t.depth <= 4  -- limit to 4 levels
-  )
-  SELECT * FROM task_tree
-`);
-```
-
-### AI Provider Cost Optimization
-
-**Strategy:** Free tier → cheap → expensive
-
-1. **Start with Gemini 2.0 Flash (Google):**
-   - Free tier: 1500 requests/day
-   - Fast, sufficient for subtask generation
-   - Model: `gemini-2.0-flash-exp`
-
-2. **Fallback to Claude Haiku (Anthropic):**
-   - $0.25/MTok input, $1.25/MTok output
-   - Better reasoning for complex tasks
-   - Model: `claude-3-5-haiku-20241022`
-
-3. **Premium: Claude Sonnet (Anthropic):**
-   - $3/MTok input, $15/MTok output
-   - For deeply nested breakdowns
-   - Model: `claude-3-5-sonnet-20241022`
-
-**Implementation:**
-```typescript
-// config/ai-providers.ts
-export const AI_PROVIDERS = {
-  free: google('gemini-2.0-flash-exp'),
-  standard: anthropic('claude-3-5-haiku-20241022'),
-  premium: anthropic('claude-3-5-sonnet-20241022'),
-} as const;
-
-// User preference stored in Zustand
-const aiTier = useAIStore(state => state.tier); // 'free' | 'standard' | 'premium'
-```
-
-## Deployment
-
-### Mobile (Expo)
-```bash
-# Build for app stores via EAS
-eas build --platform all
-
-# Or development builds
-npx expo run:ios
-npx expo run:android
-```
-
-### Web (Expo)
-```bash
-# Static export (host on Cloudflare Pages)
-npx expo export:web
-
-# Outputs to /web-build, deploy to CF Pages (free)
-npx wrangler pages deploy web-build
-```
-
-### Backend (Cloudflare Workers)
-```bash
-cd backend
-
-# Deploy Workers + D1
-npx wrangler deploy
-
-# Run migrations
-npx drizzle-kit push
-```
-
-**Total monthly cost (personal use):**
-- Cloudflare Workers: $0 (free tier)
-- D1: $0 (free tier)
-- Cloudflare Pages: $0 (free tier)
-- Gemini API: $0 (free tier)
-- **Total: $0** until you exceed free tiers
+---
 
 ## Sources
 
-**Confidence caveat:** This research is based on training data through January 2025. External verification (Context7, WebSearch, official docs) was unavailable. Key recommendations (React Native + Expo, Hono, D1, Vercel AI SDK) reflect the state of the ecosystem as of late 2024/early 2025, but specific version numbers and API details should be verified against current documentation before implementation.
+- Firebase JavaScript SDK Release Notes — https://firebase.google.com/support/release-notes/js (version 12.10.0 confirmed Feb 27 2026; v12.0.0 July 2025 dropped Node <20 and ES2020 requirement noted)
+- Firebase Firestore offline persistence docs — https://firebase.google.com/docs/firestore/manage-data/enable-offline (`persistentLocalCache`, `persistentMultipleTabManager` API confirmed HIGH confidence)
+- Firebase Auth Google sign-in best practices — https://firebase.google.com/docs/auth/web/redirect-best-practices (redirect required Chrome M115+ June 2024, confirmed MEDIUM confidence via WebSearch)
+- Firebase Hosting SPA configuration — https://firebase.google.com/docs/hosting/full-config (rewrites pattern confirmed HIGH confidence via multiple sources)
+- firebase-tools version — WebSearch result citing v15.8.0, March 2026 (MEDIUM confidence — npm registry not directly fetchable)
+- reactfire status — GitHub repo https://github.com/FirebaseExtended/reactfire (experimental, v4.2.3, June 2023 — HIGH confidence, directly verified)
+- Firebase modular API bundle size — https://firebase.blog/posts/2021/07/introducing-the-new-firebase-js-sdk/ (80% size reduction with modular imports confirmed HIGH confidence)
 
-**Recommended verification steps:**
-1. Check Expo SDK latest version: https://docs.expo.dev/
-2. Verify Hono + Cloudflare Workers compatibility: https://hono.dev/getting-started/cloudflare-workers
-3. Confirm D1 free tier limits: https://developers.cloudflare.com/d1/platform/pricing/
-4. Review Vercel AI SDK docs: https://sdk.vercel.ai/docs
-5. Check Gemini API free tier: https://ai.google.dev/pricing
+---
 
-**High confidence areas:** Framework choices (React Native + Expo, Hono, Vercel AI SDK) are well-established as of Jan 2025.
-
-**Medium confidence areas:** Specific version numbers, D1 stability (still in beta as of training cutoff), NativeWind v4 maturity.
-
-**Recommended architecture exploration:** Seriously evaluate local-first (IndexedDB + optional sync) vs client-server. For ADHD users and "personal use first," local-first offers superior UX and zero costs.
+*Stack research for: Firebase v1.1 additions to TaskBreaker PWA*
+*Researched: 2026-03-01*

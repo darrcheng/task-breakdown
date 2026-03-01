@@ -1,295 +1,221 @@
 # Project Research Summary
 
-**Project:** ADHD-focused To-Do List with AI Task Breakdown
-**Domain:** Cross-platform productivity application with AI assistance
-**Researched:** 2026-02-05
-**Confidence:** MEDIUM (based on training data through Jan 2025, external verification unavailable)
+**Project:** TaskBreaker v1.1 — Firebase Deploy & Real-Time Sync
+**Domain:** Firebase Auth + Firestore sync + Firebase Hosting layered onto existing React + Vite + Dexie.js PWA
+**Researched:** 2026-03-01
+**Confidence:** HIGH
 
 ## Executive Summary
 
-This is a cross-platform productivity application targeting ADHD users with AI-powered task breakdown as the primary differentiator. Based on research, the recommended approach is React Native + Expo for unified web/mobile delivery, with a local-first architecture using Cloudflare's edge stack (Hono + D1) for near-zero operational costs. The AI integration should use the Vercel AI SDK with a tier-based provider strategy (Gemini free tier → Claude Haiku → Claude Sonnet) to manage costs while maintaining quality.
+This milestone adds Firebase Hosting deployment, Google Sign-In via Firebase Auth, and real-time cross-device Firestore sync to the existing TaskBreaker v1.0 PWA. The core insight from research is that this is an **additive integration, not a rewrite**. The existing codebase (62 files, 6,945 LOC) uses Dexie.js with `useLiveQuery` as the reactive UI source and must remain unchanged. The correct architecture treats Dexie as the local source of truth and Firestore as a cloud sync bus: `onSnapshot` writes remote changes into Dexie, and Dexie mutations are mirrored to Firestore via thin wrapper functions. This preserves all existing component code and reactive query patterns while gaining cloud sync.
 
-The core architectural risk is complexity overload — ADHD users specifically need friction-free task capture and minimal cognitive load, which means ruthless feature restraint despite temptation to add "helpful" options. Technical risks center on recursive task breakdown (must enforce depth/breadth limits to prevent explosion), AI cost control (require explicit triggers, not auto-breakdown), and cross-platform sync race conditions (requires conflict resolution strategy from foundation phase). The competitive opportunity lies in combining AI breakdown sophistication (Goblin Tools level) with visual calendar scheduling (Structured app style) at recursive depth (3-4 levels) that exceeds existing tools.
+The recommended stack additions are minimal: `firebase@^12.10.0` (modular, tree-shakeable SDK) and `firebase-tools@^15.8.0` (dev-only CLI for deployment). No third-party wrappers like `reactfire` are needed or advisable — that library is unmaintained and unverified for React 19. The Firebase SDK's modular import pattern (`firebase/app`, `firebase/auth`, `firebase/firestore` only) keeps bundle impact small. The implementation introduces 7 new files (`src/firebase/config.ts`, `auth.ts`, `sync.ts`, `src/hooks/useAuth.ts`, `useSyncEngine.ts`, `src/components/auth/AuthGate.tsx`, `SignInButton.tsx`) and minimal changes to `App.tsx` only.
 
-The recommended build order follows a local-first MVP pattern: establish data model and single-platform core task management first, add AI differentiation second, polish ADHD-specific UX third, and defer sync/multi-device until core value is validated. This approach minimizes premature optimization while ensuring the foundation supports eventual multi-platform scaling without rewrites.
+The critical risks all concentrate at the architecture design decision point. The two make-or-break choices are: (1) resolving the Dexie integer ID vs. Firestore string ID mismatch before writing any sync code — getting this wrong breaks all subtask foreign key relationships across devices, and (2) committing to Dexie as the single source of truth rather than running both Firestore's IndexedDB cache and Dexie simultaneously, which creates a two-cache conflict that silently diverges and corrupts on `Clear site data`. These decisions must be locked in during Phase 1 (Firebase setup) and cannot be revisited cheaply later.
+
+---
 
 ## Key Findings
 
 ### Recommended Stack
 
-React Native + Expo provides the best balance for equal web/mobile priority, with JavaScript/TypeScript unification reducing context switching. Expo specifically delivers out-of-box web support, file-based routing, and OTA updates that accelerate iteration. The backend strategy leverages Cloudflare's generous free tiers: Hono for edge-compatible APIs (ultralight at 12KB), D1 for SQLite-based edge database (5GB storage, 5M reads/day free), and Workers for serverless hosting (100K requests/day free). This stack can operate at literally $0/month for personal use with room to scale.
+The existing stack (React 19, Vite 5, TypeScript 5.9, Dexie 4.3, vite-plugin-pwa 1.2, Tailwind 4) is fully compatible with Firebase 12 and requires no changes. Firebase v12.10.0 (released Feb 27 2026) is the current stable release. The modular API eliminates tree-shaking concerns — only the `firebase/app`, `firebase/auth`, and `firebase/firestore` subpackages need to be imported. Firebase Auth and Firestore use their own IndexedDB namespaces separate from Dexie's named database, so there is no storage collision.
 
 **Core technologies:**
-- **React Native + Expo SDK 52+**: Cross-platform framework — best web/mobile parity, Flutter web isn't production-ready for complex drag-drop interactions
-- **Hono 4.x + Cloudflare Workers**: Backend API — edge-first, near-zero cost, faster than Express/Fastify, web-standard Request/Response
-- **D1 + Drizzle ORM 0.36+**: Database — free tier covers personal use scale, relational model suits hierarchical subtasks, lighter than Prisma
-- **Vercel AI SDK 3.x + Zod 3.x**: AI abstraction — provider-agnostic, streaming support, type-safe schema validation for structured output
-- **Zustand 5.x + TanStack Query 5.x**: State management — minimal boilerplate, handles optimistic updates and caching elegantly
-- **NativeWind 4.x**: Styling — unified Tailwind syntax across web/mobile, compile-time CSS generation
+- `firebase@^12.10.0`: SDK providing Auth, Firestore, and app init — modular imports keep bundle cost low; framework-agnostic
+- `firebase-tools@^15.8.0`: CLI for `firebase deploy --only hosting`; dev dependency, never shipped to browser
+- `initializeFirestore` with `persistentMultipleTabManager`: required for multi-tab PWA support; must be called before any other Firestore usage to configure the local cache
+- `signInWithPopup` (desktop) + `signInWithRedirect` (mobile/PWA): both required due to iOS Safari and Chrome M115+ third-party cookie restrictions
 
-**Alternative consideration:** Local-first architecture (IndexedDB + optional sync to R2) could eliminate backend costs entirely and deliver zero-latency offline-first experience that particularly benefits ADHD users. This aligns better with "personal use first, shareable later" but adds client complexity.
+**What NOT to add:** `reactfire` (unmaintained, React 19 compatibility unverified), `firebase/analytics` (~40KB, no value for personal tool), `firebase/compat/*` (disables tree-shaking), `firebase/firestore/lite` (removes `onSnapshot`, which is the core feature).
 
 ### Expected Features
 
-**Must have (table stakes):**
-- Quick task capture — ADHD brains need immediate offload, single input field with keyboard shortcuts
-- Daily/calendar view — time blindness requires concrete "today" visualization, clear separation from future tasks
-- Visual task organization — drag-and-drop, color coding, spatial hierarchy prevents text-heavy overwhelm
-- Task completion feedback — dopamine hits essential for ADHD motivation, needs satisfying visual/audio confirmation
-- Low friction editing — inline editing, no modal dialogs, perfectionism paralysis requires effortless changes
-- Mobile + desktop parity — task capture happens anywhere, desktop-only breaks ADHD workflow
+**Must have (P1 — v1.1 launch blockers):**
+- Google sign-in — popup on desktop, redirect on mobile/PWA; persistent session via `browserLocalPersistence`
+- Sign-out — explicit user action clears auth state
+- Firestore user-scoped data model — `/users/{uid}/tasks/{taskId}` with security rules matching `request.auth.uid`
+- Offline persistence — Firestore queues pending writes when offline, flushes on reconnect automatically
+- Real-time cross-device sync — `onSnapshot` listener propagates changes within ~1 second
+- One-time Dexie-to-Firestore migration — on first sign-in, existing local tasks are uploaded without data loss
+- Firebase Hosting deploy — HTTPS, SPA rewrites, correct cache headers for PWA service worker
+- Multi-tab safety — `persistentMultipleTabManager` prevents `FAILED_PRECONDITION` errors
 
-**Should have (competitive differentiators):**
-- AI task breakdown — core differentiator that solves "where to start" paralysis, must handle recursive 3-4 levels
-- Task time estimates — helps with time blindness, AI can suggest durations and learn from completion patterns
-- Energy level tagging — ADHD has variable capacity, need to match tasks to current state (low/medium/high energy)
-- Gentle reschedule prompts — no guilt-inducing overdue badges, supportive "would you like to move this?" language
-- Calendar time blocking — drag tasks to time slots for realistic day visualization
+**Should have (P2 — add after core sync works):**
+- Offline sync status indicator — `metadata.hasPendingWrites` and `metadata.fromCache` flags are readable at no cost; shows "synced" vs. "saving"
+- Auth error handling UX — graceful messages for popup blocked, network failure, sign-in cancelled
+- Sign-in gate UI — landing page with sign-in prompt for unauthenticated users
 
 **Defer (v2+):**
-- Gamification/rewards system — complex to implement well, validate engagement need first
-- Body doubling/focus timer — valuable but not core to task breakdown value proposition
-- Routine templates — useful but not essential for validating core AI concept
-- External calendar integration — internal calendar must work first before syncing Google/Outlook
-- Real-time collaboration — far future, focus on personal use first
+- Additional auth providers — Google Sign-In alone is sufficient for a personal app
+- Selective date-range sync — cost optimization only relevant at higher task volumes
+- Shared task lists and multi-user collaboration — out of scope for personal-first approach
+- Export/import JSON backup
 
-**Anti-features (explicitly avoid):**
-- Guilt-inducing overdue indicators — red badges worsen ADHD shame spiral
-- Rigid deadline enforcement — ADHD has unpredictable energy, rigid deadlines cause anxiety
-- Mandatory categorization — forced organization blocks task capture momentum
-- Achievement streaks that reset — losing streaks feels punishing for inconsistent ADHD productivity
-- Complex hierarchy beyond 3 levels — deep nesting causes overwhelm and paralysis
+**Anti-features to explicitly reject:**
+- Anonymous auth — adds account-upgrade complexity with no benefit over Dexie-only mode
+- Firestore as UI source (replacing Dexie) — would require rewriting all 62 files
+- Custom conflict resolution — last-write-wins via `updatedAt` is correct for single-user; CRDT adds weeks of complexity for zero benefit
+- Firebase Cloud Messaging push notifications — intrusive for ADHD users; in-app prompts already exist
 
 ### Architecture Approach
 
-The recommended architecture follows a local-first pattern with platform-specific storage (IndexedDB for web, SQLite for mobile) and maximum code sharing through a monorepo structure. Business logic lives in platform-agnostic `/core` package while UI components remain platform-specific. This enables sharing of Task Logic, Calendar Logic, and AI Service layers while allowing best-in-class storage implementations per platform.
+The architecture is a layered addition on top of unchanged existing code. All React components, `useLiveQuery` hooks, and Dexie schema remain untouched. A new `src/firebase/` module isolates all SDK calls so no component imports Firebase directly. A `useSyncEngine` hook orchestrates bidirectional sync: outbound writes go to Dexie first (instant), then Firestore asynchronously; inbound changes arrive via `onSnapshot`, pass through a `hasPendingWrites` guard (to avoid echo loops) and an `updatedAt` last-write-wins check, then write into Dexie, triggering existing `useLiveQuery` re-renders automatically.
 
 **Major components:**
-1. **Shared State (Zustand)** — application state management, coordinates between UI components and business logic with unidirectional data flow
-2. **Task Logic** — pure business logic for CRUD operations, subtask recursion with adjacency list pattern (parent_id references), status management
-3. **AI Service with Provider Adapter** — orchestrates task breakdown via Strategy pattern, abstracts provider differences (Gemini/Claude/OpenAI), handles prompt management and retry logic
-4. **Calendar Logic** — temporal operations for date scheduling, drag-between-days calculations, view state separation from domain data
-5. **Local Database** — source of truth with IndexedDB/SQLite, recursive queries via CTE, indexed on parent_id and scheduled_date for performance
-6. **Sync Engine (deferred)** — eventual consistency layer for multi-device, not needed for MVP, conflict resolution must be designed upfront even if not implemented
+1. `src/firebase/config.ts` — Firebase app init, `initializeFirestore` with `persistentLocalCache` + `persistentMultipleTabManager`, `getAuth`
+2. `src/firebase/auth.ts` — `signInWithPopup`/`signInWithRedirect` helpers, `signOut`
+3. `src/firebase/sync.ts` — Firestore path helpers, type converters (Dexie `Task` to/from `FirestoreTask`), mutation wrappers (`syncAddTask`, `syncUpdateTask`, `syncDeleteTask`)
+4. `src/hooks/useAuth.ts` — `AuthProvider` context + `useAuth` hook; exposes `{ user, loading, signIn, signOut }`
+5. `src/hooks/useSyncEngine.ts` — `onSnapshot` subscription lifecycle, inbound change handler, migration trigger on first sign-in
+6. `src/components/auth/AuthGate.tsx` — renders loading spinner, login screen, or app depending on auth state
+7. `App.tsx` (modified only) — wraps existing JSX with `AuthProvider` and `AuthGate`, calls `useSyncEngine(user)`
 
-**Key patterns:**
-- **Recursive Task Tree (Adjacency List)**: Store parent_id reference only, compute hierarchy on demand, enforces depth limits via schema constraints
-- **Optimistic Updates with Rollback**: Update UI immediately, persist asynchronously, rollback on failure for responsive offline-first UX
-- **AI Provider Strategy Pattern**: Unified interface for swappable backends, avoid vendor lock-in, enable cost-tier experimentation
+**ID mapping decision (must be made in Phase 1):** Use `String(task.id)` as the Firestore document ID. No Dexie schema migration required. Dexie integer IDs remain the local primary key; sync wrappers convert at the boundary with `String(id)` / `Number(doc.id)`. This is the zero-risk path.
+
+**Data flow:**
+```
+Write path:  User action → Dexie (immediate) → Firestore (async, when online)
+Read path:   UI ← useLiveQuery ← Dexie (always)
+Sync path:   Firestore onSnapshot → hasPendingWrites guard → LWW check → Dexie.put → useLiveQuery fires
+```
 
 ### Critical Pitfalls
 
-1. **Overwhelming ADHD users with complexity** — More features creates cognitive load exceeding benefit. Default to zero-config, make everything optional, ruthlessly cut pre-task-entry decisions. Test with actual ADHD users not productivity enthusiasts. Measure time-to-first-task (must be under 10 seconds).
+1. **Integer-to-string ID mismatch breaks subtask foreign keys across devices** — Design the ID mapping strategy before writing any sync code. Use `String(task.id)` as Firestore doc ID; parse `Number(doc.id)` on inbound. Never use Firestore's `addDoc` for syncing existing records — use `setDoc` with a stable pre-determined ID. Failing to do this causes subtasks to become orphaned on the second device.
 
-2. **Infinite recursion and subtask explosion** — AI generating 4+ levels with 47 subtasks for "clean kitchen" creates paralyzing overwhelm. Hard limit depth to 3 levels max, breadth to 5-7 subtasks per parent, require user confirmation before breakdown, collapse by default, enforce via database constraints. This must be MVP requirement, not deferred optimization.
+2. **Auth state is async — causes flash of sign-in screen and permission errors on startup** — Always use `onAuthStateChanged` with a `loading` state; render a spinner until `authLoading === false`. Never start Firestore listeners until `user !== null`. Never read `auth.currentUser` synchronously at startup — it always returns `null` before the async check completes.
 
-3. **AI cost explosion without controls** — User creates 50 tasks in planning session, auto-breakdown triggers $5 in API costs before real usage begins. Require explicit breakdown trigger (button not automatic), implement daily/monthly rate limits, cache common breakdowns, use cheaper models first (Gemini free tier → Claude Haiku), show approaching limits. Cost controls are Day 1 requirement.
+3. **`signInWithPopup` fails silently in iOS Safari PWA standalone mode** — Use `signInWithRedirect` on mobile. Detect mobile with `isMobile` check (already available in the codebase). Verify `authDomain` in Firebase config exactly matches the deployed domain. Test explicitly on real iOS device in PWA standalone mode before marking auth complete.
 
-4. **Cross-platform sync race conditions** — User drags task to Friday on web while marking done on mobile, conflicting timestamps cause data loss or duplication. Design conflict resolution strategy upfront (CRDTs, operational transforms, or explicit conflict UI), use vector clocks for change tracking, test with simultaneous conflicting edits. Foundation phase architecture decision that cannot be bolted on later.
+4. **Firestore's IndexedDB persistence conflicts with Dexie as source of truth** — Either disable Firestore's own persistence (`memoryLocalCache`) and rely entirely on Dexie, or use `persistentLocalCache` as a Firestore-internal write buffer while Dexie remains the sole read source. Running both as competing read sources causes cache divergence and post-`Clear site data` corruption (confirmed SDK issue #8593). The architecture choice must be documented and committed to before any sync code is written.
 
-5. **Calendar-task impedance mismatch** — Task "write blog post" scheduled Tuesday but takes 3 hours when only 45-minute block available, endless rescheduling creates guilt loop. Add capacity indicators ("6 hours tasks on 3-hour-free day"), warn on overload, offer "find time for this" suggestions, separate "scheduled for" from "hoping to do."
+5. **Open security rules expose all data before first production deploy** — Write the production security rules (`/users/{uid}/{document=**}` scoped to `request.auth.uid`) before or simultaneously with the first Firebase Hosting deploy. The `firebaseConfig` is publicly visible in the deployed JS bundle, so an open ruleset means anyone can read or delete all data.
+
+6. **Firestore reconnect billing: 30-minute offline gap triggers full-collection re-read** — With 500 tasks, reconnecting after 30+ minutes costs 500 reads. Mitigate by: unsubscribing `onSnapshot` on `visibilitychange` (app backgrounded), resubscribing with a `where('updatedAt', '>', lastSyncTimestamp)` delta query on foreground resume. Track `lastSyncTimestamp` in Dexie.
+
+7. **`onSnapshot` unsubscribe omission causes memory leaks and zombie read billing** — Every `onSnapshot` call must return the unsubscribe function from its `useEffect` cleanup. Centralizing all listeners in `useSyncEngine` makes this easy to enforce and audit.
+
+---
 
 ## Implications for Roadmap
 
-Based on research, suggested phase structure:
+Based on the hard dependency chain discovered in research, the implementation must follow a strict sequential order. Auth must precede Firestore (security rules reject unauthenticated writes). The data model and ID strategy must be decided before any sync code is written. Migration must complete before the sync listener starts (or the listener could overwrite local data with empty state from Firestore on a fresh device).
 
-### Phase 1: Foundation — Local-First Core
-**Rationale:** Establish data model and single-platform basic task management before AI complexity. Local-first architecture provides immediate usability without backend dependency and ensures solid foundation for eventual sync.
+### Phase 1: Firebase Project Setup and Configuration
 
-**Delivers:** Functional single-device task manager with calendar view
-- Data model with recursive task tree (adjacency list, depth constraints)
-- Local storage layer (IndexedDB for web OR SQLite for mobile, choose one platform to start)
-- Core task CRUD operations with optimistic updates
-- Basic UI: quick task capture, daily calendar view, drag-and-drop scheduling
-- Task completion with positive feedback
+**Rationale:** Everything else depends on having a Firebase project with credentials. This phase has no code output but unblocks all subsequent phases. The billing architecture (Spark vs. GCP trial) must also be resolved here to avoid the trial-expiry disruption pitfall. The ID mapping decision (Option A: `String(task.id)`) should be confirmed as a design checkpoint at the end of this phase.
+**Delivers:** Firebase project with Firestore (Native mode) and Google Auth enabled; `.env.local` with `VITE_FIREBASE_*` vars; `firebase.json` and `.firebaserc` skeleton committed; Firestore security rules deployed (not left open); billing plan confirmed (Spark vs. GCP trial); `npm install firebase firebase-tools` complete; ID mapping strategy documented.
+**Addresses:** Google sign-in (setup prerequisite), Firebase Hosting deploy (config prerequisite), HTTPS requirement
+**Avoids:** Open security rules (Pitfall 7), GCP trial/Spark confusion (Pitfall 8 from PITFALLS.md)
 
-**Addresses features:**
-- Quick task capture (table stakes)
-- Daily calendar view (table stakes)
-- Visual task organization via drag-drop (table stakes)
-- Task completion feedback (table stakes)
-- Low friction editing (table stakes)
+### Phase 2: Firebase Auth Layer
 
-**Avoids pitfalls:**
-- Complexity overload: zero-config task capture, minimal setup required
-- Performance issues: proper indexing from day one (parent_id, scheduled_date)
-- Time zone bugs: store dates as ISO strings "2026-02-04" not timestamps
+**Rationale:** Auth must be working and confirmed before any Firestore writes are attempted. The `user.uid` is the key for all Firestore paths. The auth loading state and iOS PWA sign-in failure must both be addressed and verified here — auth is not complete until tested on real iOS hardware in PWA standalone mode.
+**Delivers:** `src/firebase/config.ts`, `src/firebase/auth.ts`, `src/hooks/useAuth.ts`, `src/components/auth/AuthGate.tsx`, `src/components/auth/SignInButton.tsx`; `App.tsx` wrapped with `AuthProvider`; sign-in and sign-out working on desktop and mobile; auth loading state renders spinner with no sign-in flash for already-authenticated users.
+**Uses:** `firebase/auth`, `signInWithPopup`, `signInWithRedirect`, `onAuthStateChanged`, `GoogleAuthProvider`
+**Implements:** Auth Context pattern (React Context + `onAuthStateChanged` from ARCHITECTURE.md)
+**Avoids:** Auth state race (Pitfall 2), iOS Safari popup failure (Pitfall 3)
 
-**Research needs:** SKIP — established patterns for local task managers, well-documented storage libraries
+### Phase 3: Firestore Sync Engine
 
-### Phase 2: AI Differentiation
-**Rationale:** Core value proposition depends on AI breakdown working well. Implement with strict controls to avoid cost explosion and subtask overload. Build provider abstraction from start to enable experimentation.
+**Rationale:** The most complex phase. Requires auth (for `user.uid`) and must open with a confirmation of the ID mapping strategy (Pitfall 1) before writing a line. Inbound and outbound sync paths, the `hasPendingWrites` echo guard, the `updatedAt` last-write-wins conflict resolution, and the one-time Dexie-to-Firestore migration all belong here. Migration is included in this phase because it must run before the `onSnapshot` listener starts for the first time — separating them creates a sequencing failure risk.
+**Delivers:** `src/firebase/sync.ts` (type converters, path helpers, `syncAddTask`/`syncUpdateTask`/`syncDeleteTask` wrappers); `src/hooks/useSyncEngine.ts` (bidirectional sync, `onSnapshot` subscription, migration trigger); `App.tsx` calling `useSyncEngine(user)`; `firestore.indexes.json` for date and delta-sync queries; real-time sync verified on two devices including subtask parent/child relationships.
+**Uses:** `firebase/firestore`, `onSnapshot`, `setDoc`, `updateDoc`, `deleteDoc`, `persistentMultipleTabManager`, `serverTimestamp`
+**Implements:** Dexie-as-cache pattern, per-user subcollection data model, last-write-wins conflict resolution (Patterns 1, 2, 4, 5 from ARCHITECTURE.md)
+**Avoids:** Integer/string ID mismatch (Pitfall 1), Firestore cache vs. Dexie conflict (Pitfall 4), full-document write amplification (PITFALLS.md Pitfall 9), unsubscribe memory leak (Pitfall 7)
 
-**Delivers:** Task breakdown with recursive subtasks
-- AI Provider abstraction (Strategy pattern with single provider implementation)
-- Gemini integration as initial free-tier provider
-- Prompt engineering for 3-5 actionable subtasks
-- Subtask creation with depth/breadth enforcement (3 levels max, 5-7 per parent)
-- UI: "Break down task" button, loading states, edit AI suggestions before accepting
-- Cost controls: rate limiting, explicit triggers only, usage tracking
+### Phase 4: Firebase Hosting Deployment
 
-**Addresses features:**
-- AI task breakdown (primary differentiator)
-- Recursive breakdown to 3-4 levels (competitive advantage)
-- Task time estimates (AI can suggest durations)
+**Rationale:** Hosting can technically be configured independently of Auth/Firestore, but is most meaningful as the "ship it" moment after sync is proven working locally. The service worker cache header configuration (no-cache for `sw.js` and `index.html`, immutable for hashed assets) must be in place before the first real user deploy to avoid the PWA update propagation failure.
+**Delivers:** `firebase.json` with SPA rewrites and correct cache headers; `.firebaserc` with project alias; `npm run deploy` script (`npm run build && firebase deploy --only hosting`); app accessible at `[project-id].web.app` over HTTPS; PWA installable from Firebase Hosting URL; deploy confirmed not to touch Firestore data.
+**Avoids:** vite-plugin-pwa service worker conflict with Firebase service worker (Pitfall 4 from PITFALLS.md), CDN caching of `index.html` blocking PWA updates (Anti-Pattern 4 from ARCHITECTURE.md)
 
-**Avoids pitfalls:**
-- Infinite recursion: hard limits enforced in AI Service and database schema
-- AI cost explosion: explicit triggers, rate limits, free tier provider first
-- Stale AI context: pass task description and recent task context in prompt
-- No loading states: immediate spinner, disable button during request
+### Phase 5: Polish and UX Hardening
 
-**Research needs:** DEEP RESEARCH REQUIRED
-- Current Gemini API structured output capabilities and free tier limits
-- Prompt engineering patterns for task breakdown (quality vs tokens)
-- Latest Vercel AI SDK integration patterns for Zod schema validation
-- Rate limiting strategies for AI endpoints
-
-### Phase 3: ADHD-Specific Polish
-**Rationale:** Differentiate from generic task apps by addressing ADHD pain points. These features make the difference between "tried it" and "can't live without it."
-
-**Delivers:** ADHD-optimized user experience
-- Energy level tagging for tasks (low/medium/high)
-- Filter tasks by current energy capacity
-- Capacity awareness: visual day overload indicators
-- Gentle reschedule prompts (no guilt language)
-- Enhanced completion feedback (celebrate small wins)
-- Undo support for all mutations
-- Empty states and onboarding flow
-
-**Addresses features:**
-- Energy level tagging (differentiator)
-- Gentle reschedule prompts (ADHD-specific)
-- Positive completion feedback (ADHD motivation support)
-
-**Avoids pitfalls:**
-- Guilt-inducing indicators: neutral language, supportive prompts
-- Notification hell: default to zero, opt-in only for what user wants
-- No undo: Cmd/Ctrl+Z support, toast confirmations with undo option
-
-**Research needs:** MODERATE RESEARCH RECOMMENDED
-- ADHD community feedback on existing tools (r/ADHD, ADDitude forums)
-- Energy-based task filtering patterns from ADHD apps
-- Positive reinforcement patterns that don't feel patronizing
-
-### Phase 4: Cross-Platform Expansion
-**Rationale:** After core value validated on one platform, expand to second platform to enable task capture anywhere. Shared business logic reduces duplication.
-
-**Delivers:** Full web + mobile parity
-- Implement second platform (if started web, add mobile; if started mobile, add web)
-- Extract shared logic to monorepo `/core` package
-- Platform-specific UI components (web vs mobile drag-drop libraries)
-- Unified state management across platforms
-- Platform-specific storage adapters (IndexedDB + SQLite)
-
-**Addresses features:**
-- Mobile + desktop parity (table stakes requirement)
-- Cross-platform sync foundation (architecture ready even if not syncing yet)
-
-**Avoids pitfalls:**
-- Mixing view concerns with domain data: strict separation maintained
-- Shared mutable state: unidirectional data flow enforced
-- Platform differences in drag-drop: accept separate libraries per platform
-
-**Research needs:** SKIP — established React Native + Expo patterns, architecture already researched
-
-### Phase 5: Multi-Device Sync (Deferred to Post-MVP)
-**Rationale:** Validate core value proposition and user retention before investing in complex sync infrastructure. Conflict resolution is architecturally complex and can wait until proven user need.
-
-**Delivers:** Use app across multiple devices with sync
-- Backend API (Hono + Cloudflare Workers + D1)
-- Authentication (simple email/password or magic link, not OAuth initially)
-- Sync engine with conflict resolution (last-write-wins with conflict detection)
-- Offline queue and background sync
-- Sync status indicators in UI
-
-**Avoids pitfalls:**
-- Race conditions: implement conflict resolution strategy designed in Phase 1
-- Authentication overload: start simple, add complexity only when needed
-- Sync before offline: local-first foundation already solid
-
-**Research needs:** DEEP RESEARCH REQUIRED (when phase begins)
-- Cloudflare D1 production readiness and limitations at time of implementation
-- Conflict resolution libraries and patterns for React Native
-- Offline queue implementation patterns with TanStack Query
+**Rationale:** Core sync is now working. Add the P2 features that meaningfully improve trust and reliability without changing the sync architecture. The delta sync strategy (visibility-change unsubscribe + `lastSyncTimestamp` query on foreground resume) belongs here as a billing safeguard once baseline usage patterns are observable.
+**Delivers:** Offline sync status indicator using `metadata.hasPendingWrites` and `metadata.fromCache`; auth error handling UX (popup blocked, network failure messages); offline/online banner using `navigator.onLine`; delta sync with `lastSyncTimestamp` (background/foreground lifecycle management to contain Firestore billing at scale).
+**Addresses:** P2 features from FEATURES.md — offline sync status indicator, auth error handling UX, sign-in gate UI
+**Avoids:** Reconnect billing spike (Pitfall 6), UX pitfalls from PITFALLS.md (no sync feedback, blocking UI on write)
 
 ### Phase Ordering Rationale
 
-- **Phase 1 first**: Foundation must be solid before adding AI complexity. Local-first architecture validates core task management patterns without backend dependency. Single platform reduces variables during initial development.
-
-- **Phase 2 second**: AI differentiation is core value proposition but depends on stable task data model. Cost controls and limits must be MVP requirements, not optimizations. Provider abstraction from start avoids lock-in.
-
-- **Phase 3 third**: ADHD-specific polish separates this from generic task managers but requires working task+AI foundation. These features are refinements, not core functionality.
-
-- **Phase 4 fourth**: Cross-platform expansion proves architecture's portability but only after core value validated on single platform. Shared business logic reuse validates abstraction quality.
-
-- **Phase 5 deferred**: Sync is most complex component with highest risk of premature optimization. Personal use MVP doesn't require it. Multi-device sync becomes valuable only after retention is proven.
+- **Sequential dependency chain:** Project setup → Auth → Sync → Hosting is a hard dependency chain; no phase can be reordered without creating either a blocked implementation or a security gap.
+- **ID strategy is a Phase 1/2 boundary decision:** The ID mapping approach must be confirmed before Phase 3. Treating it as a design checkpoint at the end of Phase 1 ensures it cannot be skipped.
+- **Migration inside Phase 3:** The one-time Dexie-to-Firestore migration is tightly coupled to sync engine initialization. Keeping it in the same phase prevents a sequencing error where the listener fires before migration completes, potentially overwriting local data.
+- **Hosting last among core phases:** Firebase Hosting serves the compiled app. Deploying before sync works means deploying an incomplete product to a public URL. Phase 4 is the intentional "ship it" gate.
+- **P2 features in their own phase:** The sync status indicator, error handling UX, and delta sync are low-risk additions that do not touch the sync architecture. Isolating them prevents scope creep in the critical Phase 3.
 
 ### Research Flags
 
-**Phases needing deeper research during planning:**
-- **Phase 2 (AI Integration)**: Gemini API capabilities evolve rapidly, prompt engineering is domain-specific, cost optimization strategies need current pricing verification
-- **Phase 3 (ADHD Polish)**: ADHD community feedback on existing tools provides real user pain points, energy-based filtering patterns need UX validation
-- **Phase 5 (Sync)**: Conflict resolution strategies and D1 production readiness require point-in-time verification when phase begins
+Phases requiring deeper research or implementation-level spiking:
 
-**Phases with standard patterns (skip research):**
-- **Phase 1 (Foundation)**: Local task storage with IndexedDB/SQLite is well-documented, adjacency list for recursive trees is established pattern
-- **Phase 4 (Cross-Platform)**: React Native + Expo patterns are mature, monorepo code sharing is standard practice
+- **Phase 3 (Sync Engine — migration function):** The one-time idempotent Dexie-to-Firestore migration has no established Firebase template. It must be both safe to run multiple times (in case of partial failure) and guaranteed to complete before the `onSnapshot` listener starts. Recommend a focused spike task at the start of Phase 3 before writing any production sync code.
+- **Phase 3 (ID mapping — validation):** Option A (`String(task.id)`) is the recommendation, but the PITFALLS research identifies subtask `parentId` foreign key propagation as a known failure mode. Validate with a small prototype (create a task tree locally, sync to Firestore, verify subtask hierarchy on a second device) before committing the full sync layer.
+- **Phase 2 (iOS PWA auth — hardware gate):** iOS Safari standalone mode sign-in is a documented failure mode that no emulator can reliably reproduce. Phase 2 is not complete until tested on an actual iOS device with the PWA installed in standalone mode.
+
+Phases with well-documented patterns (standard implementation, no additional research needed):
+
+- **Phase 1 (Firebase project setup):** Entirely console-driven with comprehensive official documentation. No code output, no research uncertainty.
+- **Phase 4 (Hosting deploy):** `firebase.json` configuration is thoroughly documented, verified HIGH confidence. The `firebase init hosting` CLI wizard handles the basics; only the cache header additions require manual editing.
+
+---
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | React Native + Expo, Hono + CF Workers, D1 + Drizzle are clear choices for requirements as of 2025; specific versions need verification |
-| Features | MEDIUM | ADHD app patterns based on training knowledge of Goblin Tools, Structured, Llama Life; features align with known ADHD executive function challenges; validation with actual ADHD users needed |
-| Architecture | HIGH | Local-first, adjacency list, provider abstraction are established patterns; cross-platform code sharing via monorepo is standard; sync complexity acknowledged and deferred appropriately |
-| Pitfalls | MEDIUM-HIGH | Recursive explosion, cost controls, ADHD complexity overload are well-documented failure modes; sync race conditions are known distributed systems problems; specific ADHD pitfalls based on accessibility research |
+| Stack | HIGH | Verified against Firebase JS SDK release notes (v12.10.0 Feb 27 2026), official Firebase docs, and reactfire GitHub repo. Version compatibility confirmed for React 19, Vite 5, TypeScript 5.9, Dexie 4.3. |
+| Features | HIGH | Firebase official docs are the authoritative source for all features researched. Spark plan limits verified against Firebase pricing docs. Feature dependency chain verified against Firebase SDK behavior. |
+| Architecture | HIGH | Core patterns (Dexie-as-cache, Firestore-as-sync-transport, per-user subcollection, auth context) all verified against official Firebase docs and cloud.google.com. `persistentMultipleTabManager` API verified against Firebase JS API reference. |
+| Pitfalls | HIGH | All pitfalls verified against official Firebase docs, confirmed GitHub issues (SDK #8593 cache corruption, #6716 iOS Safari, vite-plugin-pwa #777 service worker conflict), and Firebase billing documentation. |
 
-**Overall confidence:** MEDIUM
-
-Research is based on solid architectural patterns and established technology choices, but lacks external verification due to WebSearch unavailability. Stack recommendations reflect ecosystem state as of late 2024/early 2025 but specific versions, API capabilities, and pricing need point-in-time verification during implementation. ADHD-specific insights draw from training knowledge of executive function challenges and existing app patterns but would benefit from current community feedback.
+**Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **D1 production readiness**: Was in beta as of training cutoff, need to verify current status and any limitations discovered since then
-- **Gemini API structured output**: Capabilities for Zod schema integration need verification during Phase 2 planning
-- **NativeWind v4 maturity**: Check for breaking changes and stability reports before committing
-- **ADHD user validation**: All ADHD-specific features should be validated with actual users, not just inferred from research
-- **React Native drag-drop libraries**: Verify current maintenance status of @dnd-kit and react-native-draggable-flatlist
-- **Cloudflare Workers cold start**: Verify free tier still has "zero cold starts" claim with current infrastructure
+- **`firebase-tools` version uncertainty:** v15.8.0 cited from WebSearch (March 2026), not directly verified against the npm registry. Use `npm install -D firebase-tools@latest` and pin the resolved version. Low risk — CLI version does not affect app behavior.
 
-**How to handle during planning:**
-- Phase 1: Verify IndexedDB/SQLite library current versions and React Native compatibility
-- Phase 2: Run `/gsd:research-phase` for AI integration specifically (Gemini API, prompt patterns, cost optimization)
-- Phase 3: Consider user research sprint with ADHD community before finalizing UX patterns
-- Phase 4: Verify chosen libraries still maintained and compatible with latest Expo SDK
-- Phase 5: Run `/gsd:research-phase` for sync strategies and conflict resolution when phase begins
+- **`memoryLocalCache` vs. `persistentLocalCache` for Firestore:** PITFALLS.md recommends disabling Firestore's own persistence (`memoryLocalCache`) while STACK.md and ARCHITECTURE.md recommend `persistentLocalCache` + `persistentMultipleTabManager` as a secondary write buffer. The contradiction is intentional — both are valid. Recommended resolution: use `persistentLocalCache` with `persistentMultipleTabManager` (as STACK/ARCHITECTURE recommend) because it lets Firestore queue offline writes independently. The PITFALLS concern (two caches diverging) is mitigated by Dexie always being the read source and Firestore persistence being write-only from the app's perspective. Lock this decision in Phase 1 and document it as an architecture decision record (ADR).
+
+- **Delta sync composite index:** The `lastSyncTimestamp` delta query (`where('updatedAt', '>', lastSyncTimestamp)`) requires a Firestore composite index. Create `firestore.indexes.json` in Phase 3 to include this index even though the delta query itself is implemented in Phase 5.
+
+- **Dexie mutation call site audit:** Components currently call `db.tasks.add/put/delete` directly. Replacing these with `syncAddTask/syncUpdateTask/syncDeleteTask` wrappers requires identifying all mutation call sites. Grep for `db.tasks.add`, `db.tasks.put`, `db.tasks.delete`, `db.tasks.update` before planning Phase 3 execution to scope the work accurately.
+
+---
 
 ## Sources
 
-### Training Data Knowledge (MEDIUM-HIGH confidence)
-- React Native, Expo, React ecosystem best practices (through Jan 2025)
-- Cloudflare Workers, Hono, D1 architecture patterns (through late 2024)
-- ADHD executive function challenges and productivity tool patterns (Goblin Tools, Structured, Llama Life, Finch app patterns)
-- Recursive data structures, adjacency list patterns for hierarchical data
-- Cross-platform mobile development patterns and monorepo strategies
-- AI integration patterns, LLM cost optimization, provider abstraction strategies
-- Sync conflict resolution patterns, CRDT concepts, eventual consistency
+### Primary (HIGH confidence)
+- Firebase JavaScript SDK Release Notes — https://firebase.google.com/support/release-notes/js — v12.10.0 confirmed, v12 requirements (Node 20+, ES2020)
+- Firebase Firestore offline persistence — https://firebase.google.com/docs/firestore/manage-data/enable-offline — `persistentLocalCache`, `persistentMultipleTabManager`
+- Firebase Auth: Best practices for signInWithRedirect — https://firebase.google.com/docs/auth/web/redirect-best-practices — Chrome M115+, iOS Safari, PWA requirements
+- Firebase Hosting full configuration — https://firebase.google.com/docs/hosting/full-config — SPA rewrites, cache headers
+- Firebase Auth: Google Sign-In for Web — https://firebase.google.com/docs/auth/web/google-signin — popup vs redirect patterns
+- Firestore: Access data offline — https://cloud.google.com/firestore/docs/manage-data/enable-offline — confirmed against cloud.google.com
+- Firebase: Use Firebase in a PWA — https://firebase.google.com/docs/web/pwa — service worker integration
+- Firestore: Security rules per-user permissions — https://firebase.google.com/docs/rules/rules-and-auth
+- Firestore data model — https://firebase.google.com/docs/firestore/data-model — subcollection pattern
+- Firestore onSnapshot metadata — https://firebase.google.com/docs/firestore/query-data/listen — `hasPendingWrites`, `fromCache`
+- Firebase pricing: Spark plan — https://firebase.google.com/docs/projects/billing/firebase-pricing-plans
+- Firebase: Avoid surprise bills — https://firebase.google.com/docs/projects/billing/avoid-surprise-bills
+- Firestore: Understand billing (reconnect reads) — https://firebase.google.com/docs/firestore/pricing
 
-### Verification Needed (before implementation)
-- Current Expo SDK version and web support capabilities: https://docs.expo.dev/
-- Hono + Cloudflare Workers integration status: https://hono.dev/getting-started/cloudflare-workers
-- D1 free tier limits and production status: https://developers.cloudflare.com/d1/
-- Vercel AI SDK current capabilities: https://sdk.vercel.ai/docs
-- Gemini API free tier and structured output: https://ai.google.dev/pricing
-- ADHD community tool feedback: r/ADHD, ADDitude Magazine forums
-- React Native drag-drop library status: @dnd-kit, react-native-draggable-flatlist GitHub
+### Secondary (MEDIUM confidence)
+- reactfire GitHub — https://github.com/FirebaseExtended/reactfire — confirmed experimental, v4.2.3 June 2023, not an official Firebase product
+- Firebase Auth state persistence — https://firebase.google.com/docs/auth/web/auth-state-persistence — async loading behavior
+- Firebase Hosting quickstart — https://firebase.google.com/docs/hosting/quickstart — `dist/` as public dir for Vite apps
+- Firebase: Get started with Free Trial credits — https://firebase.blog/posts/2024/11/claim-300-to-get-started/ — GCP trial vs. Spark plan clarification
+- Firebase Enable Firestore caching (multi-tab code) — https://puf.io/posts/enable-firestore-caching-on-web/
+- Firebase Security Rules patterns — https://medium.com/firebase-developers/patterns-for-security-with-firebase-per-user-permissions-for-cloud-firestore-be67ee8edc4a
 
-### Confidence Rationale
-- **HIGH confidence**: Framework choices and architectural patterns are well-established, stable technologies
-- **MEDIUM confidence**: ADHD-specific patterns based on known apps and executive function research, but lacking current user validation; specific versions and API details need point-in-time verification
-- **LOW confidence**: None — all recommendations have reasonable evidence basis even if external verification unavailable
+### Tertiary (confirmed GitHub issues — HIGH confidence for documented bugs)
+- firebase/firebase-js-sdk #8593 — Firestore IndexedDB cache corrupted after clear site data
+- firebase/firebase-js-sdk #6716 — Safari 16.1+ signInWithPopup failure in PWA standalone mode
+- firebase/firebase-js-sdk #2755 — Offline listener reconnect behavior
+- vite-pwa/vite-plugin-pwa #777 — Second service worker causes constant reload loop
 
 ---
-*Research completed: 2026-02-05*
+
+*Research completed: 2026-03-01*
 *Ready for roadmap: yes*

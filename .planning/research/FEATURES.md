@@ -1,245 +1,201 @@
-# Feature Landscape: ADHD-Friendly To-Do List App
+# Feature Landscape: Firebase Deploy & Real-Time Sync (v1.1 Milestone)
 
-**Domain:** ADHD-focused productivity / task management
-**Researched:** 2026-02-05
-**Confidence:** LOW (based on training data only - external research tools unavailable)
+**Domain:** Firebase Auth + Firestore sync + Firebase Hosting for existing PWA
+**Researched:** 2026-03-01
+**Confidence:** HIGH (verified against Firebase official docs, GitHub issues, and multiple corroborating sources)
 
-## Research Note
+## Scope Note
 
-This research is based on training data knowledge of ADHD productivity apps (Todoist, Things 3, Goblin Tools, Finch, Structured, Llama Life) without current external verification. All findings should be validated against actual app documentation and ADHD user research.
+This document covers ONLY the new features for v1.1. The existing v1.0 features (calendar view, AI breakdown, IndexedDB persistence via Dexie.js, drag-and-drop, PWA) are complete and out of scope. The Dexie.js dependency is the key architectural constraint — it must coexist with Firestore's own IndexedDB usage.
 
-## Table Stakes
+---
 
-Features users expect in ADHD-focused task management. Missing these = product feels incomplete or unusable.
+## Feature Landscape
+
+### Table Stakes (Users Expect These)
+
+Features that users assume any "signed-in app with cloud sync" will have. Missing these = the feature feels broken or incomplete.
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| **Quick task capture** | ADHD brains need to offload thoughts immediately before forgetting | Low | Single input field, keyboard shortcuts, always accessible |
-| **Visual task organization** | Text-heavy lists cause overwhelm; visual hierarchy helps focus | Medium | Drag-and-drop, color coding, spatial organization |
-| **Today/daily view** | ADHD struggles with abstract future; concrete "today" view essential | Low | Clear separation of today vs future tasks |
-| **Time awareness** | Time blindness is core ADHD symptom; need time visibility | Medium | Time blocking, duration estimates, calendar integration |
-| **Task completion feedback** | ADHD needs dopamine hits; completion must feel rewarding | Low | Visual/audio feedback, progress indicators, streaks |
-| **Low friction editing** | Perfectionism paralysis; editing must be effortless | Low | Inline editing, no modal dialogs, quick reschedule |
-| **Clear visual hierarchy** | Overwhelm from seeing "everything"; need prioritization cues | Medium | Priority levels, visual weight differences, collapsible sections |
-| **Minimal setup required** | ADHD hates onboarding; must be useful in < 2 minutes | Low | Smart defaults, optional customization, no required setup |
-| **Forgiveness for incompletion** | ADHD comes with guilt/shame; app must not punish uncompleted tasks | Low | Easy reschedule, no guilt-inducing language, rollover handling |
-| **Mobile + desktop parity** | Task capture happens anywhere; can't be desktop-only | High | Cross-platform sync, feature parity |
+| **Google sign-in** | Standard OAuth login; users expect "sign in with Google" as the minimal-friction path for a personal app | LOW | `signInWithPopup` for desktop; `signInWithRedirect` for mobile/PWA. Both needed due to browser differences. |
+| **Sign-out** | Users expect to explicitly end session | LOW | `signOut()` from Firebase Auth; clear local state on sign-out |
+| **Persistent auth session** | Users expect to stay signed in across page reloads and browser restarts | LOW | Firebase Auth persists session to IndexedDB by default (`browserLocalPersistence`). No extra work needed. |
+| **Data belongs to the signed-in user** | Tasks created while signed in must be tied to the user and visible only to them | MEDIUM | Firestore path `/users/{uid}/tasks/{taskId}` + security rules scoped to `request.auth.uid` |
+| **Real-time sync across devices** | Core ask of the milestone: tasks created on phone appear on PC without refresh | MEDIUM | Firestore real-time listeners (`onSnapshot`) propagate changes within ~1 second when online |
+| **Offline data access** | Tasks must be readable when network is lost | LOW | Firestore's `persistentLocalCache()` caches reads in its own IndexedDB store (separate from Dexie) |
+| **Offline writes queue and sync** | Tasks created/edited offline must sync when connectivity returns | MEDIUM | Firestore automatically queues pending writes and flushes on reconnect. No explicit retry code needed. |
+| **HTTPS deploy** | PWA service workers require HTTPS; users expect a real URL | LOW | Firebase Hosting serves over HTTPS by default. Domain is `[project-id].web.app`. |
+| **App loads fast** | SPA deploy must handle React Router paths without 404s | LOW | `firebase.json` rewrite rule: all paths → `/index.html` |
+| **Code deploys don't touch data** | Developer expectation: `firebase deploy --only hosting` never touches Firestore data | LOW | Firebase Hosting and Firestore are independent. Deploy only touches `/dist` files. |
 
-## Differentiators
+### Differentiators (Competitive Advantage)
 
-Features that set ADHD-specific apps apart from general to-do lists. Not expected by all users, but highly valued by ADHD users.
+Features beyond bare minimum that meaningfully improve UX for this specific app.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| **AI task breakdown** | Core ADHD pain: vague tasks cause paralysis. AI breaks down "where to start" | High | Your app's primary differentiator; must handle recursive breakdown |
-| **Body doubling / focus timer** | ADHD benefits from external accountability and time pressure | Medium | Pomodoro variants, virtual "presence", timed focus sessions (Llama Life style) |
-| **Task time estimates** | ADHD has poor time estimation; app helps predict duration | Medium | AI-suggested durations, learn from past completions |
-| **Hyperfocus protection** | ADHD hyperfocus causes time loss; need break reminders | Medium | Interruption reminders, session limits, break enforcement |
-| **Emotional task tracking** | ADHD often has task-related anxiety; tracking helps identify patterns | Medium | Energy level needed, emotional resistance, task dread scores |
-| **Gamification / rewards** | ADHD responds to immediate rewards; points/achievements help | Medium | XP systems, character growth (Finch-style), achievements |
-| **Task categorization by energy** | ADHD has variable energy; need to match tasks to current state | Medium | Low/medium/high energy tags, filter by current capacity |
-| **Magic Todo / simplification** | Goblin Tools approach: rewrite tasks to remove intimidation | Medium | AI rewording, task simplification, removing judgmental language |
-| **Calendar time blocking** | Visual time allocation helps ADHD brains "see" the day | Medium | Drag tasks to time slots, realistic day visualization |
-| **Routine templates** | ADHD struggles with consistency; templates reduce decision fatigue | Medium | Morning/evening routines, recurring checklists, auto-populate |
-| **Deadline without punishment** | Traditional deadlines cause anxiety; need supportive reminders | Low | Gentle nudges, "flexible deadlines", suggest reschedule vs guilt |
-| **Task initiation helpers** | ADHD struggles with starting; need "just start" aids | Medium | First step highlighting, 2-minute rule suggestions, momentum builders |
-| **Distraction capture** | ADHD gets derailed by tangents; need quick "park this thought" | Low | Quick add to "later" bucket, separate from main task list |
-| **Context switching support** | ADHD struggles with transitions; need prep for switches | Medium | Transition warnings, context setup reminders, cool-down periods |
+| **Offline sync status indicator** | Users with ADHD can become anxious if they don't know whether data is saved. Showing "syncing..." vs "saved" removes doubt. | LOW | Firestore snapshots include `metadata.hasPendingWrites` and `metadata.fromCache` flags. Readable without extra calls. |
+| **Seamless popup + redirect fallback** | Chrome M115+, Firefox 109+, Safari 16.1+ block third-party cookies, which breaks naive `signInWithRedirect`. Implementing both methods prevents auth failures across browser/platform combos. | MEDIUM | Use `signInWithPopup` on desktop; switch to `signInWithRedirect` on mobile/PWA. Firebase docs have a dedicated best-practices page for this case. |
+| **Data migration from anonymous/local IndexedDB on first sign-in** | v1.0 users have tasks in Dexie/IndexedDB. On first sign-in, those local tasks should be uploaded to Firestore so nothing is lost. | HIGH | No built-in Firebase mechanism. Requires a one-time migration: read from Dexie, write to Firestore, mark as migrated. Most complex step in the milestone. |
+| **Sync layer that doesn't break existing Dexie.js reactivity** | The app uses `useLiveQuery` from Dexie for per-cell reactive queries. Firestore sync must update Dexie as source of truth so all existing UI re-renders continue to work. | HIGH | Recommended pattern: Firestore is the sync source, Dexie is the local cache and UI source. Firestore `onSnapshot` → write to Dexie → existing `useLiveQuery` picks up changes. Avoids rewriting UI layer. |
+| **Multi-tab safety** | Opening the app in multiple browser tabs must not corrupt data or cause duplicate sync writes | MEDIUM | Use Firestore's `persistentMultipleTabManager()` (the modern replacement for deprecated `enableMultiTabIndexedDbPersistence()`). One tab becomes the "owner" of the Firestore network connection. |
 
-## Anti-Features
+### Anti-Features (Commonly Requested, Often Problematic)
 
-Features to explicitly NOT build. Common in productivity apps but harmful or counterproductive for ADHD users.
+| Feature | Why Requested | Why Problematic | Alternative |
+|---------|---------------|-----------------|-------------|
+| **Anonymous auth before sign-in** | Allows app usage without an account | Adds account upgrade complexity (linking anonymous UID to Google UID). Local IndexedDB data migration is already a one-time solved problem — anonymous auth adds a second migration problem and permanent auth state to manage. | Skip anonymous auth. Let unauthenticated users use Dexie-only mode; sign-in triggers migration. |
+| **Real-time Firestore as the UI source (replace Dexie)** | "Simpler" to have one data source | Breaks all existing `useLiveQuery` reactive queries, requires rewriting every component that reads data, loses IndexedDB offline-first benefits. Would be a full rewrite of the data layer. | Keep Dexie as local cache and UI source; use Firestore as sync bus. Firestore writes flow into Dexie via `onSnapshot`. |
+| **Custom conflict resolution logic** | Sounds necessary for offline-first | For a single-user personal app, last-write-wins (Firestore's default) is correct behavior. The user cannot conflict with themselves in a meaningful way across devices — the last device they used wins. Custom conflict resolution adds weeks of complexity for zero user benefit. | Accept Firestore's last-write-wins. Document this decision. |
+| **Firebase Cloud Messaging push notifications** | "Notify me of overdue tasks" | ADHD users find intrusive notifications harmful. Already documented as out-of-scope in PROJECT.md. Would also require service worker changes and notification permissions flow. | Gentle in-app reschedule prompts (already built in v1.0) handle this. |
+| **Firestore as primary offline store (replace IndexedDB entirely)** | Consolidate to one persistence layer | Firestore's offline cache is opaque — you cannot query it directly with arbitrary Dexie-style queries. All offline queries must go through Firestore SDK, which has different performance characteristics and no reactive hooks compatible with the existing React component tree. | Keep both. Firestore offline cache is a sync buffer; Dexie is the app's queryable store. |
+| **Email/password auth** | Users expect account options | Google Sign-In is sufficient for a personal app and eliminates password management, reset flows, and email verification. Adding more auth providers is post-MVP scope. | Google Sign-In only for v1.1. |
 
-| Anti-Feature | Why Avoid | What to Do Instead |
-|--------------|-----------|-------------------|
-| **Guilt-inducing overdue indicators** | ADHD already comes with shame; red badges/counters worsen it | Neutral reschedule prompts, "would you like to move this?" language |
-| **Rigid deadline enforcement** | ADHD has unpredictable energy/focus; rigid deadlines cause anxiety | Flexible target dates, "aim for" language, easy postponement |
-| **Overwhelming feature set** | ADHD paralyzed by too many options; feature bloat kills usability | Progressive disclosure, simple core, optional advanced features |
-| **Productivity tracking/analytics** | Comparing to "ideal" productivity worsens ADHD shame spiral | Focus on completion celebration, not productivity metrics |
-| **Multi-step task creation** | ADHD needs immediate capture; forms kill momentum | Single-field quick add, optional details later |
-| **Mandatory categorization** | ADHD hates organizing before acting; forced categories block capture | Smart defaults, categorize later, optional organization |
-| **Achievement streaks that reset** | ADHD has inconsistent productivity; losing streaks feels punishing | Cumulative achievements, celebrate "back on track", no resets |
-| **Intrusive notifications** | ADHD already struggles with distraction; notifications worsen it | Gentle, customizable, respect focus mode, no nagging |
-| **Complex hierarchy/projects** | ADHD overwhelmed by nested structures; deep trees cause paralysis | Flat structure with tags, max 2-3 levels deep |
-| **Productivity comparisons** | ADHD comparing to others worsens inadequacy feelings | No social comparison, individual progress only |
+---
 
 ## Feature Dependencies
 
 ```
-Core capture flow:
-  Quick Add → Daily View → Task Completion
-  (All must exist for basic usability)
+Google Sign-In (Firebase Auth)
+    └──required before──> Firestore user-scoped writes
+                              └──required before──> Real-time cross-device sync
+                              └──required before──> Security rules enforcement
 
-AI task breakdown flow:
-  Task Input → AI Breakdown → Edit/Reorder Subtasks → Recursive Breakdown
-  ↓
-  Mark Subtask Done → Progress Tracking → Parent Task Completion
+Firestore offline persistence (persistentLocalCache)
+    └──enables──> Offline writes queue
+    └──enables──> Offline reads from cache
+    └──requires separate IndexedDB namespace from──> Dexie.js (different DB names, no conflict)
 
-Time awareness flow:
-  Task Entry → Time Estimate → Calendar Slot Assignment → Time Block View
+Firebase Hosting deploy
+    └──independent from──> Auth and Firestore (can deploy without auth configured)
+    └──requires──> `firebase.json` SPA rewrite rule (all paths → /index.html)
+    └──requires──> `dist/` as public directory (Vite build output)
 
-Emotional support flow:
-  Task Capture → Energy Level Tag → Filter by Current State → Appropriate Task Suggestion
-  ↓
-  Completion → Positive Feedback → Streak/Progress Celebration
+Dexie.js (existing) ──is UI source for──> all React components via useLiveQuery
+    └──must remain authoritative for──> reactive UI updates
+    └──Firestore onSnapshot writes INTO Dexie to preserve this
 
-Mobile/Desktop sync:
-  All features depend on reliable sync for ADHD users who capture everywhere
+Data migration (one-time, on first sign-in)
+    └──requires──> Google Sign-In completed
+    └──requires──> Dexie readable (already exists)
+    └──requires──> Firestore writable (user path must exist)
+    └──must run before──> real-time sync listener starts (avoid duplicate writes)
 ```
 
-## MVP Recommendation
+### Dependency Notes
 
-For MVP, prioritize these features to validate core value proposition:
+- **Auth before Firestore writes:** Firestore security rules reject unauthenticated writes. Auth must complete before any sync attempt.
+- **Migration before sync listener:** Starting the Firestore `onSnapshot` listener before migration completes could cause the listener to write empty state back into Dexie, overwriting local data. Migration must be atomic and idempotent.
+- **Firestore + Dexie coexistence:** Both use IndexedDB under the hood but open different named databases. Firebase uses `firestore/[project-id]/[database-id]` naming; Dexie uses the database name you specify (`taskbreaker-db` or similar). No collision — confirmed by Firebase GitHub issues showing developers use both simultaneously.
+- **Multi-tab manager:** Required when `persistentLocalCache()` is used with multiple browser tabs. Without it, the second tab throws an `FAILED_PRECONDITION` error.
 
-### Phase 1: Core Task Management (Table Stakes)
-1. **Quick task capture** - Single input, keyboard accessible
-2. **Daily calendar view** - Visual day layout
-3. **Drag-and-drop scheduling** - Move tasks between days
-4. **Task completion with feedback** - Satisfying completion action
-5. **Basic editing** - Inline edit, delete, reschedule
+---
 
-### Phase 2: AI Differentiation (Primary Value)
-6. **AI task breakdown** - Core differentiator, simple prompt to start
-7. **Subtask editing** - Reorder, delete, edit AI suggestions
-8. **Recursive breakdown** - 3-4 levels deep as specified
-9. **Regenerate option** - Try again if AI gets it wrong
-10. **Swappable AI provider** - Backend architecture for multiple providers
+## MVP Definition
 
-### Phase 3: ADHD-Specific Polish
-11. **Task time estimates** - Help with time blindness
-12. **Energy level tagging** - Match tasks to capacity
-13. **Positive completion feedback** - Dopamine-friendly celebrations
-14. **Gentle reschedule prompts** - No guilt, just "want to move this?"
+### Launch With (v1.1)
 
-### Defer to Post-MVP
+Minimum to achieve the milestone goal: "deploy TaskBreaker to Firebase and add real-time cross-device sync."
 
-**Gamification/rewards system** - Complex to implement well, can add later if engagement data shows need
+- [ ] **Firebase project setup** — Firestore, Auth (Google provider enabled), Hosting configured
+- [ ] **Google sign-in** — popup on desktop, redirect on mobile/PWA, persistent session
+- [ ] **Sign-out** — explicit sign-out clears auth state
+- [ ] **Firestore user-scoped data model** — `/users/{uid}/tasks/{taskId}` with matching security rules
+- [ ] **Offline persistence** — `initializeFirestore` with `persistentLocalCache` + `persistentMultipleTabManager`
+- [ ] **Sync layer** — Firestore `onSnapshot` writes to Dexie; existing `useLiveQuery` drives all UI
+- [ ] **One-time migration** — on first sign-in, upload existing Dexie tasks to Firestore
+- [ ] **Firebase Hosting deploy** — `firebase.json` with SPA rewrites, `dist/` as public dir
+- [ ] **Data safety** — `firebase deploy --only hosting` never touches Firestore data (verified by Firebase's separation of services)
 
-**Body doubling/focus timer** - Valuable but not core to task breakdown value proposition
+### Add After Validation (v1.x)
 
-**Mobile app** - Start web-responsive for personal use, native mobile if traction
+- [ ] **Offline sync status indicator** — show pending writes badge; low effort, high trust value
+- [ ] **Auth error handling UX** — graceful messages for popup blocked, network failure, sign-in cancelled
+- [ ] **Sign-in gate UI** — landing page / sign-in prompt for unauthenticated users
 
-**Routine templates** - Useful but not essential for validating core AI breakdown concept
+### Future Consideration (v2+)
 
-**Emotional task tracking** - Nice-to-have, adds complexity to MVP
+- [ ] **Additional auth providers** — only if user demands it; Google is sufficient for personal use
+- [ ] **Selective sync** — sync only specific date ranges to reduce Firestore reads (cost optimization at scale)
+- [ ] **Shared task lists** — multi-user collaboration; explicitly out-of-scope for personal-first approach
+- [ ] **Export/import** — JSON backup; useful if moving away from Firebase
 
-**Calendar integration** - Sync with Google/Outlook can come after internal calendar works
+---
 
-## ADHD-Specific Design Principles
+## Feature Prioritization Matrix
 
-Based on apps like Goblin Tools, Structured, and Llama Life, key principles:
+| Feature | User Value | Implementation Cost | Priority |
+|---------|------------|---------------------|----------|
+| Google sign-in | HIGH | LOW | P1 |
+| Firestore user-scoped writes | HIGH | LOW | P1 |
+| Firestore security rules | HIGH | LOW | P1 |
+| Offline persistence (`persistentLocalCache`) | HIGH | LOW | P1 |
+| Firebase Hosting deploy | HIGH | LOW | P1 |
+| SPA rewrite rules (`firebase.json`) | HIGH | LOW | P1 |
+| One-time Dexie→Firestore migration | HIGH | HIGH | P1 |
+| Sync layer (Firestore → Dexie via onSnapshot) | HIGH | HIGH | P1 |
+| Multi-tab safety (`persistentMultipleTabManager`) | MEDIUM | LOW | P1 |
+| Popup + redirect sign-in fallback | MEDIUM | MEDIUM | P1 |
+| Offline sync status indicator | MEDIUM | LOW | P2 |
+| Auth error handling UX | MEDIUM | LOW | P2 |
+| Sign-in gate / landing page | LOW | LOW | P2 |
 
-### Visual Clarity
-- High contrast, clear typography
-- Generous whitespace to prevent overwhelm
-- Color coding that's meaningful, not decorative
-- Icons + text (visual + verbal processing)
+**Priority key:**
+- P1: Must have for v1.1 milestone completion
+- P2: Should have; add when core sync is working
+- P3: Nice to have; future consideration
 
-### Immediate Feedback
-- Every action shows instant result
-- Completion feels satisfying (animation, sound, visual change)
-- Loading states don't create anxiety ("AI is thinking...")
-- Errors are helpful, not punishing
+---
 
-### Low Cognitive Load
-- Single primary action visible at any time
-- Hide complexity behind progressive disclosure
-- Default to simplest option
-- Smart suggestions reduce decisions
+## Existing Architecture Dependencies (Dexie.js)
 
-### Forgiveness
-- Easy undo for everything
-- No destructive actions without confirmation
-- Nothing is "too late" - can always reschedule
-- App remembers context when user returns
+This milestone is layered onto existing Dexie.js infrastructure. These are the constraints that shape every feature decision above.
 
-### Motivation Support
-- Celebrate small wins
-- Break large tasks into dopamine-sized chunks
-- Make starting feel easy
-- Remove judgment language ("should", "must", "overdue")
+| Existing Piece | Constraint It Creates | Resolution |
+|----------------|----------------------|------------|
+| `useLiveQuery` from `dexie-react-hooks` drives all UI re-renders | Firestore cannot replace Dexie as UI source — all 62 files use this hook | Firestore `onSnapshot` writes into Dexie; Dexie remains UI source |
+| Dexie schema has `tasks`, `subtasks` tables with defined fields | Firestore documents must match or be mappable to Dexie schema | Map 1:1: each Dexie row becomes one Firestore document under `/users/{uid}/tasks/{taskId}` |
+| Dexie uses named IndexedDB database (`taskbreaker-db` or similar) | Firestore uses its own IndexedDB namespace (`firestore/...`) | No conflict — separate database names, verified by Firebase SDK behavior |
+| Offline tasks exist in Dexie before v1.1 | First sign-in must migrate these to Firestore without data loss | One-time migration function: read all Dexie tasks, batch write to Firestore, set migration flag |
+| Per-cell reactive queries in each `DayCell` component | Sync writes to Dexie trigger automatic re-renders via `useLiveQuery` | This is the desired behavior — no changes to UI components needed |
 
-## Competitive Landscape Analysis
+---
 
-### General Task Apps (Todoist, Things 3)
-**What they do well:**
-- Mature, polished UI/UX
-- Reliable sync
-- Keyboard shortcuts
-- Natural language input
+## Firebase Spark Plan Considerations
 
-**What they lack for ADHD:**
-- No task breakdown assistance
-- Overwhelming project hierarchy
-- Productivity-focused metrics (stressful for ADHD)
-- Limited emotional/energy context
+The project runs on the Firebase Spark (free) plan. These limits are relevant for feature design.
 
-### ADHD-Specific Apps
+| Resource | Spark Free Limit | Expected Usage (Single User) | Headroom |
+|----------|-----------------|------------------------------|----------|
+| Firestore reads | 50,000 / day | ~100-500 (initial load + sync) | Substantial |
+| Firestore writes | 20,000 / day | ~50-200 (task CRUD) | Substantial |
+| Firestore deletes | 20,000 / day | ~10-50 | Substantial |
+| Firestore stored data | 1 GB | ~1 MB (text tasks) | Substantial |
+| Hosting transfer | 10 GB / month | ~5-50 MB | Substantial |
+| Hosting storage | 1 GB | ~5 MB (built assets) | Substantial |
 
-**Goblin Tools (Magic Todo):**
-- Task simplification and breakdown
-- Removes intimidation from task wording
-- Simple, focused interface
-- **Gap:** No calendar view, no scheduling, very basic
+**Assessment:** A single-user personal app will stay well within Spark plan limits. Real-time listeners are billed as reads only when data changes (not per-second polling). No cost risk for intended usage.
 
-**Structured:**
-- Beautiful time-blocked calendar view
-- Visual daily planning
-- Drag-and-drop time assignment
-- **Gap:** No AI assistance, manual task breakdown
-
-**Llama Life:**
-- Focus timer with task list
-- Urgency-based time pressure
-- Simple, focused interface
-- **Gap:** No task breakdown, no calendar scheduling
-
-**Finch:**
-- Gamification with emotional check-ins
-- Character growth tied to task completion
-- Mental health focus
-- **Gap:** Not primarily a task manager, limited breakdown
-
-### Your App's Opportunity Space
-
-**Unique combination:**
-- AI task breakdown (Goblin Tools sophistication)
-- + Calendar scheduling (Structured's visual planning)
-- + ADHD-friendly design (Llama Life's simplicity)
-- + Recursive depth (novel - go deeper than existing tools)
-
-**White space:**
-- No existing app combines AI breakdown WITH calendar scheduling
-- Recursive subtask breakdown at 3-4 levels is deeper than competitors
-- Swappable AI providers gives user control (helps with AI skepticism)
-
-## Feature Complexity Assessment
-
-| Complexity | Features | Phase Suggestion |
-|------------|----------|-----------------|
-| **Low** | Quick capture, daily view, task completion, basic editing, visual feedback | Phase 1 (MVP core) |
-| **Medium** | Drag-and-drop scheduling, AI task breakdown (single level), time estimates, energy tagging | Phase 1-2 (MVP + differentiation) |
-| **High** | Recursive AI breakdown (3-4 levels), swappable AI providers, cross-platform sync, routine templates | Phase 2-3 (core differentiation + polish) |
-| **Very High** | Real-time collaboration, advanced gamification, calendar integration (external), mobile native apps | Post-MVP |
+---
 
 ## Sources
 
-**Confidence Level: LOW**
+- [Firebase Auth: Google Sign-In for Web](https://firebase.google.com/docs/auth/web/google-signin) — Official docs, popup vs redirect methods
+- [Firebase: Best practices for signInWithRedirect (third-party storage blocking)](https://firebase.google.com/docs/auth/web/redirect-best-practices) — Chrome M115+, Firefox, Safari compatibility
+- [Firestore: Access data offline](https://firebase.google.com/docs/firestore/manage-data/enable-offline) — `persistentLocalCache`, `persistentMultipleTabManager`
+- [Firebase: Use Firebase in a PWA](https://firebase.google.com/docs/web/pwa) — Service worker + Firebase integration
+- [Firebase Hosting: Configure behavior](https://firebase.google.com/docs/hosting/full-config) — SPA rewrite rules, `firebase.json`
+- [Firebase Hosting: Quickstart](https://firebase.google.com/docs/hosting/quickstart) — `dist/` as public dir for Vite apps
+- [Firebase pricing plans](https://firebase.google.com/docs/projects/billing/firebase-pricing-plans) — Spark plan limits
+- [Firestore quotas](https://firebase.google.com/docs/firestore/quotas) — Daily read/write limits
+- [Firebase: Security rules and Authentication](https://firebase.google.com/docs/rules/rules-and-auth) — `request.auth.uid` scoping pattern
+- [Firebase: Best practices for anonymous authentication](https://firebase.blog/posts/2023/07/best-practices-for-anonymous-authentication/) — Why not to use anonymous auth for this case
+- [Firestore multi-tab deprecation (FlutterFire issue #12034)](https://github.com/firebase/flutterfire/issues/12034) — `enableMultiTabIndexedDbPersistence` deprecated; use `persistentMultipleTabManager` instead
+- [Dexie.js: useLiveQuery](https://dexie.org/docs/dexie-react-hooks/useLiveQuery()) — Existing reactive hook dependency
+- [DEV Community: Enabling offline capabilities with Firebase IndexedDB persistence](https://dev.to/itselftools/enabling-offline-capabilities-in-firebase-with-indexeddb-persistence-5c8d) — PWA + Firestore offline pattern
+- [SystemsArchitect: Firestore conflict resolution](https://www.systemsarchitect.io/services/google-firestore/reliability-best-practices/pt/implement-offline-persistence-with-conflict-resolu) — Last-write-wins is default; custom resolution not needed for single-user
 
-All information based on training data knowledge (pre-January 2025) of:
-- Todoist, Things 3 (general task management apps)
-- Goblin Tools, Finch, Structured, Llama Life (ADHD-specific apps)
-- ADHD executive function challenges
-- General productivity app patterns
-
-**Validation Needed:**
-- Current feature sets of mentioned apps (may have evolved)
-- Recent ADHD productivity research (2025-2026)
-- User studies on ADHD task management needs
-- Competitive landscape changes
-
-**Recommended Verification:**
-- Download and test each mentioned app
-- Review ADHD community discussions (Reddit r/ADHD, ADDitude forums)
-- Consult ADHD coaches/therapists about task management needs
-- User interviews with ADHD individuals about current tool pain points
+---
+*Feature research for: Firebase Auth + Firestore Sync + Firebase Hosting (TaskBreaker v1.1)*
+*Researched: 2026-03-01*

@@ -1,495 +1,442 @@
-# Domain Pitfalls
+# Pitfalls Research
 
-**Domain:** ADHD-focused to-do list with AI task breakdown
-**Researched:** 2026-02-05
-**Confidence:** MEDIUM (based on training data and known patterns, not verified with current sources)
+**Domain:** Adding Firebase (Firestore sync, Google Auth, Hosting) to an existing React PWA with Dexie.js/IndexedDB
+**Researched:** 2026-03-01
+**Confidence:** HIGH — verified against official Firebase docs, GitHub issue tracker, and multiple independent sources
+
+---
 
 ## Critical Pitfalls
 
-Mistakes that cause rewrites, abandonment, or fundamentally broken user experience.
+### Pitfall 1: Integer ID → String ID Mismatch Breaks the Entire Data Model
 
-### Pitfall 1: Overwhelming the ADHD User with Complexity
-**What goes wrong:** App becomes a second job to manage. Users need to categorize, tag, prioritize, assign contexts, set energy levels, choose quadrants, etc. The cognitive load of managing the system exceeds the benefit of using it.
-
-**Why it happens:** Developers assume more features = more helpful. Power users and productivity enthusiasts (who often test early versions) love complex systems. But ADHD users specifically need friction reduction, not flexibility.
-
-**Consequences:**
-- User opens app, feels overwhelmed, closes it
-- Tasks pile up uncategorized because categorization itself is a task
-- App abandonment within 2-4 weeks
-- User returns to simpler tools (Apple Reminders, sticky notes)
-
-**Prevention:**
-- Default to zero-config usage: tasks go in, tasks show up, done
-- Make every feature optional and hidden until explicitly enabled
-- Ruthlessly cut features that require decisions before task entry
-- Test with actual ADHD users, not productivity enthusiasts
-- Measure "time to first task added" - should be under 10 seconds
-
-**Detection:**
-- Analytics show users creating tasks but not returning
-- User testing reveals confusion about "how to use" the app
-- Support requests asking "what's the right way to organize this?"
-
-**Phase impact:** Foundation phase must establish minimal-friction task entry as core principle.
-
----
-
-### Pitfall 2: Infinite Recursion and Explosion of Subtasks
-**What goes wrong:** AI generates 4 levels of subtasks for a simple task. User faces 47 subtasks for "clean kitchen." The breakdown itself becomes paralyzing.
+**What goes wrong:**
+Dexie.js uses auto-incrementing integer IDs (`++id`). The current schema has `tasks.id: number`, `tasks.parentId: number`, `tasks.categoryId: number`. Firestore uses string document IDs (e.g., `"abc123xyz"`). When syncing, if you naively map Dexie's integer IDs to Firestore document IDs, every foreign key relationship (`parentId`, `categoryId`) breaks — because the new Firestore record has a string ID but all existing subtasks still reference the old integer `parentId`.
 
 **Why it happens:**
-- No limits on AI breakdown depth or breadth
-- AI doesn't understand "atomic task" threshold
-- No user control over breakdown granularity
-- Recursive breakdown happens automatically without user confirmation
+Developers see IndexedDB `++id` (auto-increment) as equivalent to a database primary key and assume Firestore will accept integers as document IDs. Firestore doesn't auto-increment — you must supply a string ID or call `addDoc` which generates one. The mismatch only becomes obvious when querying subtasks by `parentId`.
 
-**Consequences:**
-- Users see overwhelming list of micro-tasks
-- Performance degrades (rendering 1000+ nested items)
-- Database queries become exponentially complex
-- UI becomes unusable (scrolling through endless nesting)
-- Paradox: tool meant to reduce overwhelm creates more overwhelm
+**How to avoid:**
+Design the sync layer ID strategy before writing a single line of Firebase code:
+- Option A (Recommended): Add a `firestoreId: string` field to each Dexie record. Use `firestoreId` as the Firestore document ID. Keep Dexie's integer `id` as the local-only primary key. All cross-device lookups use `firestoreId`; Dexie queries use integer `id`. Write a Dexie schema migration (version 4) to add the `firestoreId` index.
+- Option B: Generate UUIDs client-side (`crypto.randomUUID()`) and use them as both the Dexie primary key (replacing `++id`) and the Firestore document ID. Requires a one-time migration of all existing data.
+- Never use Firestore's `addDoc` for syncing existing local records — use `setDoc` with a stable, pre-determined ID.
 
-**Prevention:**
-- Hard limit recursive depth to 3 levels maximum
-- Limit breadth: max 5-7 subtasks per parent
-- User confirms before breakdown happens ("Break this down?")
-- UI shows collapsed view by default (expand on demand)
-- AI prompt engineering: "Generate 3-5 concrete, actionable subtasks"
-- Implement "stop breakdown" UX: user can mark task as atomic
-- Database schema enforces depth limits with check constraints
+**Warning signs:**
+- Subtask query by `parentId` returns empty after sync
+- Categories show as "Unknown" on second device
+- Console errors: `Invalid document ID` or missing foreign key references
 
-**Detection:**
-- Monitor average subtask count per task
-- Alert if any task tree exceeds 20 total nodes
-- User feedback: "too many steps"
-- Performance metrics: query time >100ms for task tree
-
-**Phase impact:** MVP must include breakdown limits. Do NOT defer this to "optimization" phase.
+**Phase to address:** Firebase setup phase — before writing any Firestore sync code.
 
 ---
 
-### Pitfall 3: Stale AI Breakdown Context
-**What goes wrong:** User creates task "Review Q4 analysis." AI breaks it down based on generic business analysis. But user's Q4 analysis is actually a podcast episode script. Breakdown is useless.
+### Pitfall 2: Auth State Is Async, Causing a Flash-of-Unauthenticated-Content
+
+**What goes wrong:**
+`onAuthStateChanged` fires asynchronously after app load. During the gap (typically 200-800ms), `currentUser` is `null`. If you render "Sign In" screen whenever `user === null`, the app flashes the sign-in screen on every page load — even for already-authenticated users. Worse: if you start a Firestore sync based on auth state, it may fire before auth resolves and crash with a permission-denied error.
 
 **Why it happens:**
-- AI has no context about user's life, work, or current projects
-- No memory of past tasks or user's domain
-- Prompt sends only the task title, nothing else
-- Generic LLM training data assumes common interpretations
+Firebase Auth needs to check persisted auth tokens in IndexedDB or localStorage, which is async. The pattern `const user = auth.currentUser` checked synchronously immediately after `initializeApp` always returns `null`. The search results confirm this fires twice — once with null, then again with the user object.
 
-**Consequences:**
-- User must manually rewrite or delete AI-generated subtasks
-- Trust in AI feature erodes rapidly
-- Feature becomes "gimmick" rather than genuinely helpful
-- User stops using breakdown feature entirely
+**How to avoid:**
+Introduce a loading state that blocks rendering until auth settles:
+```typescript
+const [user, setUser] = useState<User | null>(null);
+const [authLoading, setAuthLoading] = useState(true);
 
-**Prevention:**
-- Include context in AI prompt: recent tasks, task notes, project tags if present
-- Allow user to add one-line context: "Task: X | Context: podcast script"
-- Learn from user edits: track when user modifies/deletes AI suggestions
-- Provide feedback mechanism: "Was this breakdown helpful? Y/N"
-- Consider user's domain over time (e.g., "user often works on podcasts")
-- Make AI suggestions editable BEFORE they become real tasks
+useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    setUser(firebaseUser);
+    setAuthLoading(false);
+  });
+  return unsubscribe;
+}, []);
 
-**Detection:**
-- Track how often users delete all AI-generated subtasks
-- Monitor edit rate: >50% of AI tasks edited = poor quality
-- User feedback scores trending negative
+if (authLoading) return <AppLoadingSpinner />;
+```
+Do not start any Firestore listeners until `authLoading === false` and `user !== null`.
 
-**Phase impact:** Phase 2 (AI integration) must include context passing, not just bare task title.
+**Warning signs:**
+- Brief sign-in screen flash on reload for signed-in users
+- Firestore permission-denied errors in console on startup
+- `onAuthStateChanged` fires twice in logs
+
+**Phase to address:** Google Auth integration phase.
 
 ---
 
-### Pitfall 4: Cross-Platform Sync Race Conditions
-**What goes wrong:** User drags task to Friday on web app. While syncing, user marks same task done on mobile. Sync conflict: task is now both "Friday" and "completed" with different timestamps. System doesn't know which is authoritative. Task disappears or duplicates.
+### Pitfall 3: signInWithPopup Fails in PWA Standalone Mode on iOS Safari
+
+**What goes wrong:**
+When the app is installed as a PWA and opened in iOS Safari standalone mode, `signInWithPopup` is blocked. Safari's ITP (Intelligent Tracking Prevention) blocks the OAuth popup from communicating back to the opener window. The sign-in flow silently fails or throws a cross-origin error. On iOS 16.4+, this is a documented Firebase SDK issue (#6716 on GitHub).
 
 **Why it happens:**
-- Last-write-wins sync strategy
-- No conflict resolution strategy
-- Optimistic UI updates without sync confirmation
-- No vector clocks or operational transforms
-- Editing same entity on multiple devices simultaneously
+iOS Safari in standalone/PWA mode has strict cross-origin restrictions. `signInWithPopup` relies on a popup window that postMessages back to the opener — this mechanism is blocked. `signInWithRedirect` also has problems in PWA mode because navigation away from the PWA scope can exit standalone mode.
 
-**Consequences:**
-- Data loss: user's changes disappear mysteriously
-- Duplicate tasks appear
-- User loses trust in system reliability
-- "It's buggy" perception kills app adoption
-- Support burden explodes
+**How to avoid:**
+Use `signInWithRedirect` with the Firebase Auth persistence set to `LOCAL`, and configure the `firebaseapp.com/__/auth/handler` redirect. Verify that the `authDomain` in the Firebase config matches the actual deployed domain (e.g., `yourdomain.web.app`). Test sign-in flow explicitly in iOS Safari PWA standalone mode before shipping. As a fallback, consider adding a non-standalone sign-in path that opens the browser.
 
-**Prevention:**
-- Implement conflict resolution strategy upfront (e.g., CRDTs, operational transforms, or explicit conflict UI)
-- Use version vectors or logical clocks for change tracking
-- Design data model for eventual consistency from day one
-- Consider offline-first architecture (local source of truth)
-- Test sync with two devices making conflicting changes simultaneously
-- Show sync status clearly in UI ("Syncing...", "Synced ✓", "Conflict!")
-- For MVP: consider simpler approach - last sync timestamp + conflict detection that prompts user
+Official Firebase docs specifically address this: [Best practices for signInWithRedirect on browsers that block third-party storage access](https://firebase.google.com/docs/auth/web/redirect-best-practices).
 
-**Detection:**
-- Bug reports: "my task disappeared"
-- Data audits show orphaned or duplicate records
-- Timestamp analysis reveals overlapping edits
-- Support tickets about "wrong task appearing"
+**Warning signs:**
+- Sign-in button appears to do nothing on mobile
+- Cross-origin error in Safari developer console
+- Sign-in works in browser but not in installed PWA
 
-**Phase impact:** Foundation phase architecture decision. Cannot bolt on later without refactor.
+**Phase to address:** Google Auth integration phase — must test on iOS standalone before shipping.
 
 ---
 
-### Pitfall 5: Calendar-Task Impedance Mismatch
-**What goes wrong:** User has task "Write blog post" on Tuesday. Task takes 3 hours but user only has 45-minute block. Drags it to Wednesday. Realizes Wednesday is also packed. Drags to Thursday. Now feels behind and guilty. Task becomes anxiety trigger instead of clarity tool.
+### Pitfall 4: vite-plugin-pwa and Firebase Service Worker Conflict
+
+**What goes wrong:**
+The existing `vite-plugin-pwa` generates a Workbox service worker that precaches all static assets. If Firebase Cloud Messaging (FCM) is added later, or if Firebase's `firebase-messaging-sw.js` is introduced, the app enters an infinite reload loop. The root cause is that only one service worker can be active per origin. Competing registrations cause constant update-then-reload cycles.
 
 **Why it happens:**
-- Calendar view implies time blocks but tasks have no duration
-- No capacity planning: day can have infinite tasks
-- No visual indication of overload
-- System doesn't understand time estimation
-- Drag-and-drop makes rescheduling too frictionless (sounds good, but enables avoidance)
+vite-plugin-pwa registers its generated service worker at the root scope. A separately registered `firebase-messaging-sw.js` tries to claim the same scope. The browser sees two service workers fighting for control and triggers update cycles. GitHub issue #777 on vite-pwa/vite-plugin-pwa documents the constant reload behavior.
 
-**Consequences:**
-- Tasks accumulate on "someday" days
-- User experiences planning fallacy repeatedly
-- Guilt and shame associated with app usage
-- Specifically harmful for ADHD: time blindness already a challenge
-- App reinforces executive dysfunction instead of supporting it
+**How to avoid:**
+For this milestone, Firebase Messaging is out of scope — do not introduce `firebase-messaging-sw.js`. If FCM is added in a future milestone, merge Firebase messaging handling into the existing Workbox service worker using Workbox's `messagingBackgroundHandler` inside the custom service worker. Do not register a second service worker file.
 
-**Prevention:**
-- Make time estimates optional but encouraged (AI can suggest)
-- Visual capacity indicator: "You have 6 hours of tasks on a day you're free for 3 hours"
-- Warn on overload: "This day looks packed. Still add here?"
-- Offer "find time for this" feature: AI suggests realistic day based on existing load
-- Track completion rates by day to show realistic capacity patterns
-- Consider "energy available" not just time (ADHD users have variable energy)
-- Separate "scheduled for date" from "hoping to do on date"
+Additionally, configure Firebase Hosting to serve `sw.js` with `Cache-Control: no-cache` so new service worker versions are picked up immediately:
+```json
+// firebase.json
+{
+  "hosting": {
+    "headers": [
+      {
+        "source": "/sw.js",
+        "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+      }
+    ]
+  }
+}
+```
 
-**Detection:**
-- Analytics: tasks rescheduled 3+ times never get done
-- Days with >8 hours of estimated tasks
-- User doesn't complete >70% of planned tasks on any given day
+**Warning signs:**
+- App reloads immediately after updating to a new deploy
+- Service worker update loop visible in Chrome DevTools > Application > Service Workers
+- Old app version persists despite new deployment
 
-**Phase impact:** MVP can skip duration tracking, but Phase 2 must add capacity awareness.
+**Phase to address:** Firebase Hosting deployment phase.
 
 ---
 
-### Pitfall 6: AI Cost Explosion Without Budget Controls
-**What goes wrong:** User creates 50 tasks in planning session. Each triggers AI breakdown (GPT-4 call). User generates $5 in API costs before adding a single real task. Monthly costs balloon to hundreds of dollars for personal use app.
+### Pitfall 5: Firestore's Built-in Offline Cache Conflicts with Dexie as the Source of Truth
+
+**What goes wrong:**
+Firestore SDK has its own IndexedDB persistence layer (`enableIndexedDbPersistence` / `persistentLocalCache`). If you enable both Firestore's offline cache AND keep Dexie as the primary data store, you have two IndexedDB databases storing the same data with no defined authority. After a clear-site-data event, Firestore's cache returns `null` for documents that exist in Dexie — causing the UI to show empty state when data is actually there. GitHub issue #8593 confirms cache corruption after `Clear site data`.
 
 **Why it happens:**
-- No rate limiting on AI calls
-- No cost estimation before API call
-- Auto-breakdown on every task create
-- No caching of similar breakdowns
-- Using expensive models (GPT-4) when cheaper would work
-- No user awareness of costs accumulating
+Developers enable Firestore persistence thinking it's "free offline support," not realizing it competes with Dexie for being the source of truth. The two caches can diverge silently.
 
-**Consequences:**
-- Unsustainable economics for free/personal tier
-- Forced to add paywall before product-market fit
-- Developer subsidy required for testing
-- Can't afford to onboard users
-- If costs passed to user, sticker shock kills adoption
+**How to avoid:**
+Pick one of these two clear architectures and commit to it:
 
-**Prevention:**
-- Require explicit user action to trigger breakdown (button, not automatic)
-- Daily/monthly AI call limits for free tier
-- Cache common task breakdowns (e.g., "clean kitchen" probably similar for everyone)
-- Use cheaper models first (GPT-3.5 or Claude Haiku), upgrade only if needed
-- Batch AI requests where possible
-- Show user when they're approaching limits
-- Consider local/smaller models for common patterns
-- Implement debouncing: don't call AI on every keystroke
+- **Architecture A (Recommended for this project):** Dexie is the source of truth. Firestore is the sync target. Disable Firestore offline persistence (use `memoryLocalCache`). All reads go to Dexie. Writes go to Dexie first, then sync to Firestore. On startup, fetch latest from Firestore to hydrate Dexie. `useLiveQuery` from Dexie drives all UI rendering.
 
-**Detection:**
-- Monitor API costs daily during development
-- Alert if cost per user exceeds threshold ($X/month)
-- Track AI call patterns: spikes indicate no rate limiting
+- **Architecture B:** Firestore with persistence is the source of truth. Remove Dexie entirely. Use Firestore's offline cache for local reads. This requires a full data layer rewrite and is NOT recommended for this milestone given existing Dexie investment.
 
-**Phase impact:** Must implement before any real user testing. Cost controls are Day 1.
+Architecture A preserves all existing Dexie/`useLiveQuery` code and keeps the migration incremental.
+
+**Warning signs:**
+- UI shows empty state after clear-site-data, but data is in Dexie
+- Multi-tab errors: `failed-precondition` from Firestore persistence
+- Data inconsistency between what Dexie shows and what Firestore shows
+
+**Phase to address:** Firebase setup and architecture phase — this is the foundational decision.
 
 ---
 
-### Pitfall 7: Recursive Tree Rendering Performance
-**What goes wrong:** User has 200 tasks with 3 levels of subtasks each. UI tries to render entire tree on load. Page freeze for 5-10 seconds. Mobile app crashes. Scrolling is janky. Each drag-and-drop operation re-renders entire tree.
+### Pitfall 6: Firestore Offline Listener Reconnect Costs Money
+
+**What goes wrong:**
+If Firestore's `onSnapshot` listener is disconnected for more than 30 minutes (app backgrounded, device offline), when it reconnects Firestore charges reads as if you issued a brand-new query — reading every document in the result set. For a single user with 500 tasks, that's 500 reads on every reconnect after 30+ minutes offline. At 50,000 reads/day free tier, this can exceed the quota surprisingly fast during heavy mobile use.
 
 **Why it happens:**
-- Naive recursive rendering: traverse entire tree on every render
-- No virtualization for long lists
-- React reconciliation on deeply nested components
-- Querying entire tree from database instead of pagination
-- No memoization of subtask trees
-- Every state change triggers full tree re-render
+The 30-minute reconnect window is documented in Firestore's billing docs but easy to miss. Most developers assume "offline-then-online" is free because no user action occurred.
 
-**Consequences:**
-- App unusable with real data volumes
-- Mobile performance unacceptable (lower RAM, CPU)
-- User frustration with lag
-- Battery drain on mobile
-- Cannot scale beyond toy examples
+**How to avoid:**
+Since this project uses Dexie as the source of truth (Architecture A above), minimize use of persistent `onSnapshot` listeners. Instead:
+- Use a single `onSnapshot` listener on the user's task collection, only while the app is in the foreground
+- Unsubscribe the listener when the app goes to the background (`document.addEventListener('visibilitychange')`)
+- On foreground resume, fetch only documents changed since the last known server timestamp (`where('updatedAt', '>', lastSyncTimestamp)`)
+- Track `lastSyncTimestamp` in Dexie to enable delta syncs
 
-**Prevention:**
-- Implement virtual scrolling for task lists (react-window, react-virtuoso)
-- Lazy load subtasks: only fetch when parent expanded
-- Memoize subtask components (React.memo, useMemo)
-- Database: index on parent_id, fetch only visible level
-- Consider flattened view options (show all as flat list with indent)
-- Debounce drag operations
-- Use optimistic UI updates while background sync happens
-- Profile with realistic data: 500+ tasks, 3 levels deep
-- Set performance budget: <100ms for initial render, <16ms for interactions
+**Warning signs:**
+- Firestore read count spikes in Firebase console after mobile background usage
+- Daily read quota exceeded unexpectedly
+- Firebase console shows full collection reads on reconnect
 
-**Detection:**
-- Lighthouse performance scores <80
-- Render time profiling shows >100ms
-- User reports of "app is slow"
-- Frame drops during drag operations
-
-**Phase impact:** Foundation phase must choose performant patterns. Optimizing later requires rewrite.
+**Phase to address:** Firestore sync implementation phase.
 
 ---
 
-## Moderate Pitfalls
+### Pitfall 7: Firestore Security Rules Left Open During Development Exposes Data
 
-Mistakes that cause delays or technical debt but are recoverable.
-
-### Pitfall 8: Over-Engineering AI Provider Abstraction
-**What goes wrong:** Spend 2 weeks building complex adapter pattern for swappable AI providers. Abstract every API difference. Build configuration UI for each provider. Ship MVP without any users, never need to swap providers.
+**What goes wrong:**
+Default Firestore rules during project setup are `allow read, write: if false` (lock everything) or `allow read, write: if true` (open everything). Developers often set open rules to unblock development, deploy, and forget to lock them down. Since Firebase projects have guessable project IDs (they appear in the app's `firebaseConfig`), anyone who finds the config string can read or delete all data.
 
 **Why it happens:**
-- Premature optimization
-- "Future-proofing" that never pays off
-- Confusing flexibility with value
-- Not validating need before building abstraction
+Rules feel like a "later" concern. The app is "just for me." But Firebase Hosting makes the `firebaseConfig` publicly visible in the JavaScript bundle — it has to be, since client SDKs use it to connect.
 
-**Prevention:**
-- Start with single provider (OpenAI or Anthropic)
-- Simple function: `generateSubtasks(taskTitle: string): Promise<Subtask[]>`
-- Add abstraction only when second provider is needed
-- YAGNI principle: You Aren't Gonna Need It (until you do)
-- Environment variable for API key, hard-code provider initially
+**How to avoid:**
+Write the production security rules before deploying to Firebase Hosting, even for a personal app. For a single-user personal app where data is scoped per user:
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+```
+Deploy rules with `firebase deploy --only firestore:rules` as part of the first deploy. Use the Firebase Rules Simulator in the console to verify they work before going live.
 
-**Detection:**
-- Architecture planning takes longer than implementation would
-- No users asking for provider choice
-- Abstraction layer has one implementation for months
+**Warning signs:**
+- Firebase console shows "Your security rules are not secure" warning
+- Rules allow `if true` (open access)
+- Data collection is at root level without user-scoped paths
+
+**Phase to address:** Firebase setup phase — rules must be deployed before or simultaneously with the first public deployment.
 
 ---
 
-### Pitfall 9: Notification Hell
-**What goes wrong:** App sends notifications for task due, task overdue, task due tomorrow, weekly summary, AI breakdown ready, sync complete, encouragement messages. User disables all notifications after 3 days.
+### Pitfall 8: GCP Free Trial Is Not the Same as Firebase Spark Plan
+
+**What goes wrong:**
+The user is on a GCP free trial with $300 credit. When the trial ends, the project automatically downgrades and services stop — it does NOT automatically switch to Firebase Spark (permanent free tier). If the project was created as a Blaze plan project on GCP (which trials require for full access), after the trial ends Firebase may require explicit migration to Spark to avoid charges. Budget alerts do NOT cap spending on Blaze; they only send emails.
 
 **Why it happens:**
-- Each feature team adds their notification
-- No holistic notification strategy
-- Assumption that more reminders = more helpful
-- For ADHD users specifically: notification fatigue leads to learned helplessness
+The GCP free trial and Firebase Spark plan are separate things. Firebase Spark is a free-forever plan with hard limits. GCP trials use temporary credits. Many developers conflate the two and are surprised when the trial ends.
 
-**Prevention:**
-- Default to zero notifications
-- Make every notification opt-in, not opt-out
-- Batch notifications: one daily summary, not 15 individual alerts
-- Respect notification preferences religiously
-- Test: "Would I want this notification 30 days from now?"
-- Consider alternative: in-app indicators instead of push
+**How to avoid:**
+- Before the trial expires: decide whether to stay on Spark (free, with limits) or upgrade to Blaze (pay-as-you-go)
+- For a single-user personal app, Spark limits are sufficient: 50K reads/day, 20K writes/day, 1GB storage
+- If staying on Spark, ensure the Firebase project billing is set to "No billing account" and verify in Firebase console under Project Settings > Usage and billing
+- Set up a budget alert with a low threshold ($1/month) to detect unexpected charges
+- Do NOT enable Google Cloud Functions without moving to Blaze — Functions are not available on Spark
 
-**Detection:**
-- Analytics show notification disable rate >50%
-- App uninstalls spike after notification feature ships
-- User feedback: "too many notifications"
+The Firebase blog post [Get started with Firebase using Free Trial credits](https://firebase.blog/posts/2024/11/claim-300-to-get-started/) confirms the trial and Spark are separate entitlements.
+
+**Warning signs:**
+- Trial expiry email from Google Cloud
+- Firebase console shows billing warning
+- Services stop working without warning after trial period
+
+**Phase to address:** Firebase project setup phase — billing architecture decided first.
 
 ---
 
-### Pitfall 10: Authentication Overload for Personal App
-**What goes wrong:** Implement OAuth, social login, 2FA, email verification, password reset flow, session management. User just wants to try the app on their laptop.
+### Pitfall 9: Writing Full Documents Instead of Partial Updates Multiplies Write Counts
+
+**What goes wrong:**
+When a user marks a task complete, you call `setDoc(taskRef, localTask)` — syncing the entire Task object (all 15+ fields). Firestore counts this as one write, which seems fine. But if a task has subtasks, naive sync might write the entire parent document every time any subtask changes. With 3 levels of subtasks (up to ~35 nodes per root task), completing one leaf subtask could trigger writes for the whole tree, burning 35 writes for what should be 1.
 
 **Why it happens:**
-- Building for enterprise scale when it's personal use
-- Cargo-culting auth patterns from other apps
-- Security theater without threat model
+Fetching the whole Dexie record and passing it to `setDoc` is the simplest code. Developers don't think through write amplification until they see the Firebase console.
 
-**Prevention:**
-- For initial MVP: localStorage or even no auth (single device)
-- First multi-device need: simple email/password or magic link
-- Add OAuth only when users request specific provider
-- Don't build what Firebase Auth or Supabase Auth already provides
-- Ask: "What's the actual risk of skipping this?"
+**How to avoid:**
+Use `updateDoc` with only the changed fields for updates, not `setDoc` for the entire document:
+```typescript
+// Bad: writes all fields
+await setDoc(taskRef, { ...task });
 
-**Detection:**
-- Auth implementation takes >20% of MVP timeline
-- No users yet but complex auth system built
-- Auth code larger than core app features
+// Good: writes only what changed
+await updateDoc(taskRef, {
+  status: 'done',
+  updatedAt: serverTimestamp()
+});
+```
+Only use `setDoc` for initial document creation. Use Firestore's `serverTimestamp()` for `updatedAt` to avoid clock skew between devices.
+
+**Warning signs:**
+- Write count in Firebase console is 10-50x higher than expected task mutation count
+- Network tab shows large payloads for simple status changes
+- Approaching 20K writes/day limit with low user activity
+
+**Phase to address:** Firestore sync implementation phase.
 
 ---
 
-### Pitfall 11: Ignoring Time Zones in Calendar View
-**What goes wrong:** User schedules task for "Tuesday February 4, 2026." Travels to different time zone. Opens app, task now shows on Wednesday. Or creates task on mobile (PST), syncs to web (UTC stored), shows wrong day.
+### Pitfall 10: Not Unsubscribing Firestore Listeners Causes Memory Leaks and Zombie Reads
+
+**What goes wrong:**
+`onSnapshot` returns an unsubscribe function. If a React component that calls `onSnapshot` inside `useEffect` is unmounted without calling the unsubscribe function, the listener continues running in the background. It still fires callbacks on every document change, updating state on an unmounted component (React warning), and counting as active read operations. With multiple route changes, zombie listeners accumulate.
 
 **Why it happens:**
-- Storing dates as UTC timestamps instead of date-only
-- Mixing Date objects (time-aware) with calendar dates (time-agnostic)
-- Not considering user's local time zone on display
-- Calendar libraries default to midnight UTC
+`onSnapshot` looks like a `useEffect` dependency but is actually a subscription that needs explicit cleanup. Developers familiar with `useState` + `useEffect` for one-time data fetching don't realize the subscription semantics.
 
-**Prevention:**
-- Store calendar dates as date-only strings: "2026-02-04" (ISO 8601 date)
-- Never convert to timestamp for calendar dates
-- Use time zone only for "created_at" and sync metadata
-- Test with device time zone changed
-- Library choice: consider date-fns or Temporal API for date handling
+**How to avoid:**
+```typescript
+useEffect(() => {
+  if (!user) return;
 
-**Detection:**
-- Bug reports: "task appeared on wrong day"
-- Users in different time zones see different dates
-- Daylight saving time transitions cause issues
+  const unsubscribe = onSnapshot(
+    query(collection(db, `users/${user.uid}/tasks`)),
+    (snapshot) => { /* handle updates */ }
+  );
 
----
+  // Critical: return the cleanup function
+  return unsubscribe;
+}, [user]);
+```
+Every `onSnapshot` call must have a corresponding `return unsubscribe` in the `useEffect` cleanup. Consider creating a custom hook (`useFirestoreSync`) that centralizes all listeners so cleanup is in one place.
 
-### Pitfall 12: No Offline Support on Mobile
-**What goes wrong:** User on subway, opens app, sees loading spinner forever. Cannot add task. Cannot check tasks. App is useless without connection.
+**Warning signs:**
+- React warning: "Can't perform a React state update on an unmounted component"
+- Firebase console shows unexpected read activity after user navigates away
+- Memory usage grows over time without stabilizing
 
-**Why it happens:**
-- API-first architecture without local cache
-- No offline queue for writes
-- Assuming constant connectivity
-
-**Prevention:**
-- Local-first architecture: SQLite or IndexedDB as source of truth
-- Sync in background, not on user action
-- Queue writes when offline, sync when reconnected
-- Show clear offline indicator
-- Use service workers (PWA) for web version
-
-**Detection:**
-- Network tab shows app broken without connection
-- Mobile users report "app doesn't work on subway"
-- Bounce rate correlated with network conditions
+**Phase to address:** Firestore sync implementation phase.
 
 ---
 
-## Minor Pitfalls
+## Technical Debt Patterns
 
-Mistakes that cause annoyance but are fixable without major refactoring.
+Shortcuts that seem reasonable but create long-term problems.
 
-### Pitfall 13: No Undo for Drag-and-Drop
-**What goes wrong:** User accidentally drags task to wrong day. No way to undo. Must manually drag back. Or worse, dropped it "somewhere" and now can't find it.
-
-**Prevention:**
-- Cmd/Ctrl+Z support for all mutations
-- Toast notification after drag: "Moved to Friday. Undo?"
-- Confirmation for destructive actions (delete task with subtasks)
-
----
-
-### Pitfall 14: AI Subtask Generation Has No Loading State
-**What goes wrong:** User clicks "Break down task," nothing happens for 3-5 seconds, user clicks again, now two breakdown requests, gets duplicate subtasks or error.
-
-**Prevention:**
-- Immediate loading indicator (spinner, skeleton UI)
-- Disable button while request in flight
-- Show progress: "Thinking..." → "Generating subtasks..."
-- Timeout with friendly error: "AI is taking longer than usual. Try again?"
+| Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
+|----------|-------------------|----------------|-----------------|
+| Keep integer IDs, map to Firestore string IDs only on write | Preserves existing Dexie queries | Brittle mapping layer; `parentId` references break on second device | Never — choose one ID type at sync design time |
+| Enable Firestore's IndexedDB persistence alongside Dexie | "Free" offline support | Two caches diverge, post-clear-data corruption, multi-tab `failed-precondition` errors | Never — pick one source of truth |
+| Use `setDoc` for all syncs (create and update) | Simpler code | Write amplification, overwrites partial updates from other devices | Acceptable only if single-device and no real concurrency |
+| Leave security rules open during development, harden later | Unblocks development speed | Rules will be forgotten; data is public until caught | Never — write rules before first deployment |
+| Store API keys (AI provider keys) in Firestore | "Central storage" | Keys visible to anyone who authenticates; treat Firestore as public | Never — keep AI keys in environment variables / client-only localStorage |
+| Single top-level Firestore collection (no user scoping) | Simple queries | Security rules cannot scope per-user without user-scoped paths | Never — always scope under `/users/{uid}/` |
 
 ---
 
-### Pitfall 15: Accessibility Ignored in Drag Interface
-**What goes wrong:** Keyboard users, screen reader users cannot rearrange tasks. Drag-and-drop is mouse-only.
+## Integration Gotchas
 
-**Prevention:**
-- Keyboard shortcuts for moving tasks (Cmd+↑/↓ for days, Cmd+→/← for indent)
-- Screen reader announcements: "Task moved to Friday"
-- Consider alternative UI: dropdown or date picker as fallback
-- Test with keyboard only (unplug mouse)
-- ARIA labels for drag handles
+Common mistakes when connecting Firebase services.
 
----
-
-### Pitfall 16: No Empty States
-**What goes wrong:** New user sees blank screen. No guidance. Doesn't know what to do.
-
-**Prevention:**
-- Welcome screen with sample task or tutorial
-- Empty state messaging: "No tasks for today. Add one below!"
-- Onboarding checklist: "Add your first task" → "Try AI breakdown" → "Move task to tomorrow"
+| Integration | Common Mistake | Correct Approach |
+|-------------|----------------|------------------|
+| Firestore + Dexie | Enabling both Firestore persistence and Dexie, letting them compete | Disable Firestore persistence (`memoryLocalCache`); Dexie is sole source of truth |
+| Firebase Auth + React | Reading `auth.currentUser` synchronously at startup | Always use `onAuthStateChanged` with a loading state |
+| Firebase Auth + iOS PWA | Using `signInWithPopup` in standalone mode | Use `signInWithRedirect` with correct `authDomain` matching deployed domain |
+| Firebase Hosting + vite-plugin-pwa | Deploying without `no-cache` header on service worker file | Add `Cache-Control: no-cache` for `/sw.js` in `firebase.json` headers |
+| Firestore + Dexie IDs | Using Dexie integer IDs as Firestore document IDs | Add `firestoreId: string` field to Dexie schema, use it for Firestore paths |
+| Firestore + Dexie parentId | Syncing `parentId` as integer to Firestore | Sync `parentId` as the corresponding `firestoreId` string |
+| Firestore Security Rules | Testing rules only with Firebase console simulator | Also test with actual app sign-in + sign-out + anonymous access from browser |
+| Firebase Hosting + GCP trial | Assuming GCP trial = Firebase Spark plan | Explicitly check billing plan in Firebase console; Spark is separate from trial |
 
 ---
 
-### Pitfall 17: Mobile Keyboard Covers Input Field
-**What goes wrong:** User taps to add task, keyboard appears, input field behind keyboard. Cannot see what they're typing.
+## Performance Traps
 
-**Prevention:**
-- ScrollView with keyboardShouldPersistTaps
-- Android: adjustResize window setting
-- iOS: KeyboardAvoidingView component
-- Test on multiple device sizes
+Patterns that work at small scale but cause problems with real usage.
 
----
-
-### Pitfall 18: No Data Export
-**What goes wrong:** User wants to switch tools or back up data. Locked in. Feels trapped. Doesn't trust app as long-term solution.
-
-**Prevention:**
-- Export to JSON or CSV
-- Even simple MVP should have export
-- Builds trust: "Your data is yours"
-- Bonus: import from competitor formats
+| Trap | Symptoms | Prevention | When It Breaks |
+|------|----------|------------|----------------|
+| Full-collection `onSnapshot` listener | All N tasks re-read on reconnect after 30+ min offline | Scope to user UID path; unsubscribe when app backgrounded; use delta sync with `updatedAt` filter | >200 tasks, frequent mobile background/foreground cycles |
+| Write full document on every Dexie change | Write count 10-50x expected | Use `updateDoc` with only changed fields for updates | >500 task mutations/day |
+| Sync triggered on every `useLiveQuery` emission | Firestore write on every letter typed in task title | Debounce sync trigger (500ms after last change), or sync only on blur/explicit save | Typing speed of a normal user |
+| Unbounded Firestore query for tasks | All tasks fetched on startup regardless of date range | Query by date range matching the visible calendar window | >1,000 tasks total |
+| Creating Firestore documents at Dexie write time on mobile | High latency writes block UI on slow connections | Write to Dexie immediately; sync to Firestore in background (fire-and-forget with retry) | 3G/LTE with high latency (subway, rural areas) |
 
 ---
 
-## Phase-Specific Warnings
+## Security Mistakes
 
-| Phase Topic | Likely Pitfall | Mitigation |
-|-------------|---------------|------------|
-| Foundation (Data model) | Recursive depth not enforced in schema | Add CHECK constraint: depth <= 3 |
-| Foundation (Sync architecture) | Last-write-wins without conflict detection | Design conflict strategy upfront |
-| AI Integration | Auto-breakdown on every task | Require explicit user trigger |
-| AI Integration | No cost monitoring | Implement rate limits Day 1 |
-| Calendar UI | Time-zone bugs with calendar dates | Store dates as strings, not timestamps |
-| Mobile MVP | No offline support | Local-first architecture from start |
-| Performance | Recursive tree renders entire dataset | Virtual scrolling, lazy loading, memoization |
-| ADHD UX | Feature creep adds cognitive load | Ruthless scope control, test with ADHD users |
-| Multi-platform | Sync race conditions not tested | Test with two devices making conflicting edits |
+Firebase-specific security issues for a personal app.
+
+| Mistake | Risk | Prevention |
+|---------|------|------------|
+| Open Firestore rules (`allow read, write: if true`) during development, never locked | Anyone with the project ID (visible in deployed bundle) can read/write/delete all data | Write user-scoped rules before first deployment; `firebase.json` deploy block includes `firestore:rules` |
+| Data stored at root collection without user UID scoping (e.g., `/tasks/{taskId}`) | Rules cannot distinguish which user owns which task | Always scope under `/users/{uid}/tasks/{taskId}`; rules enforce `request.auth.uid == userId` |
+| AI provider API keys stored in Firestore | Anyone authenticated can read API keys; keys are billable credentials | Keep AI keys in client-side `localStorage` or environment variables; they never go to Firestore |
+| Firestore rules only tested via console simulator | Rules may pass simulator but fail in real app auth context | Test with actual browser sign-in + DevTools network inspection |
+| Not validating `updatedAt` field in security rules | Client can backdate `updatedAt` to win last-write-wins conflicts | Add rules validation: `request.resource.data.updatedAt == request.time` |
 
 ---
 
-## Confidence Assessment
+## UX Pitfalls
 
-**Overall confidence:** MEDIUM
+Integration-specific UX mistakes that harm the user experience.
 
-**Why MEDIUM:**
-- Based on training knowledge of productivity app patterns (HIGH confidence)
-- Based on known ADHD UX principles (MEDIUM-HIGH confidence)
-- Based on recursive data structure performance patterns (HIGH confidence)
-- Based on AI integration cost/quality tradeoffs (HIGH confidence)
-- NOT verified with 2026 current sources due to WebSearch unavailability (reduces confidence)
-- NOT verified with recent post-mortems or case studies (would increase confidence)
-- Patterns are well-established but specific tools/solutions may have evolved
+| Pitfall | User Impact | Better Approach |
+|---------|-------------|-----------------|
+| No sync status indicator | User doesn't know if changes are saved to cloud or not | Show subtle sync state: "Saved locally" → "Synced" → "Sync failed — will retry" |
+| Blocking UI on Firestore write | Typing/task completion feels slow on bad connections | Write to Dexie immediately (instant UI feedback), sync to Firestore in background |
+| Sign-in gate before seeing any app content | ADHD users abandon on-boarding friction | Let users create tasks locally first; prompt sign-in when they want cross-device sync |
+| Sign-out clears all local data | User is locked out of their tasks if sign-out is accidental | Keep Dexie data on sign-out; only clear sync metadata; re-associate on next sign-in |
+| No offline indicator | User makes changes, gets confused why they're not showing on other device | Show "Offline — changes saved locally" banner when `navigator.onLine === false` |
+| Google sign-in popup on mobile breaks PWA flow | Sign-in appears to fail; user retries repeatedly | Use redirect-based sign-in on mobile (`isMobile()` check before calling auth method) |
 
-**What would increase confidence:**
-- Access to recent productivity app post-mortems
-- Current ADHD community feedback on existing apps
-- Recent AI integration case studies
-- Current cross-platform sync library best practices
+---
+
+## "Looks Done But Isn't" Checklist
+
+Things that appear complete but are missing critical pieces.
+
+- [ ] **Firebase setup:** App connects and writes data locally — verify security rules are NOT open (`allow write: if true`) before calling this done
+- [ ] **Google Auth:** Sign-in works in Chrome desktop — verify it also works in iOS Safari PWA standalone mode and Android PWA before marking complete
+- [ ] **Firestore sync:** Tasks appear on second device — verify subtask `parentId` relationships are preserved correctly (subtasks appear under the right parent, not orphaned)
+- [ ] **Offline support:** App works without internet (Dexie handles this already) — verify changes made offline successfully sync to Firestore when connection restores
+- [ ] **Firestore sync:** Sync appears to work — check Firebase console to confirm actual write counts are sane (not 10x expected due to full-document writes)
+- [ ] **Service worker:** Deploy appears successful — verify installed PWA on mobile picks up the new version within 24 hours (not serving stale cached shell)
+- [ ] **Firebase Hosting:** Site loads at Firebase URL — verify `firebase.json` rewrites are configured for SPA (all routes return `index.html`, not 404)
+- [ ] **Data safety:** New data syncs — verify that `firebase deploy` does NOT destroy existing Firestore data (hosting deploy is code only; Firestore data is separate)
+- [ ] **Auth state:** User stays signed in across sessions — verify `AUTH_PERSISTENCE` is set to `LOCAL` (not `SESSION` which signs out on browser close)
+
+---
+
+## Recovery Strategies
+
+When pitfalls occur despite prevention, how to recover.
+
+| Pitfall | Recovery Cost | Recovery Steps |
+|---------|---------------|----------------|
+| Integer/string ID mismatch discovered after sync built | HIGH | Pause sync, write Dexie migration to add `firestoreId` field, migrate all Firestore documents to use new string IDs, update all sync code to use `firestoreId` |
+| Firestore data corrupted by open security rules | MEDIUM | Audit Firestore console for unexpected documents, delete unauthorized data, lock down rules immediately, rotate any exposed credentials |
+| Two Firestore caches (Dexie + Firestore persistence) diverged | MEDIUM | Disable Firestore persistence, clear Firestore local cache (`clearIndexedDbPersistence()`), re-hydrate Dexie from canonical Firestore data |
+| Service worker serving stale app after deploy | LOW | Force update: in Chrome DevTools, Service Workers tab, click "Update" and "Skip waiting"; for users, add `skipWaiting()` call in service worker or cache-bust the sw.js URL |
+| Zombie `onSnapshot` listeners causing memory leak | LOW | Add unsubscribe calls to all `useEffect` cleanup functions; restart the app to clear accumulated listeners |
+| GCP trial ended, services stopped unexpectedly | MEDIUM | Decide: migrate to Spark (free, limited) or enable Blaze (pay-as-you-go); Firestore data is preserved during billing transition |
+| iOS Safari sign-in broken after deploy | LOW | Switch auth method to `signInWithRedirect`; verify `authDomain` in Firebase config matches deployed domain exactly |
+
+---
+
+## Pitfall-to-Phase Mapping
+
+How roadmap phases should address these pitfalls.
+
+| Pitfall | Prevention Phase | Verification |
+|---------|------------------|--------------|
+| Integer/string ID mismatch | Firebase project setup (first phase) | Write a Dexie schema migration for `firestoreId` field before any Firestore writes |
+| Auth state race / null user flash | Google Auth integration phase | Confirm loading state renders on hard refresh; no sign-in flash for authenticated user |
+| signInWithPopup iOS PWA failure | Google Auth integration phase | Test on actual iOS device in PWA standalone mode before marking auth complete |
+| vite-plugin-pwa service worker conflict | Firebase Hosting deployment phase | Verify `firebase.json` includes `no-cache` header for `sw.js` |
+| Firestore cache vs. Dexie conflict | Firebase architecture design (pre-code) | Code review: confirm `memoryLocalCache` is configured; no Firestore persistence enabled |
+| 30-min reconnect read cost | Firestore sync implementation phase | Test: background app 31 minutes, foreground, observe Firebase console read count |
+| Open security rules | Firebase setup phase | Firebase console Security Rules tab shows user-scoped rules; test with unauthenticated request being denied |
+| GCP trial vs. Spark plan | Firebase project setup phase | Firebase console Project Settings > Usage and billing shows "Spark plan" or confirmed billing plan |
+| Full document writes on update | Firestore sync implementation phase | Firebase console shows write counts within expected range after 50 task operations |
+| Missing `onSnapshot` unsubscribe | Firestore sync implementation phase | React DevTools Profiler shows no "state update on unmounted component" warnings |
 
 ---
 
 ## Sources
 
-**Note:** Due to WebSearch unavailability, this research draws from training knowledge (as of January 2025) of:
-- Productivity app development patterns
-- ADHD-specific UX research (accessible technology guidelines)
-- Recursive data structure performance characteristics
-- AI integration cost and quality tradeoffs
-- Cross-platform sync architecture patterns
+- [Firebase Auth: Authentication State Persistence](https://firebase.google.com/docs/auth/web/auth-state-persistence) — official docs on persistence modes and async loading
+- [Best practices for signInWithRedirect on browsers blocking third-party storage](https://firebase.google.com/docs/auth/web/redirect-best-practices) — official docs on iOS Safari PWA auth
+- [Firebase: Use Firebase in a progressive web app](https://firebase.google.com/docs/web/pwa) — official PWA integration guide
+- [Firestore: Access data offline](https://firebase.google.com/docs/firestore/manage-data/enable-offline) — persistence modes, multi-tab constraints
+- [Firestore: Understand Cloud Firestore billing](https://firebase.google.com/docs/firestore/pricing) — read/write costs, reconnect billing
+- [Firestore: Fix insecure rules](https://firebase.google.com/docs/firestore/security/insecure-rules) — security rule patterns
+- [Firebase: Avoid surprise bills](https://firebase.google.com/docs/projects/billing/avoid-surprise-bills) — budget alerts, Spark vs. Blaze
+- [GitHub: vite-pwa/vite-plugin-pwa issue #777 — second service worker causes constant reload](https://github.com/vite-pwa/vite-plugin-pwa/issues/777) — confirmed service worker conflict
+- [GitHub: firebase/firebase-js-sdk issue #8593 — Firestore IndexedDB cache corrupted after clear site data](https://github.com/firebase/firebase-js-sdk/issues/8593) — confirmed cache corruption bug
+- [GitHub: firebase/firebase-js-sdk issue #6716 — Safari 16.1+ signInWithPopup failure](https://github.com/firebase/firebase-js-sdk/issues/6716) — confirmed iOS Safari issue
+- [GitHub: firebase/firebase-js-sdk issue #2755 — Offline mode improvements: listener reconnect without restart](https://github.com/firebase/firebase-js-sdk/issues/2755) — confirmed reconnect issue
+- [Firebase: Deploying Firebase Hosting — firebase.json headers configuration](https://firebase.github.io/firebase-tools/#hosting) — service worker cache control headers
+- [Dexie.js: Version.upgrade() documentation](https://dexie.org/docs/Version/Version.upgrade()) — schema migration patterns
+- [wild.codes: How do you design offline-first sync & conflict resolution on Firebase?](https://wild.codes/candidate-toolkit-question/how-do-you-design-offline-first-sync-conflict-resolution-on-firebase) — LWW vs. CRDT patterns
 
-**Recommended validation:**
-- Test patterns with actual ADHD users during development
-- Consult ADHD community forums (Reddit r/ADHD, ADDitude Magazine)
-- Review recent productivity app case studies (Todoist, Things, TickTick engineering blogs)
-- Validate AI costs with current OpenAI/Anthropic pricing
-- Test cross-platform sync patterns with chosen tech stack
-
-**Flag for phase-specific research:**
-- Specific sync library recommendations (when tech stack chosen)
-- Current AI model pricing and capabilities (before Phase 2)
-- Performance profiling benchmarks for chosen framework (during Foundation)
+---
+*Pitfalls research for: Adding Firebase (Firestore, Auth, Hosting) to existing TaskBreaker PWA with Dexie.js*
+*Researched: 2026-03-01*
