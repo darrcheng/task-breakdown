@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { db } from '../../db/database';
 import { CategoryCombobox } from './CategoryCombobox';
+import { useTimeEstimate } from '../../hooks/useTimeEstimate';
 
 interface TaskInlineCreateProps {
   date: string;
@@ -11,6 +12,7 @@ export function TaskInlineCreate({ date, onClose }: TaskInlineCreateProps) {
   const [title, setTitle] = useState('');
   const [categoryId, setCategoryId] = useState<number>(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { triggerEstimate } = useTimeEstimate();
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -22,7 +24,7 @@ export function TaskInlineCreate({ date, onClose }: TaskInlineCreateProps) {
 
     const finalCategoryId = categoryId || 1;
 
-    await db.tasks.add({
+    const newId = await db.tasks.add({
       title: title.trim(),
       description: '',
       date,
@@ -32,6 +34,9 @@ export function TaskInlineCreate({ date, onClose }: TaskInlineCreateProps) {
       createdAt: new Date(),
       updatedAt: new Date(),
     });
+
+    // Fire-and-forget: AI time estimation for inline-created tasks
+    triggerEstimate(newId as number, title.trim(), '', finalCategoryId);
 
     setTitle('');
     setCategoryId(0);
