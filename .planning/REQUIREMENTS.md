@@ -65,30 +65,30 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SETUP-01 | — | Pending |
-| SETUP-02 | — | Pending |
-| SETUP-03 | — | Pending |
-| AUTH-01 | — | Pending |
-| AUTH-02 | — | Pending |
-| AUTH-03 | — | Pending |
-| AUTH-04 | — | Pending |
-| AUTH-05 | — | Pending |
-| AUTH-06 | — | Pending |
-| SYNC-01 | — | Pending |
-| SYNC-02 | — | Pending |
-| SYNC-03 | — | Pending |
-| SYNC-04 | — | Pending |
-| SYNC-05 | — | Pending |
-| DATA-01 | — | Pending |
-| DATA-02 | — | Pending |
-| DATA-03 | — | Pending |
-| DATA-04 | — | Pending |
+| SETUP-01 | Phase 11 | Pending |
+| SETUP-02 | Phase 11 | Pending |
+| SETUP-03 | Phase 8 | Pending |
+| AUTH-01 | Phase 9 | Pending |
+| AUTH-02 | Phase 9 | Pending |
+| AUTH-03 | Phase 9 | Pending |
+| AUTH-04 | Phase 9 | Pending |
+| AUTH-05 | Phase 9 | Pending |
+| AUTH-06 | Phase 9 | Pending |
+| SYNC-01 | Phase 10 | Pending |
+| SYNC-02 | Phase 10 | Pending |
+| SYNC-03 | Phase 10 | Pending |
+| SYNC-04 | Phase 10 | Pending |
+| SYNC-05 | Phase 10 | Pending |
+| DATA-01 | Phase 9 | Pending |
+| DATA-02 | Phase 10 | Pending |
+| DATA-03 | Phase 12 | Pending |
+| DATA-04 | Phase 12 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 18 total
-- Mapped to phases: 0
-- Unmapped: 18 ⚠️
+- Mapped to phases: 18
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-01*
-*Last updated: 2026-03-01 after initial definition*
+*Last updated: 2026-03-01 — traceability filled after roadmap creation*
