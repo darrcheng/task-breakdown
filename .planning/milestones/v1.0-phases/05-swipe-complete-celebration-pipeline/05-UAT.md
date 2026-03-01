@@ -1,9 +1,9 @@
 ---
-status: complete
+status: diagnosed
 phase: 05-swipe-complete-celebration-pipeline
 source: 05-01-SUMMARY.md
 started: 2026-03-01T00:00:00Z
-updated: 2026-03-01T00:05:00Z
+updated: 2026-03-01T00:10:00Z
 ---
 
 ## Current Test
@@ -46,7 +46,11 @@ skipped: 1
   reason: "User reported: Fail, clicking the check box does nothing. Also, the animation is weird. The task goes away, then comes back for a quick second before then disappearing again. Didn't we have this issue on desktop? Why is it reappearing?"
   severity: blocker
   test: 1
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Two bugs: (1) triggerComplete gates on getNextStatus===done but todo->in-progress, so swipe/checkbox does nothing for todo tasks. (2) Settling phase removes opacity-0, causing task to fade back to visible before DB write removes it from DOM — same bug class as Phase 03."
+  artifacts:
+    - path: "src/components/list/TaskListItem.tsx"
+      issue: "triggerComplete getNextStatus guard blocks todo tasks; settling phase removes opacity-0 causing flash-back"
+  missing:
+    - "Remove getNextStatus check — triggerComplete should force-complete to done regardless of current status"
+    - "Move DB write before settling phase so component unmounts before flash-back when showCompleted=false"
+  debug_session: ".planning/debug/swipe-complete-flashback.md"

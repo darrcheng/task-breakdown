@@ -82,3 +82,10 @@ None - no external service configuration required.
 ---
 *Phase: 03-adhd-optimized-ux*
 *Completed: 2026-02-24*
+
+## Self-Check: PASSED
+
+- FOUND: src/components/task/SubtaskList.tsx
+- FOUND: .planning/phases/03-adhd-optimized-ux/03-15-SUMMARY.md
+- FOUND: bfc5ed4 (task commit)
+- FOUND: 0faf285 (metadata commit)
