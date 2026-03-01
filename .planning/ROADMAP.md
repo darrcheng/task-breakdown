@@ -149,8 +149,11 @@ Plans:
   2. Swiping a task to complete triggers hapticFeedback
   3. Celebration animation is identical whether completed via checkbox or swipe
 
+**Plans:** 2 plans
+
 Plans:
-- [ ] 05-01-PLAN.md — Route DaySwipeView/DayGroup swipe-complete through celebration pipeline, add haptic
+- [x] 05-01-PLAN.md — Route DaySwipeView/DayGroup swipe-complete through celebration pipeline, add haptic
+- [ ] 05-02-PLAN.md — Gap closure: fix triggerComplete getNextStatus guard for todo tasks, eliminate settling phase flash-back
 
 ### Phase 6: Mobile Someday Navigation
 **Goal**: Mobile users can access the Someday view via BottomTabBar
@@ -191,10 +194,10 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | 02.1. Gemini Model Selector | 1/1 | Complete    | 2026-02-23 |
 | 3. ADHD-Optimized UX | 17/17 | Complete   | 2026-02-24 |
 | 4. Cross-Platform Expansion | 1/6 | In Progress|  |
-| 5. Swipe-Complete Celebration | 0/1 | Pending | |
+| 5. Swipe-Complete Celebration | 1/2 | In Progress | |
 | 6. Mobile Someday Navigation | 0/1 | Pending | |
 | 7. Secondary Path Polish | 0/1 | Pending | |
 
 ---
 *Roadmap created: 2026-02-05*
-*Last updated: 2026-02-28*
+*Last updated: 2026-03-01*
