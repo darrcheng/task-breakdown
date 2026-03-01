@@ -17,6 +17,7 @@ Turn vague, paralyzing tasks into small, concrete steps you can start right now.
 - Drag tasks between calendar days to reschedule — Phase 1
 - Mark tasks as done (clears from calendar view) — Phase 1
 - Data persists across browser sessions via IndexedDB — Phase 1
+- Swipe-complete triggers identical celebration animation and haptic as checkbox — Phase 5
 
 ### Active
 
@@ -61,4 +62,4 @@ Turn vague, paralyzing tasks into small, concrete steps you can start right now.
 | Per-cell reactive queries | Each DayCell queries its own tasks, Dexie handles reactivity | Phase 1 |
 
 ---
-*Last updated: 2026-02-22 after Phase 1*
+*Last updated: 2026-03-01 after Phase 5*
