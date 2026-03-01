@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 4: Cross-Platform Expansion** - Full web and mobile parity (gap closure in progress)
 - [ ] **Phase 5: Swipe-Complete Celebration Pipeline** - Wire swipe-complete through departure animation + haptic (gap closure)
 - [x] **Phase 6: Mobile Someday Navigation** - Add Someday tab to mobile BottomTabBar (gap closure) (completed 2026-03-01)
-- [ ] **Phase 7: Secondary Path Polish + Cleanup** - Inline estimate trigger, keyboard toggle, dead code removal (gap closure)
+- [x] **Phase 7: Secondary Path Polish + Cleanup** - Inline estimate trigger, keyboard toggle, dead code removal (gap closure)
 
 ## Phase Details
 
@@ -179,7 +179,7 @@ Plans:
   3. TaskInlineEdit dead code is removed
 
 Plans:
-- [ ] 07-01-PLAN.md — Wire triggerEstimate to inline create, connect shortcuts toggle, delete TaskInlineEdit
+- [x] 07-01-PLAN.md — Wire triggerEstimate to inline create, connect shortcuts toggle, delete TaskInlineEdit
 
 ## Progress
 
@@ -196,7 +196,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | 4. Cross-Platform Expansion | 1/6 | In Progress|  |
 | 5. Swipe-Complete Celebration | 1/2 | In Progress | |
 | 6. Mobile Someday Navigation | 1/1 | Complete | 2026-03-01 |
-| 7. Secondary Path Polish | 0/1 | Pending | |
+| 7. Secondary Path Polish | 1/1 | Complete | 2026-03-01 |
 
 ---
 *Roadmap created: 2026-02-05*

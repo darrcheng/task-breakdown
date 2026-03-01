@@ -18,16 +18,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-01)
 
 **Core value:** Turn vague, paralyzing tasks into small, concrete steps you can start right now
-**Current focus:** Phase 6 — Mobile Someday Navigation
+**Current focus:** Phase 7 complete — Secondary Path Polish + Cleanup
 
 ## Current Position
 
-Phase: 6 of 7 (Mobile Someday Navigation) - Ready to plan
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-03-01 — Phase 05 complete. Swipe-complete routed through celebration pipeline, triggerComplete force-completes any status, flash-back eliminated.
+Phase: 7 of 7 (Secondary Path Polish + Cleanup) - Complete
+Plan: 1/1
+Status: Complete
+Last activity: 2026-03-01 — Phase 07 complete. Inline create estimation wired, keyboard shortcuts toggle connected to handler, TaskInlineEdit dead code removed.
 
-Progress: [██████████████████░░] 45/50 plans (90%)
+Progress: [████████████████████] 47/52 plans (90%)
 
 ## Performance Metrics
 
@@ -161,6 +161,9 @@ Recent decisions affecting current work:
 - [Phase 05]: Swipe-complete routes through same triggerComplete as checkbox — single source of truth for departure animation, haptic, and deferred DB write
 - [Phase 05]: triggerComplete force-complete: removed getNextStatus guard so triggerComplete always marks done regardless of todo/in-progress status
 - [Phase 05]: Settling phase removed: setDepartingPhase(null) + DB write fires directly after 1500ms fade -- settling was causing flash-back by restoring opacity before unmount
+- [Phase 07]: useTimeEstimate hook used directly in TaskInlineCreate (not threaded as prop from DayGroup) — matches TaskModal pattern
+- [Phase 07]: Early return guard `if (!settings.showKeyboardShortcuts) return;` in keyboard useEffect + dependency array inclusion for reactive toggle control
+- [Phase 07]: TaskInlineEdit.tsx deleted — confirmed dead code with zero import references
 
 ### Pending Todos
 
@@ -178,5 +181,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-01
-Stopped at: Phase 7 context gathered
-Resume file: .planning/phases/07-secondary-path-polish-cleanup/07-CONTEXT.md
+Stopped at: Phase 7 complete
+Resume file: .planning/phases/07-secondary-path-polish-cleanup/07-01-SUMMARY.md
