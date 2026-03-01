@@ -15,10 +15,10 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Local-First Foundation** - Core task management with calendar view (completed 2026-02-22)
 - [x] **Phase 2: AI Task Breakdown** - AI-powered subtask generation with controls (completed 2026-02-23)
 - [x] **Phase 3: ADHD-Optimized UX** - Energy tracking and gentle reschedule prompts (gap closure in progress) (completed 2026-02-24)
-- [ ] **Phase 4: Cross-Platform Expansion** - Full web and mobile parity (gap closure in progress)
-- [ ] **Phase 5: Swipe-Complete Celebration Pipeline** - Wire swipe-complete through departure animation + haptic (gap closure)
+- [x] **Phase 4: Cross-Platform Expansion** - Full web and mobile parity (completed 2026-02-26)
+- [x] **Phase 5: Swipe-Complete Celebration Pipeline** - Wire swipe-complete through departure animation + haptic (completed 2026-03-01)
 - [x] **Phase 6: Mobile Someday Navigation** - Add Someday tab to mobile BottomTabBar (gap closure) (completed 2026-03-01)
-- [x] **Phase 7: Secondary Path Polish + Cleanup** - Inline estimate trigger, keyboard toggle, dead code removal (gap closure)
+- [x] **Phase 7: Secondary Path Polish + Cleanup** - Inline estimate trigger, keyboard toggle, dead code removal (completed 2026-03-01)
 
 ## Phase Details
 
@@ -137,7 +137,7 @@ Plans:
 - [x] 04-03-PLAN.md — Mobile calendar: day swipe view, date strip navigation
 - [x] 04-04-PLAN.md — Touch interactions: bottom sheet modal, swipe-to-reveal actions, haptic feedback
 - [x] 04-05-PLAN.md — Integration and polish: install banner, offline indicator, touch drag, offline AI guard
-- [ ] 04-06-PLAN.md — Gap closure: wire SwipeableTaskRow into DaySwipeView, fix swipe event conflict
+- [x] 04-06-PLAN.md — Gap closure: wire SwipeableTaskRow into DaySwipeView, fix swipe event conflict
 
 ### Phase 5: Wire Swipe-Complete to Celebration Pipeline
 **Goal**: Swipe-to-complete triggers the same celebration animation and haptic feedback as checkbox completion
@@ -193,8 +193,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | 2. AI Task Breakdown | 7/7 | Complete   | 2026-02-23 |
 | 02.1. Gemini Model Selector | 1/1 | Complete    | 2026-02-23 |
 | 3. ADHD-Optimized UX | 17/17 | Complete   | 2026-02-24 |
-| 4. Cross-Platform Expansion | 1/6 | In Progress|  |
-| 5. Swipe-Complete Celebration | 1/2 | In Progress | |
+| 4. Cross-Platform Expansion | 6/6 | Complete | 2026-02-26 |
+| 5. Swipe-Complete Celebration | 2/2 | Complete | 2026-03-01 |
 | 6. Mobile Someday Navigation | 1/1 | Complete | 2026-03-01 |
 | 7. Secondary Path Polish | 1/1 | Complete | 2026-03-01 |
 
