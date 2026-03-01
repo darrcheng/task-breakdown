@@ -1,14 +1,14 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: MVP
-status: shipped
-last_updated: "2026-03-01T19:33:00.824Z"
+milestone: v1.1
+milestone_name: Deploy & Sync
+status: defining_requirements
+last_updated: "2026-03-01T20:00:00.000Z"
 progress:
-  total_phases: 9
-  completed_phases: 9
-  total_plans: 52
-  completed_plans: 52
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 # Project State
@@ -18,14 +18,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-01)
 
 **Core value:** Turn vague, paralyzing tasks into small, concrete steps you can start right now
-**Current focus:** v1.0 MVP shipped — planning next milestone
+**Current focus:** v1.1 Deploy & Sync — defining requirements
 
 ## Current Position
 
-Milestone: v1.0 MVP — SHIPPED 2026-03-01
-All phases complete (9 phases, 52 plans)
-
-Progress: [████████████████████] 52/52 plans (100%)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-01 — Milestone v1.1 started
 
 ## Accumulated Context
 
@@ -34,9 +34,17 @@ Progress: [████████████████████] 52/52 p
 Decisions are logged in PROJECT.md Key Decisions table.
 Full decision history archived in `.planning/milestones/v1.0-ROADMAP.md`.
 
+- Firebase chosen over raw GCP for real-time sync, auth, and hosting
+- Google sign-in for authentication
+- Offline-first: keep IndexedDB, layer Firestore on top
+- Start fresh (no data migration from local IndexedDB)
+
 ### Pending Todos
 
-14 pending todos (see `.planning/todos/pending/`).
+3 pending todos (see `.planning/todos/pending/`):
+- Status cycling accidental click safety
+- Category filter with multiple selection
+- Today view for PC (mobile done)
 
 ### Blockers/Concerns
 
@@ -45,5 +53,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-01
-Stopped at: v1.0 milestone completion
-Next step: `/gsd:new-milestone` for v1.1 planning
+Stopped at: Defining v1.1 requirements
+Next step: Complete requirements definition and roadmap creation

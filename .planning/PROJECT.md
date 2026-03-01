@@ -32,7 +32,11 @@ Turn vague, paralyzing tasks into small, concrete steps you can start right now.
 
 ### Active
 
-(None — fresh for next milestone)
+- [ ] Firebase project setup (Firestore, Auth, Hosting)
+- [ ] Google sign-in authentication
+- [ ] Real-time Firestore sync with offline-first IndexedDB cache
+- [ ] Deploy to Firebase Hosting
+- [ ] Data backup safety (deploys don't touch data)
 
 ### Out of Scope
 
@@ -44,6 +48,17 @@ Turn vague, paralyzing tasks into small, concrete steps you can start right now.
 - Social comparison — worsens inadequacy feelings
 - Rigid deadline enforcement — creates anxiety for ADHD users
 
+## Current Milestone: v1.1 Deploy & Sync
+
+**Goal:** Deploy TaskBreaker to Firebase and add real-time cross-device sync so tasks stay in sync between phone and PC.
+
+**Target features:**
+- Firebase project setup (Firestore, Auth, Hosting)
+- Google sign-in (single user now, multi-user ready)
+- Real-time Firestore sync layered on existing IndexedDB (offline-first)
+- Deploy to Firebase Hosting (GCP free trial / Spark plan)
+- Data backup safety — code deploys never touch data, IndexedDB as offline cache
+
 ## Context
 
 Shipped v1.0 MVP with 6,945 LOC TypeScript across 62 files.
@@ -51,6 +66,7 @@ Tech stack: React + Vite 5 + Tailwind CSS 4 + Dexie.js + dnd-kit + vite-plugin-p
 Built in 24 days (234 commits) across 9 phases including 2 decimal insertions.
 All 23 v1 requirements satisfied. 5 integration gaps found in audit were closed by Phases 5-7.
 Initial user testing showed demand for Gemini model selection (added as Phase 02.1).
+User is on GCP free trial. Firebase chosen for real-time sync (Firestore), auth (Google sign-in), and hosting — stays within permanent free tier (Spark plan) for single-user usage.
 
 ## Constraints
 
@@ -78,4 +94,4 @@ Initial user testing showed demand for Gemini model selection (added as Phase 02
 | onRegisterComplete callback | Parent stores child triggerComplete in refs Map by task.id | ✓ Good — Phase 5 |
 
 ---
-*Last updated: 2026-03-01 after v1.0 milestone*
+*Last updated: 2026-03-01 after v1.1 milestone start*
