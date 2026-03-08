@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Deploy & Sync
 status: executing
-stopped_at: Completed 10-03-PLAN.md
-last_updated: "2026-03-08T18:10:00.000Z"
-last_activity: 2026-03-08 — Completed 10-03 (data migration with batch upload and merge)
+stopped_at: Completed 10-04-PLAN.md
+last_updated: "2026-03-08T18:13:31.000Z"
+last_activity: 2026-03-08 — Completed 10-04 (auth integration with sync lifecycle)
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 10
-  completed_plans: 8
-  percent: 80
+  completed_plans: 9
+  percent: 90
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-01)
 ## Current Position
 
 Phase: 10 of 12 (Sync Engine)
-Plan: 3 of 5 (complete)
+Plan: 4 of 5 (complete)
 Status: In Progress
-Last activity: 2026-03-08 — Completed 10-03 (data migration with batch upload and merge)
+Last activity: 2026-03-08 — Completed 10-04 (auth integration with sync lifecycle)
 
-Progress: [████████--] 80% (Plan 10-03 complete)
+Progress: [█████████-] 90% (Plan 10-04 complete)
 
 ## Accumulated Context
 
@@ -56,6 +56,8 @@ Full v1.0 decision history archived in `.planning/milestones/v1.0-ROADMAP.md`.
 - [Phase 10]: All aiSettings safe to sync (API keys in WebCrypto/localStorage, not Dexie)
 - [Phase 10]: Used any cast for Dexie hook registration due to EntityTable strict typing
 - [Phase 10]: LWW only for tasks; categories/aiSettings always overwrite (no timestamps)
+- [Phase 10]: Sync errors non-fatal: app works without sync if setup fails
+- [Phase 10]: Category dedup not needed: inbound put() upserts by matching numeric ID
 
 ### Pending Todos
 
@@ -71,6 +73,6 @@ Full v1.0 decision history archived in `.planning/milestones/v1.0-ROADMAP.md`.
 
 ## Session Continuity
 
-Last session: 2026-03-08T18:10:00.000Z
-Stopped at: Completed 10-03-PLAN.md
-Next step: Execute 10-04-PLAN.md (auth integration)
+Last session: 2026-03-08T18:13:31.000Z
+Stopped at: Completed 10-04-PLAN.md
+Next step: Execute 10-05-PLAN.md (final verification)
