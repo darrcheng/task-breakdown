@@ -15,11 +15,11 @@ Requirements for Deploy & Sync milestone. Each maps to roadmap phases.
 
 ### Authentication
 
-- [ ] **AUTH-01**: User can sign in with their Google account
-- [ ] **AUTH-02**: Auth session persists across browser refresh (no re-login needed)
+- [x] **AUTH-01**: User can sign in with their Google account
+- [x] **AUTH-02**: Auth session persists across browser refresh (no re-login needed)
 - [ ] **AUTH-03**: User can sign out
-- [ ] **AUTH-04**: App is gated behind auth — must sign in to access tasks
-- [ ] **AUTH-05**: Sign-in uses popup on desktop and redirect on mobile/PWA
+- [x] **AUTH-04**: App is gated behind auth — must sign in to access tasks
+- [x] **AUTH-05**: Sign-in uses popup on desktop and redirect on mobile/PWA
 - [ ] **AUTH-06**: Sign-in works in iOS Safari standalone PWA mode
 
 ### Sync
@@ -68,11 +68,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SETUP-01 | Phase 11 | Pending |
 | SETUP-02 | Phase 11 | Pending |
 | SETUP-03 | Phase 8 | Complete |
-| AUTH-01 | Phase 9 | Pending |
-| AUTH-02 | Phase 9 | Pending |
+| AUTH-01 | Phase 9 | Complete |
+| AUTH-02 | Phase 9 | Complete |
 | AUTH-03 | Phase 9 | Pending |
-| AUTH-04 | Phase 9 | Pending |
-| AUTH-05 | Phase 9 | Pending |
+| AUTH-04 | Phase 9 | Complete |
+| AUTH-05 | Phase 9 | Complete |
 | AUTH-06 | Phase 9 | Pending |
 | SYNC-01 | Phase 10 | Pending |
 | SYNC-02 | Phase 10 | Pending |

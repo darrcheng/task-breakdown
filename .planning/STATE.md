@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Deploy & Sync
-status: Ready
-stopped_at: Phase 9 context gathered
-last_updated: "2026-03-08T01:04:33.921Z"
-last_activity: 2026-03-08 — Phase 8 complete (Firebase project setup on Spark plan)
+status: executing
+stopped_at: Completed 09-01-PLAN.md
+last_updated: "2026-03-08T02:25:58.748Z"
+last_activity: 2026-03-08 — Completed 09-01 (auth infrastructure & sign-in)
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
-  percent: 100
+  total_plans: 5
+  completed_plans: 3
+  percent: 60
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-01)
 ## Current Position
 
 Phase: 9 of 12 (Auth Implementation)
-Plan: 1 of ?
-Status: Ready
-Last activity: 2026-03-08 — Phase 8 complete (Firebase project setup on Spark plan)
+Plan: 2 of 3
+Status: In Progress
+Last activity: 2026-03-08 — Completed 09-01 (auth infrastructure & sign-in)
 
-Progress: [██████████] 100% (Phase 8)
+Progress: [██████░░░░] 60% (Phase 9)
 
 ## Accumulated Context
 
@@ -48,6 +48,7 @@ Full v1.0 decision history archived in `.planning/milestones/v1.0-ROADMAP.md`.
 - `getFirestore` for Phase 8; `initializeFirestore` with persistence deferred to Phase 10
 - firebase-tools as devDependency for version-locked reproducible builds
 - [Phase 08]: Project ID taskpad-app (taskpad unavailable); Firestore in us-east1; Spark plan confirmed
+- [Phase 09]: Split App into auth gate + AuthenticatedApp to avoid React hooks-before-return violation
 
 ### Pending Todos
 
@@ -63,6 +64,6 @@ Full v1.0 decision history archived in `.planning/milestones/v1.0-ROADMAP.md`.
 
 ## Session Continuity
 
-Last session: 2026-03-08T01:04:33.913Z
-Stopped at: Phase 9 context gathered
+Last session: 2026-03-08T02:25:58.744Z
+Stopped at: Completed 09-01-PLAN.md
 Next step: `/gsd:plan-phase 09` (Auth Implementation)
