@@ -7,6 +7,7 @@ import {
   migrateLocalData,
   isMigrating,
 } from './sync';
+import { getDocs, writeBatch } from 'firebase/firestore';
 
 // Mock the database module
 const mockGet = vi.fn();
@@ -27,20 +28,16 @@ vi.mock('../db/database', () => ({
 // Mock firebase/firestore (prevent actual Firestore initialization)
 const mockBatchSet = vi.fn();
 const mockBatchCommit = vi.fn().mockResolvedValue(undefined);
-const mockWriteBatch = vi.fn(() => ({ set: mockBatchSet, commit: mockBatchCommit }));
-const mockGetDocs = vi.fn();
-const mockCollection = vi.fn();
-const mockDoc = vi.fn();
 
 vi.mock('firebase/firestore', () => ({
-  collection: (...args: unknown[]) => mockCollection(...args),
-  doc: (...args: unknown[]) => mockDoc(...args),
+  collection: vi.fn(),
+  doc: vi.fn(),
   onSnapshot: vi.fn(),
   setDoc: vi.fn(),
   updateDoc: vi.fn(),
   deleteDoc: vi.fn(),
-  getDocs: (...args: unknown[]) => mockGetDocs(...args),
-  writeBatch: (...args: unknown[]) => mockWriteBatch(...args),
+  getDocs: vi.fn(),
+  writeBatch: vi.fn(),
 }));
 
 // Mock firebase config
@@ -234,11 +231,14 @@ describe('removed documents', () => {
 });
 
 describe('migrateLocalData', () => {
+  const mockGetDocsFn = getDocs as ReturnType<typeof vi.fn>;
+  const mockWriteBatchFn = writeBatch as ReturnType<typeof vi.fn>;
+
   beforeEach(() => {
     vi.clearAllMocks();
-    mockBatchCommit.mockResolvedValue(undefined);
-    mockDoc.mockReturnValue('mock-doc-ref');
-    mockCollection.mockReturnValue('mock-collection-ref');
+    mockBatchSet.mockClear();
+    mockBatchCommit.mockReset().mockResolvedValue(undefined);
+    mockWriteBatchFn.mockReturnValue({ set: mockBatchSet, commit: mockBatchCommit });
   });
 
   it('uploads all local data when Firestore is empty', async () => {
@@ -255,7 +255,7 @@ describe('migrateLocalData', () => {
     mockAiSettingsToArray.mockResolvedValue([]);
 
     // getDocs returns empty snapshots for all collections
-    mockGetDocs.mockResolvedValue({ docs: [] });
+    mockGetDocsFn.mockResolvedValue({ docs: [] });
 
     await migrateLocalData('test-uid');
 
@@ -275,7 +275,7 @@ describe('migrateLocalData', () => {
     mockAiSettingsToArray.mockResolvedValue([]);
 
     // Firestore already has tasks 1 and 3
-    mockGetDocs.mockImplementation(() => {
+    mockGetDocsFn.mockImplementation(() => {
       // All getDocs calls return the same mock -- we need per-collection
       // Since collection mock is called first, we track calls
       return Promise.resolve({
@@ -298,9 +298,9 @@ describe('migrateLocalData', () => {
     await migrateLocalData('test-uid');
 
     // No batch operations when local DB is empty
-    expect(mockWriteBatch).not.toHaveBeenCalled();
+    expect(mockWriteBatchFn).not.toHaveBeenCalled();
     expect(mockBatchSet).not.toHaveBeenCalled();
-    expect(mockGetDocs).not.toHaveBeenCalled();
+    expect(mockGetDocsFn).not.toHaveBeenCalled();
   });
 
   it('chunks batches at 450 operations', async () => {
@@ -322,7 +322,7 @@ describe('migrateLocalData', () => {
     mockAiSettingsToArray.mockResolvedValue([]);
 
     // Empty Firestore
-    mockGetDocs.mockResolvedValue({ docs: [] });
+    mockGetDocsFn.mockResolvedValue({ docs: [] });
 
     await migrateLocalData('test-uid');
 
@@ -338,7 +338,7 @@ describe('migrateLocalData', () => {
     ]);
     mockCategoriesToArray.mockResolvedValue([]);
     mockAiSettingsToArray.mockResolvedValue([]);
-    mockGetDocs.mockResolvedValue({ docs: [] });
+    mockGetDocsFn.mockResolvedValue({ docs: [] });
 
     await migrateLocalData('test-uid');
 

@@ -1,4 +1,4 @@
-import { collection, onSnapshot, setDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { collection, onSnapshot, setDoc, updateDoc, deleteDoc, doc, getDocs, writeBatch } from 'firebase/firestore';
 import type { DocumentChange, DocumentData } from 'firebase/firestore';
 import { firestore } from './config';
 import { db } from '../db/database';
@@ -17,6 +17,9 @@ let syncWriteInProgress = false;
 /** Current authenticated user */
 let currentUid: string | null = null;
 
+/** Guards migration state for UI spinner */
+let migrating = false;
+
 /** Active onSnapshot unsubscribe functions */
 let unsubscribers: (() => void)[] = [];
 
@@ -34,6 +37,10 @@ export function isSyncWriteInProgress(): boolean {
 
 export function getCurrentUid(): string | null {
   return currentUid;
+}
+
+export function isMigrating(): boolean {
+  return migrating;
 }
 
 // ---------------------------------------------------------------------------
@@ -289,8 +296,66 @@ export function stopSync(): void {
 
 /**
  * Migrates all local Dexie data to Firestore on first sign-in.
- * STUB: full implementation in Plan 03.
+ * Handles three scenarios:
+ * - First device (Firestore empty): uploads all local data
+ * - Second device (both have data): uploads only non-duplicate records (union merge)
+ * - Fresh device (Dexie empty): returns immediately (cloud data arrives via onSnapshot)
+ *
+ * Batch writes are chunked at 450 operations to stay under Firestore's 500-op limit.
  */
 export async function migrateLocalData(uid: string): Promise<void> {
-  console.log(`Migration stub called for user: ${uid}`);
+  migrating = true;
+  try {
+    // Read all local data
+    const localTasks = await db.tasks.toArray();
+    const localCategories = await db.categories.toArray();
+    const localAiSettings = await db.aiSettings.toArray();
+
+    // Fresh device: nothing to upload
+    if (localTasks.length === 0 && localCategories.length === 0 && localAiSettings.length === 0) {
+      return;
+    }
+
+    // Check what already exists in Firestore
+    const existingTaskDocs = await getDocs(collection(firestore, `users/${uid}/tasks`));
+    const existingTaskIds = new Set(existingTaskDocs.docs.map((d: { id: string }) => d.id));
+
+    const existingCatDocs = await getDocs(collection(firestore, `users/${uid}/categories`));
+    const existingCatIds = new Set(existingCatDocs.docs.map((d: { id: string }) => d.id));
+
+    const existingAiDocs = await getDocs(collection(firestore, `users/${uid}/aiSettings`));
+    const existingAiIds = new Set(existingAiDocs.docs.map((d: { id: string }) => d.id));
+
+    // Filter to only records not already in Firestore
+    const tasksToUpload = localTasks.filter(t => !existingTaskIds.has(String(t.id)));
+    const categoriesToUpload = localCategories.filter(c => !existingCatIds.has(String(c.id)));
+    const aiSettingsToUpload = localAiSettings.filter(a => !existingAiIds.has(String(a.id)));
+
+    // Build flat list of all operations
+    const allOps: { table: string; record: DexieRecord }[] = [
+      ...tasksToUpload.map(t => ({ table: 'tasks', record: t as DexieRecord })),
+      ...categoriesToUpload.map(c => ({ table: 'categories', record: c as DexieRecord })),
+      ...aiSettingsToUpload.map(a => ({ table: 'aiSettings', record: a as DexieRecord })),
+    ];
+
+    if (allOps.length === 0) {
+      return;
+    }
+
+    // Batch write in chunks of 450
+    for (let i = 0; i < allOps.length; i += 450) {
+      const chunk = allOps.slice(i, i + 450);
+      const batch = writeBatch(firestore);
+      for (const op of chunk) {
+        const recordId = (op.record as DexieRecord & { id?: number }).id!;
+        const ref = doc(collection(firestore, `users/${uid}/${op.table}`), String(recordId));
+        batch.set(ref, serializeForFirestore(op.record, recordId));
+      }
+      await batch.commit();
+    }
+
+    console.log(`Migration complete for user: ${uid} (${allOps.length} records uploaded)`);
+  } finally {
+    migrating = false;
+  }
 }
