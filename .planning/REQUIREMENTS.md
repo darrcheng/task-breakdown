@@ -26,9 +26,9 @@ Requirements for Deploy & Sync milestone. Each maps to roadmap phases.
 
 - [ ] **SYNC-01**: Tasks created/edited/deleted on one device appear on other devices in real-time
 - [ ] **SYNC-02**: App works offline — tasks are saved locally and sync when connection returns
-- [ ] **SYNC-03**: Dexie.js remains the UI data source — existing `useLiveQuery` hooks unchanged
+- [x] **SYNC-03**: Dexie.js remains the UI data source — existing `useLiveQuery` hooks unchanged
 - [ ] **SYNC-04**: Conflict resolution uses last-write-wins with `updatedAt` timestamp
-- [ ] **SYNC-05**: Sync engine prevents echo loops (own writes don't trigger re-writes via `hasPendingWrites`)
+- [x] **SYNC-05**: Sync engine prevents echo loops (own writes don't trigger re-writes via `hasPendingWrites`)
 
 ### Data Safety
 
@@ -76,9 +76,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-06 | Phase 9 | Complete |
 | SYNC-01 | Phase 10 | Pending |
 | SYNC-02 | Phase 10 | Pending |
-| SYNC-03 | Phase 10 | Pending |
+| SYNC-03 | Phase 10 | Complete |
 | SYNC-04 | Phase 10 | Pending |
-| SYNC-05 | Phase 10 | Pending |
+| SYNC-05 | Phase 10 | Complete |
 | DATA-01 | Phase 9 | Complete |
 | DATA-02 | Phase 10 | Pending |
 | DATA-03 | Phase 12 | Pending |
