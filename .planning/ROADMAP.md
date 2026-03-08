@@ -61,7 +61,11 @@ Plans:
   4. Unauthenticated users see the sign-in screen, not the task UI
   5. Sign-in works in iOS Safari with the PWA installed in standalone mode (hardware-verified)
   6. Firestore security rules enforce per-user data isolation (confirmed via Firebase console)
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 09-01-PLAN.md — Auth infrastructure, sign-in screen, and auth gate
+- [ ] 09-02-PLAN.md — Sign-out in SettingsModal and Firestore security rules
+- [ ] 09-03-PLAN.md — Full manual verification across all platforms
 
 ### Phase 10: Sync Engine
 **Goal**: Tasks created, edited, or deleted on one device appear on all other devices in real-time, the app works offline, and existing local tasks are preserved on first sign-in
@@ -112,11 +116,11 @@ Plans:
 | 6. Mobile Someday Navigation | v1.0 | 1/1 | Complete | 2026-03-01 |
 | 7. Secondary Path Polish | v1.0 | 1/1 | Complete | 2026-03-01 |
 | 8. Firebase Project Setup | v1.1 | Complete    | 2026-03-08 | - |
-| 9. Authentication | v1.1 | 0/TBD | Not started | - |
+| 9. Authentication | v1.1 | 0/3 | Not started | - |
 | 10. Sync Engine | v1.1 | 0/TBD | Not started | - |
 | 11. Hosting Deploy | v1.1 | 0/TBD | Not started | - |
 | 12. Sync Polish | v1.1 | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-05*
-*Last updated: 2026-03-07 -- Phase 8 plans created (2 plans)*
+*Last updated: 2026-03-07 -- Phase 9 plans created (3 plans)*
