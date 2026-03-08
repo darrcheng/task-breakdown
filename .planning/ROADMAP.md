@@ -116,7 +116,7 @@ Plans:
 | 6. Mobile Someday Navigation | v1.0 | 1/1 | Complete | 2026-03-01 |
 | 7. Secondary Path Polish | v1.0 | 1/1 | Complete | 2026-03-01 |
 | 8. Firebase Project Setup | v1.1 | Complete    | 2026-03-08 | - |
-| 9. Authentication | 3/3 | Complete   | 2026-03-08 | - |
+| 9. Authentication | 3/3 | Complete    | 2026-03-08 | - |
 | 10. Sync Engine | v1.1 | 0/TBD | Not started | - |
 | 11. Hosting Deploy | v1.1 | 0/TBD | Not started | - |
 | 12. Sync Polish | v1.1 | 0/TBD | Not started | - |
