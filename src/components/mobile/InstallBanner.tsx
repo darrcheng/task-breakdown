@@ -15,7 +15,7 @@ export function InstallBanner() {
     <div className="fixed bottom-16 inset-x-2 z-45 bg-violet-600 text-white rounded-xl shadow-lg px-4 py-3 flex items-center gap-3 animate-slide-up">
       <Download className="w-5 h-5 flex-shrink-0" />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium">Install TaskBreaker</p>
+        <p className="text-sm font-medium">Install taskpad</p>
         <p className="text-xs text-violet-200">Add to your home screen for quick access</p>
       </div>
       <button

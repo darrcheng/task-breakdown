@@ -257,7 +257,7 @@ function App() {
     <div className="h-screen bg-white flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-slate-800">TaskBreaker</h1>
+        <h1 className="text-xl font-semibold text-slate-800">taskpad</h1>
         <div className="flex items-center gap-3">
           <ViewToggle viewMode={viewMode} onViewModeChange={setViewMode} />
 

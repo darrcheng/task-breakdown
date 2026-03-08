@@ -12,8 +12,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       manifest: {
-        name: 'TaskBreaker',
-        short_name: 'TaskBreaker',
+        name: 'taskpad',
+        short_name: 'taskpad',
         description: 'ADHD-friendly task breakdown app',
         theme_color: '#7c3aed',
         background_color: '#ffffff',
