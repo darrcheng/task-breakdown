@@ -1,3 +1,7 @@
+import { collection, onSnapshot, setDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import type { DocumentChange, DocumentData } from 'firebase/firestore';
+import { firestore } from './config';
+import { db } from '../db/database';
 import type { Task, Category, AISettings } from '../types';
 
 // ---------------------------------------------------------------------------
@@ -52,6 +56,17 @@ export function serializeForFirestore(
 }
 
 /**
+ * Serializes only the modified fields for a Firestore updateDoc call.
+ * Removes `id` if present in modifications.
+ */
+export function serializeModifications(
+  modifications: Record<string, unknown>
+): Record<string, unknown> {
+  const { id, ...rest } = modifications as Record<string, unknown> & { id?: number };
+  return rest;
+}
+
+/**
  * Converts Firestore document data back to a Dexie-compatible record.
  * - Sets `id` from the Firestore doc ID (parsed as number)
  * - Converts Timestamp fields (createdAt, updatedAt) via `.toDate()`
@@ -83,17 +98,162 @@ export function deserializeFromFirestore(
 }
 
 // ---------------------------------------------------------------------------
-// Sync lifecycle (stubs -- implemented in Plan 02)
+// Inbound sync: process a single onSnapshot document change
+// ---------------------------------------------------------------------------
+
+type TableName = 'tasks' | 'categories' | 'aiSettings';
+
+/**
+ * Processes a single inbound Firestore document change.
+ * Exported for testability.
+ *
+ * - Echo guard: skips changes where hasPendingWrites is true
+ * - LWW: for tasks, only accepts remote changes with newer updatedAt
+ * - For categories/aiSettings: always overwrites (simpler data)
+ * - Removed docs trigger Dexie delete
+ */
+export async function processInboundChange(
+  change: DocumentChange<DocumentData>,
+  tableName: TableName
+): Promise<void> {
+  // Echo guard: skip our own pending writes echoed back via onSnapshot
+  if (change.doc.metadata.hasPendingWrites) {
+    return;
+  }
+
+  const docId = change.doc.id;
+  const numericId = Number(docId);
+
+  if (change.type === 'removed') {
+    syncWriteInProgress = true;
+    try {
+      await db[tableName].delete(numericId);
+    } catch {
+      // Ignore "not found" errors
+    } finally {
+      syncWriteInProgress = false;
+    }
+    return;
+  }
+
+  // 'added' or 'modified'
+  const rawData = change.doc.data();
+  const deserialized = deserializeFromFirestore(rawData, docId);
+
+  // LWW for tasks: compare updatedAt timestamps
+  if (tableName === 'tasks') {
+    const existing = await db.tasks.get(numericId);
+    if (existing) {
+      const localUpdatedAt = existing.updatedAt instanceof Date
+        ? existing.updatedAt.getTime()
+        : 0;
+      const remoteUpdatedAt = deserialized.updatedAt instanceof Date
+        ? (deserialized.updatedAt as Date).getTime()
+        : 0;
+
+      if (remoteUpdatedAt <= localUpdatedAt) {
+        // Remote is older or same -- reject
+        return;
+      }
+    }
+    // Either no existing record or remote is newer -- accept
+  }
+
+  syncWriteInProgress = true;
+  try {
+    await db[tableName].put(deserialized);
+  } finally {
+    syncWriteInProgress = false;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Error handler for outbound sync writes
+// ---------------------------------------------------------------------------
+
+function handleSyncError(error: unknown): void {
+  console.error('Sync write failed:', error);
+}
+
+// ---------------------------------------------------------------------------
+// Dexie hooks for outbound sync
+// ---------------------------------------------------------------------------
+
+/**
+ * Registers Dexie table hooks on all 3 tables for outbound sync.
+ * Should be called once at app startup (before any writes).
+ * Hooks check isSyncEnabled() and isSyncWriteInProgress() on each invocation,
+ * so they are safe to register even before auth.
+ */
+export function setupDexieHooks(): void {
+  const tables = ['tasks', 'categories', 'aiSettings'] as const;
+
+  for (const tableName of tables) {
+    const table = db[tableName];
+
+    // Creating hook: fire setDoc after successful Dexie insert
+    table.hook('creating', function (this: { onsuccess: (fn: (resultKey: number) => void) => void } & { onsuccess: ((key: number) => void) | null }, _primKey: number, obj: DexieRecord) {
+      this.onsuccess = (resultKey: number) => {
+        if (!isSyncEnabled() || isSyncWriteInProgress()) return;
+        const uid = getCurrentUid();
+        if (!uid) return;
+        const docRef = doc(firestore, `users/${uid}/${tableName}/${resultKey}`);
+        setDoc(docRef, serializeForFirestore(obj, resultKey)).catch(handleSyncError);
+      };
+    });
+
+    // Updating hook: fire updateDoc/setDoc after successful Dexie update
+    table.hook('updating', function (this: { onsuccess: ((fn: () => void) => void) | null } & { onsuccess: (() => void) | null }, modifications: Record<string, unknown>, primKey: number, obj: DexieRecord) {
+      this.onsuccess = () => {
+        if (!isSyncEnabled() || isSyncWriteInProgress()) return;
+        const uid = getCurrentUid();
+        if (!uid) return;
+        const docRef = doc(firestore, `users/${uid}/${tableName}/${primKey}`);
+        if (tableName === 'tasks') {
+          updateDoc(docRef, serializeModifications(modifications)).catch(handleSyncError);
+        } else {
+          setDoc(docRef, serializeForFirestore({ ...obj, ...modifications } as DexieRecord, primKey), { merge: true }).catch(handleSyncError);
+        }
+      };
+    });
+
+    // Deleting hook: fire deleteDoc after successful Dexie delete
+    table.hook('deleting', function (this: { onsuccess: ((fn: () => void) => void) | null } & { onsuccess: (() => void) | null }, primKey: number) {
+      this.onsuccess = () => {
+        if (!isSyncEnabled() || isSyncWriteInProgress()) return;
+        const uid = getCurrentUid();
+        if (!uid) return;
+        const docRef = doc(firestore, `users/${uid}/${tableName}/${primKey}`);
+        deleteDoc(docRef).catch(handleSyncError);
+      };
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Sync lifecycle
 // ---------------------------------------------------------------------------
 
 /**
  * Starts real-time sync for the given user.
  * Sets up onSnapshot listeners for all synced collections.
- * STUB: full implementation in Plan 02.
  */
 export function startSync(uid: string): void {
   syncEnabled = true;
   currentUid = uid;
+
+  const tables: TableName[] = ['tasks', 'categories', 'aiSettings'];
+
+  for (const tableName of tables) {
+    const collectionRef = collection(firestore, `users/${uid}/${tableName}`);
+    const unsub = onSnapshot(collectionRef, (snapshot) => {
+      for (const change of snapshot.docChanges()) {
+        processInboundChange(change, tableName).catch(handleSyncError);
+      }
+    });
+    unsubscribers.push(unsub);
+  }
+
   console.log(`Sync started for user: ${uid}`);
 }
 
