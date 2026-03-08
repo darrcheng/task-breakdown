@@ -40,9 +40,12 @@ function mockDocChange(
   docId: string,
   data: Record<string, unknown>,
   hasPendingWrites: boolean
-) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): any {
   return {
     type,
+    oldIndex: -1,
+    newIndex: -1,
     doc: {
       id: docId,
       data: () => data,

@@ -53,3 +53,9 @@ db.on('populate', (tx) => {
 });
 
 export { db };
+
+// Register Dexie hooks for outbound sync (creating/updating/deleting).
+// Hooks are registered once at module load time and check isSyncEnabled()
+// on each invocation, so they are safe to register before auth.
+import { setupDexieHooks } from '../firebase/sync';
+setupDexieHooks();

@@ -124,10 +124,13 @@ export async function processInboundChange(
   const docId = change.doc.id;
   const numericId = Number(docId);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const table = db[tableName] as any;
+
   if (change.type === 'removed') {
     syncWriteInProgress = true;
     try {
-      await db[tableName].delete(numericId);
+      await table.delete(numericId);
     } catch {
       // Ignore "not found" errors
     } finally {
@@ -161,7 +164,7 @@ export async function processInboundChange(
 
   syncWriteInProgress = true;
   try {
-    await db[tableName].put(deserialized);
+    await table.put(deserialized);
   } finally {
     syncWriteInProgress = false;
   }
@@ -189,10 +192,16 @@ export function setupDexieHooks(): void {
   const tables = ['tasks', 'categories', 'aiSettings'] as const;
 
   for (const tableName of tables) {
-    const table = db[tableName];
+    // Use Dexie.Table to access hook() with looser typing
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const table = db[tableName] as any;
 
     // Creating hook: fire setDoc after successful Dexie insert
-    table.hook('creating', function (this: { onsuccess: (fn: (resultKey: number) => void) => void } & { onsuccess: ((key: number) => void) | null }, _primKey: number, obj: DexieRecord) {
+    table.hook('creating', function (
+      this: { onsuccess: ((resultKey: number) => void) | undefined },
+      _primKey: number,
+      obj: DexieRecord,
+    ) {
       this.onsuccess = (resultKey: number) => {
         if (!isSyncEnabled() || isSyncWriteInProgress()) return;
         const uid = getCurrentUid();
@@ -203,7 +212,12 @@ export function setupDexieHooks(): void {
     });
 
     // Updating hook: fire updateDoc/setDoc after successful Dexie update
-    table.hook('updating', function (this: { onsuccess: ((fn: () => void) => void) | null } & { onsuccess: (() => void) | null }, modifications: Record<string, unknown>, primKey: number, obj: DexieRecord) {
+    table.hook('updating', function (
+      this: { onsuccess: (() => void) | undefined },
+      modifications: Record<string, unknown>,
+      primKey: number,
+      obj: DexieRecord,
+    ) {
       this.onsuccess = () => {
         if (!isSyncEnabled() || isSyncWriteInProgress()) return;
         const uid = getCurrentUid();
@@ -218,7 +232,10 @@ export function setupDexieHooks(): void {
     });
 
     // Deleting hook: fire deleteDoc after successful Dexie delete
-    table.hook('deleting', function (this: { onsuccess: ((fn: () => void) => void) | null } & { onsuccess: (() => void) | null }, primKey: number) {
+    table.hook('deleting', function (
+      this: { onsuccess: (() => void) | undefined },
+      primKey: number,
+    ) {
       this.onsuccess = () => {
         if (!isSyncEnabled() || isSyncWriteInProgress()) return;
         const uid = getCurrentUid();
