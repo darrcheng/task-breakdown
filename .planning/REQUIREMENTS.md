@@ -11,7 +11,7 @@ Requirements for Deploy & Sync milestone. Each maps to roadmap phases.
 
 - [ ] **SETUP-01**: App is deployed to Firebase Hosting with correct SPA routing
 - [ ] **SETUP-02**: Service worker and index.html served with `no-cache` headers; hashed assets with `immutable`
-- [ ] **SETUP-03**: Firebase project configured on Spark plan (permanent free tier, not just trial credits)
+- [x] **SETUP-03**: Firebase project configured on Spark plan (permanent free tier, not just trial credits)
 
 ### Authentication
 
@@ -67,7 +67,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | SETUP-01 | Phase 11 | Pending |
 | SETUP-02 | Phase 11 | Pending |
-| SETUP-03 | Phase 8 | Pending |
+| SETUP-03 | Phase 8 | Complete |
 | AUTH-01 | Phase 9 | Pending |
 | AUTH-02 | Phase 9 | Pending |
 | AUTH-03 | Phase 9 | Pending |

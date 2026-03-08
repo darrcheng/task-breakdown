@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Deploy & Sync
-status: planning
-stopped_at: Phase 8 context gathered
-last_updated: "2026-03-07T23:53:44.525Z"
-last_activity: 2026-03-01 — v1.1 roadmap created (Phases 8-12)
+status: executing
+stopped_at: Completed 08-01-PLAN.md
+last_updated: "2026-03-08T00:11:06.760Z"
+last_activity: 2026-03-08 — Phase 8 Plan 1 complete (Firebase SDK + rename)
 progress:
   total_phases: 5
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 2
+  completed_plans: 1
+  percent: 50
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-01)
 ## Current Position
 
 Phase: 8 of 12 (Firebase Project Setup)
-Plan: — (not yet planned)
-Status: Ready to plan
-Last activity: 2026-03-01 — v1.1 roadmap created (Phases 8-12)
+Plan: 2 of 2
+Status: Executing
+Last activity: 2026-03-08 — Phase 8 Plan 1 complete (Firebase SDK + rename)
 
-Progress: [░░░░░░░░░░] 0% (v1.1)
+Progress: [█████░░░░░] 50% (v1.1)
 
 ## Accumulated Context
 
@@ -44,6 +44,9 @@ Full v1.0 decision history archived in `.planning/milestones/v1.0-ROADMAP.md`.
 - ID mapping: use `String(task.id)` as Firestore doc ID, parse `Number(doc.id)` on inbound
 - `persistentLocalCache` + `persistentMultipleTabManager` for Firestore (write buffer, not read source)
 - `signInWithPopup` on desktop, `signInWithRedirect` on mobile/PWA (iOS Safari requirement)
+- Export name `firestore` (not `db`) to avoid shadowing Dexie export
+- `getFirestore` for Phase 8; `initializeFirestore` with persistence deferred to Phase 10
+- firebase-tools as devDependency for version-locked reproducible builds
 
 ### Pending Todos
 
@@ -59,6 +62,6 @@ Full v1.0 decision history archived in `.planning/milestones/v1.0-ROADMAP.md`.
 
 ## Session Continuity
 
-Last session: 2026-03-07T23:53:44.522Z
-Stopped at: Phase 8 context gathered
-Next step: `/gsd:plan-phase 8`
+Last session: 2026-03-08T00:11:06.756Z
+Stopped at: Completed 08-01-PLAN.md
+Next step: `/gsd:execute-phase 08` (Plan 2)
