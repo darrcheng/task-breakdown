@@ -1,6 +1,13 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Per-user data: users/{userId} and all subcollections
+    // Phase 10 will write to users/{userId}/tasks/{taskId}, users/{userId}/categories/{catId}, etc.
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Deny everything else (no top-level collections accessible)
     match /{document=**} {
       allow read, write: if false;
     }
