@@ -21,6 +21,9 @@ import { OfflineIndicator } from './components/mobile/OfflineIndicator';
 import { useCategoryMap, useTaskCount, useOverdueTasks } from './db/hooks';
 import { useSettings } from './hooks/useSettings';
 import { useIsMobile } from './hooks/useMediaQuery';
+import { useAuth } from './contexts/AuthContext';
+import { AuthLoadingScreen } from './components/ui/AuthLoadingScreen';
+import { SignInScreen } from './components/auth/SignInScreen';
 import { formatDateKey } from './utils/dates';
 import type { ViewMode, CalendarView, Task, EnergyLevel } from './types';
 import type { MobileTab } from './components/mobile/BottomTabBar';
@@ -39,6 +42,15 @@ const ENERGY_FILTER_OPTIONS: { value: EnergyLevel; label: string; icon: typeof B
 ];
 
 function App() {
+  const { user, loading } = useAuth();
+
+  if (loading) return <AuthLoadingScreen />;
+  if (!user) return <SignInScreen />;
+
+  return <AuthenticatedApp />;
+}
+
+function AuthenticatedApp() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [calendarView, setCalendarView] = useState<CalendarView>('month');
   const [viewMode, setViewMode] = useState<ViewMode>('calendar');
