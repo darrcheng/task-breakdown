@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Deploy & Sync
 status: executing
-stopped_at: Completed 09-01-PLAN.md
-last_updated: "2026-03-08T02:25:58.748Z"
-last_activity: 2026-03-08 — Completed 09-01 (auth infrastructure & sign-in)
+stopped_at: Completed 09-02-PLAN.md
+last_updated: "2026-03-08T02:29:27.630Z"
+last_activity: 2026-03-08 — Completed 09-02 (sign-out & Firestore rules)
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 5
-  completed_plans: 3
-  percent: 60
+  completed_plans: 4
+  percent: 80
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-01)
 ## Current Position
 
 Phase: 9 of 12 (Auth Implementation)
-Plan: 2 of 3
+Plan: 3 of 3
 Status: In Progress
-Last activity: 2026-03-08 — Completed 09-01 (auth infrastructure & sign-in)
+Last activity: 2026-03-08 — Completed 09-02 (sign-out & Firestore rules)
 
-Progress: [██████░░░░] 60% (Phase 9)
+Progress: [████████░░] 80% (Phase 9)
 
 ## Accumulated Context
 
@@ -49,6 +49,8 @@ Full v1.0 decision history archived in `.planning/milestones/v1.0-ROADMAP.md`.
 - firebase-tools as devDependency for version-locked reproducible builds
 - [Phase 08]: Project ID taskpad-app (taskpad unavailable); Firestore in us-east1; Spark plan confirmed
 - [Phase 09]: Split App into auth gate + AuthenticatedApp to avoid React hooks-before-return violation
+- [Phase 09]: db.delete() for clean-slate sign-out (wipe entire Dexie DB, not selective)
+- [Phase 09]: Wildcard Firestore rule users/{userId}/{document=**} for Phase 10 subcollections
 
 ### Pending Todos
 
@@ -65,5 +67,5 @@ Full v1.0 decision history archived in `.planning/milestones/v1.0-ROADMAP.md`.
 ## Session Continuity
 
 Last session: 2026-03-08T02:25:58.744Z
-Stopped at: Completed 09-01-PLAN.md
-Next step: `/gsd:plan-phase 09` (Auth Implementation)
+Stopped at: Completed 09-02-PLAN.md
+Next step: Execute 09-03-PLAN.md (Auth Implementation)

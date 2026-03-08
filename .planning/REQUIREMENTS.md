@@ -17,10 +17,10 @@ Requirements for Deploy & Sync milestone. Each maps to roadmap phases.
 
 - [x] **AUTH-01**: User can sign in with their Google account
 - [x] **AUTH-02**: Auth session persists across browser refresh (no re-login needed)
-- [ ] **AUTH-03**: User can sign out
+- [x] **AUTH-03**: User can sign out
 - [x] **AUTH-04**: App is gated behind auth — must sign in to access tasks
 - [x] **AUTH-05**: Sign-in uses popup on desktop and redirect on mobile/PWA
-- [ ] **AUTH-06**: Sign-in works in iOS Safari standalone PWA mode
+- [x] **AUTH-06**: Sign-in works in iOS Safari standalone PWA mode
 
 ### Sync
 
@@ -32,7 +32,7 @@ Requirements for Deploy & Sync milestone. Each maps to roadmap phases.
 
 ### Data Safety
 
-- [ ] **DATA-01**: Firestore security rules restrict each user to only their own data
+- [x] **DATA-01**: Firestore security rules restrict each user to only their own data
 - [ ] **DATA-02**: On first sign-in, existing local tasks are migrated to Firestore
 - [ ] **DATA-03**: Sync status indicator shows synced/syncing/offline state
 - [ ] **DATA-04**: Sync errors surface to user with recovery guidance (not silent failures)
@@ -70,16 +70,16 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SETUP-03 | Phase 8 | Complete |
 | AUTH-01 | Phase 9 | Complete |
 | AUTH-02 | Phase 9 | Complete |
-| AUTH-03 | Phase 9 | Pending |
+| AUTH-03 | Phase 9 | Complete |
 | AUTH-04 | Phase 9 | Complete |
 | AUTH-05 | Phase 9 | Complete |
-| AUTH-06 | Phase 9 | Pending |
+| AUTH-06 | Phase 9 | Complete |
 | SYNC-01 | Phase 10 | Pending |
 | SYNC-02 | Phase 10 | Pending |
 | SYNC-03 | Phase 10 | Pending |
 | SYNC-04 | Phase 10 | Pending |
 | SYNC-05 | Phase 10 | Pending |
-| DATA-01 | Phase 9 | Pending |
+| DATA-01 | Phase 9 | Complete |
 | DATA-02 | Phase 10 | Pending |
 | DATA-03 | Phase 12 | Pending |
 | DATA-04 | Phase 12 | Pending |
