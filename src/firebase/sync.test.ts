@@ -4,29 +4,43 @@ import {
   deserializeFromFirestore,
   processInboundChange,
   isSyncWriteInProgress,
+  migrateLocalData,
+  isMigrating,
 } from './sync';
 
 // Mock the database module
 const mockGet = vi.fn();
 const mockPut = vi.fn();
 const mockDelete = vi.fn();
+const mockTasksToArray = vi.fn();
+const mockCategoriesToArray = vi.fn();
+const mockAiSettingsToArray = vi.fn();
 
 vi.mock('../db/database', () => ({
   db: {
-    tasks: { get: (...args: unknown[]) => mockGet(...args), put: (...args: unknown[]) => mockPut(...args), delete: (...args: unknown[]) => mockDelete(...args), hook: vi.fn() },
-    categories: { get: (...args: unknown[]) => mockGet(...args), put: (...args: unknown[]) => mockPut(...args), delete: (...args: unknown[]) => mockDelete(...args), hook: vi.fn() },
-    aiSettings: { get: (...args: unknown[]) => mockGet(...args), put: (...args: unknown[]) => mockPut(...args), delete: (...args: unknown[]) => mockDelete(...args), hook: vi.fn() },
+    tasks: { get: (...args: unknown[]) => mockGet(...args), put: (...args: unknown[]) => mockPut(...args), delete: (...args: unknown[]) => mockDelete(...args), hook: vi.fn(), toArray: () => mockTasksToArray() },
+    categories: { get: (...args: unknown[]) => mockGet(...args), put: (...args: unknown[]) => mockPut(...args), delete: (...args: unknown[]) => mockDelete(...args), hook: vi.fn(), toArray: () => mockCategoriesToArray() },
+    aiSettings: { get: (...args: unknown[]) => mockGet(...args), put: (...args: unknown[]) => mockPut(...args), delete: (...args: unknown[]) => mockDelete(...args), hook: vi.fn(), toArray: () => mockAiSettingsToArray() },
   },
 }));
 
 // Mock firebase/firestore (prevent actual Firestore initialization)
+const mockBatchSet = vi.fn();
+const mockBatchCommit = vi.fn().mockResolvedValue(undefined);
+const mockWriteBatch = vi.fn(() => ({ set: mockBatchSet, commit: mockBatchCommit }));
+const mockGetDocs = vi.fn();
+const mockCollection = vi.fn();
+const mockDoc = vi.fn();
+
 vi.mock('firebase/firestore', () => ({
-  collection: vi.fn(),
-  doc: vi.fn(),
+  collection: (...args: unknown[]) => mockCollection(...args),
+  doc: (...args: unknown[]) => mockDoc(...args),
   onSnapshot: vi.fn(),
   setDoc: vi.fn(),
   updateDoc: vi.fn(),
   deleteDoc: vi.fn(),
+  getDocs: (...args: unknown[]) => mockGetDocs(...args),
+  writeBatch: (...args: unknown[]) => mockWriteBatch(...args),
 }));
 
 // Mock firebase config
@@ -219,6 +233,130 @@ describe('removed documents', () => {
   });
 });
 
-describe('migration', () => {
-  it.todo('uploads all local data on first sign-in');
+describe('migrateLocalData', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockBatchCommit.mockResolvedValue(undefined);
+    mockDoc.mockReturnValue('mock-doc-ref');
+    mockCollection.mockReturnValue('mock-collection-ref');
+  });
+
+  it('uploads all local data when Firestore is empty', async () => {
+    const now = new Date();
+    mockTasksToArray.mockResolvedValue([
+      { id: 1, title: 'Task 1', status: 'todo', date: '2026-03-08', description: '', categoryId: 1, depth: 0, createdAt: now, updatedAt: now },
+      { id: 2, title: 'Task 2', status: 'done', date: '2026-03-08', description: '', categoryId: 1, depth: 0, createdAt: now, updatedAt: now },
+      { id: 3, title: 'Task 3', status: 'todo', date: '2026-03-08', description: '', categoryId: 2, depth: 0, createdAt: now, updatedAt: now },
+    ]);
+    mockCategoriesToArray.mockResolvedValue([
+      { id: 1, name: 'Work', icon: 'briefcase', isDefault: true },
+      { id: 2, name: 'Personal', icon: 'user', isDefault: true },
+    ]);
+    mockAiSettingsToArray.mockResolvedValue([]);
+
+    // getDocs returns empty snapshots for all collections
+    mockGetDocs.mockResolvedValue({ docs: [] });
+
+    await migrateLocalData('test-uid');
+
+    // 3 tasks + 2 categories = 5 batch.set calls
+    expect(mockBatchSet).toHaveBeenCalledTimes(5);
+    expect(mockBatchCommit).toHaveBeenCalledTimes(1);
+  });
+
+  it('merges local and cloud on second device', async () => {
+    const now = new Date();
+    mockTasksToArray.mockResolvedValue([
+      { id: 1, title: 'Task 1', status: 'todo', date: '2026-03-08', description: '', categoryId: 1, depth: 0, createdAt: now, updatedAt: now },
+      { id: 2, title: 'Task 2', status: 'done', date: '2026-03-08', description: '', categoryId: 1, depth: 0, createdAt: now, updatedAt: now },
+      { id: 3, title: 'Task 3', status: 'todo', date: '2026-03-08', description: '', categoryId: 2, depth: 0, createdAt: now, updatedAt: now },
+    ]);
+    mockCategoriesToArray.mockResolvedValue([]);
+    mockAiSettingsToArray.mockResolvedValue([]);
+
+    // Firestore already has tasks 1 and 3
+    mockGetDocs.mockImplementation(() => {
+      // All getDocs calls return the same mock -- we need per-collection
+      // Since collection mock is called first, we track calls
+      return Promise.resolve({
+        docs: [{ id: '1' }, { id: '3' }],
+      });
+    });
+
+    await migrateLocalData('test-uid');
+
+    // Only task 2 should be uploaded (1 and 3 already exist)
+    expect(mockBatchSet).toHaveBeenCalledTimes(1);
+    expect(mockBatchCommit).toHaveBeenCalledTimes(1);
+  });
+
+  it('handles empty local DB gracefully', async () => {
+    mockTasksToArray.mockResolvedValue([]);
+    mockCategoriesToArray.mockResolvedValue([]);
+    mockAiSettingsToArray.mockResolvedValue([]);
+
+    await migrateLocalData('test-uid');
+
+    // No batch operations when local DB is empty
+    expect(mockWriteBatch).not.toHaveBeenCalled();
+    expect(mockBatchSet).not.toHaveBeenCalled();
+    expect(mockGetDocs).not.toHaveBeenCalled();
+  });
+
+  it('chunks batches at 450 operations', async () => {
+    const now = new Date();
+    // Generate 500 tasks
+    const tasks = Array.from({ length: 500 }, (_, i) => ({
+      id: i + 1,
+      title: `Task ${i + 1}`,
+      status: 'todo' as const,
+      date: '2026-03-08',
+      description: '',
+      categoryId: 1,
+      depth: 0,
+      createdAt: now,
+      updatedAt: now,
+    }));
+    mockTasksToArray.mockResolvedValue(tasks);
+    mockCategoriesToArray.mockResolvedValue([]);
+    mockAiSettingsToArray.mockResolvedValue([]);
+
+    // Empty Firestore
+    mockGetDocs.mockResolvedValue({ docs: [] });
+
+    await migrateLocalData('test-uid');
+
+    // 500 items = 2 batches (450 + 50)
+    expect(mockBatchCommit).toHaveBeenCalledTimes(2);
+    expect(mockBatchSet).toHaveBeenCalledTimes(500);
+  });
+
+  it('preserves parentId as number in serialized output', async () => {
+    const now = new Date();
+    mockTasksToArray.mockResolvedValue([
+      { id: 10, title: 'Subtask', status: 'todo', date: '2026-03-08', description: '', categoryId: 1, depth: 1, parentId: 5, createdAt: now, updatedAt: now },
+    ]);
+    mockCategoriesToArray.mockResolvedValue([]);
+    mockAiSettingsToArray.mockResolvedValue([]);
+    mockGetDocs.mockResolvedValue({ docs: [] });
+
+    await migrateLocalData('test-uid');
+
+    // Verify the serialized data passed to batch.set has parentId as number
+    expect(mockBatchSet).toHaveBeenCalledTimes(1);
+    const setArgs = mockBatchSet.mock.calls[0];
+    const serializedData = setArgs[1]; // second arg is the data
+    expect(serializedData.parentId).toBe(5);
+    expect(typeof serializedData.parentId).toBe('number');
+  });
+
+  it('sets isMigrating flag during migration', async () => {
+    mockTasksToArray.mockResolvedValue([]);
+    mockCategoriesToArray.mockResolvedValue([]);
+    mockAiSettingsToArray.mockResolvedValue([]);
+
+    expect(isMigrating()).toBe(false);
+    await migrateLocalData('test-uid');
+    expect(isMigrating()).toBe(false);
+  });
 });
