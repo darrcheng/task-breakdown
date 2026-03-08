@@ -45,7 +45,10 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
   2. `npm install firebase` completes and `src/firebase/config.ts` initializes without error
   3. Firestore security rules are deployed and reject unauthenticated reads/writes
   4. `.env.local` with all `VITE_FIREBASE_*` vars is present and the app starts without Firebase errors in console
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 08-01-PLAN.md -- Install Firebase SDK, create config files, rename app to taskpad
+- [ ] 08-02-PLAN.md -- Create Firebase project, deploy rules, verify setup
 
 ### Phase 9: Authentication
 **Goal**: Users can sign in with Google, stay signed in across sessions, and sign out — on all platforms including iOS Safari PWA standalone mode
@@ -108,7 +111,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 | 5. Swipe-Complete Celebration | v1.0 | 2/2 | Complete | 2026-03-01 |
 | 6. Mobile Someday Navigation | v1.0 | 1/1 | Complete | 2026-03-01 |
 | 7. Secondary Path Polish | v1.0 | 1/1 | Complete | 2026-03-01 |
-| 8. Firebase Project Setup | v1.1 | 0/TBD | Not started | - |
+| 8. Firebase Project Setup | v1.1 | 0/2 | Not started | - |
 | 9. Authentication | v1.1 | 0/TBD | Not started | - |
 | 10. Sync Engine | v1.1 | 0/TBD | Not started | - |
 | 11. Hosting Deploy | v1.1 | 0/TBD | Not started | - |
@@ -116,4 +119,4 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 
 ---
 *Roadmap created: 2026-02-05*
-*Last updated: 2026-03-01 — v1.1 roadmap added (Phases 8-12)*
+*Last updated: 2026-03-07 -- Phase 8 plans created (2 plans)*
