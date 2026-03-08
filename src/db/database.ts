@@ -41,7 +41,10 @@ db.version(3).stores({
   });
 });
 
-// Seed default categories on first use
+// Seed default categories on first use.
+// Default categories seeded here will be overwritten by Firestore sync
+// when onSnapshot delivers categories with matching IDs. No dedup needed
+// because sync uses db.categories.put() which upserts by primary key.
 db.on('populate', (tx) => {
   tx.table('categories').bulkAdd([
     { name: 'Work', icon: 'briefcase', isDefault: true },
