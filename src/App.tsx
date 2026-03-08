@@ -42,9 +42,9 @@ const ENERGY_FILTER_OPTIONS: { value: EnergyLevel; label: string; icon: typeof B
 ];
 
 function App() {
-  const { user, loading } = useAuth();
+  const { user, loading, syncing } = useAuth();
 
-  if (loading) return <AuthLoadingScreen />;
+  if (loading || syncing) return <AuthLoadingScreen message={syncing ? 'Setting up sync...' : undefined} />;
   if (!user) return <SignInScreen />;
 
   return <AuthenticatedApp />;

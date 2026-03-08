@@ -5,6 +5,7 @@ import type { Settings } from '../../hooks/useSettings';
 import { AIProviderSettings } from '../settings/AIProviderSettings';
 import { useAuth } from '../../contexts/AuthContext';
 import { signOutUser } from '../../firebase/auth';
+import { stopSync } from '../../firebase/sync';
 import { db } from '../../db/database';
 
 interface SettingsModalProps {
@@ -31,8 +32,9 @@ export function SettingsModal({ isOpen, onClose, settings, onUpdateSettings }: S
   const { user } = useAuth();
 
   const handleSignOut = async () => {
-    await db.delete();
-    await signOutUser();
+    stopSync();              // 1. Disable sync + unsubscribe listeners
+    await db.delete();       // 2. Wipe local Dexie (hooks won't fire to Firestore)
+    await signOutUser();     // 3. Firebase sign-out
   };
 
   // Handle Escape key

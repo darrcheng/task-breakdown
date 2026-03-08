@@ -1,13 +1,21 @@
 import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 
-export function AuthLoadingScreen() {
-  const [showSpinner, setShowSpinner] = useState(false);
+interface AuthLoadingScreenProps {
+  message?: string;
+}
+
+export function AuthLoadingScreen({ message }: AuthLoadingScreenProps) {
+  const [showSpinner, setShowSpinner] = useState(!!message);
 
   useEffect(() => {
+    if (message) {
+      setShowSpinner(true);
+      return;
+    }
     const timer = setTimeout(() => setShowSpinner(true), 2000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [message]);
 
   return (
     <div className="h-screen bg-white flex items-center justify-center">
@@ -18,6 +26,9 @@ export function AuthLoadingScreen() {
         >
           <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
         </div>
+        {message && (
+          <p className="text-sm text-slate-500">{message}</p>
+        )}
       </div>
     </div>
   );
