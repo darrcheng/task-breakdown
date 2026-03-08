@@ -78,7 +78,13 @@ Plans:
   4. On first sign-in, existing local IndexedDB tasks are migrated to Firestore without data loss
   5. Rapid edits from the same device do not trigger redundant Firestore re-writes (echo guard active)
   6. Last edit wins when the same task is modified on two devices while one is offline (updatedAt LWW)
-**Plans**: TBD
+**Plans**: 5 plans
+Plans:
+- [ ] 10-01-PLAN.md — Test infrastructure, Firestore persistence config, sync module contracts
+- [ ] 10-02-PLAN.md — Sync engine core: outbound Dexie hooks + inbound onSnapshot + echo guard + LWW
+- [ ] 10-03-PLAN.md — Data migration: first sign-in upload, second-device merge, batch chunking
+- [ ] 10-04-PLAN.md — Integration wiring: auth lifecycle, sign-out flow, category dedup
+- [ ] 10-05-PLAN.md — Manual sync verification checkpoint (6 test scenarios)
 
 ### Phase 11: Hosting Deploy
 **Goal**: The app is live at a Firebase Hosting URL over HTTPS with correct SPA routing and PWA cache headers — deploy confirmed safe for existing Firestore data
@@ -117,10 +123,10 @@ Plans:
 | 7. Secondary Path Polish | v1.0 | 1/1 | Complete | 2026-03-01 |
 | 8. Firebase Project Setup | v1.1 | Complete    | 2026-03-08 | - |
 | 9. Authentication | 3/3 | Complete    | 2026-03-08 | - |
-| 10. Sync Engine | v1.1 | 0/TBD | Not started | - |
+| 10. Sync Engine | v1.1 | 0/5 | Not started | - |
 | 11. Hosting Deploy | v1.1 | 0/TBD | Not started | - |
 | 12. Sync Polish | v1.1 | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-05*
-*Last updated: 2026-03-07 -- Phase 9 plans created (3 plans)*
+*Last updated: 2026-03-08 -- Phase 10 plans created (5 plans)*
