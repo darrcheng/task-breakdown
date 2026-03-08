@@ -28,7 +28,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 
 **Milestone Goal:** Deploy TaskBreaker to Firebase Hosting and add real-time cross-device sync so tasks stay in sync between phone and PC.
 
-- [ ] **Phase 8: Firebase Project Setup** - Configure Firebase project, SDK, and billing plan — unblocks all subsequent phases
+- [x] **Phase 8: Firebase Project Setup** - Configure Firebase project, SDK, and billing plan — unblocks all subsequent phases (completed 2026-03-08)
 - [ ] **Phase 9: Authentication** - Google sign-in with session persistence, sign-out, auth gate, and popup/redirect platform handling
 - [ ] **Phase 10: Sync Engine** - Bidirectional Dexie-Firestore sync with offline-first, conflict resolution, echo guard, and data migration
 - [ ] **Phase 11: Hosting Deploy** - Ship app to Firebase Hosting with correct SPA routing and PWA cache headers
@@ -111,7 +111,7 @@ Plans:
 | 5. Swipe-Complete Celebration | v1.0 | 2/2 | Complete | 2026-03-01 |
 | 6. Mobile Someday Navigation | v1.0 | 1/1 | Complete | 2026-03-01 |
 | 7. Secondary Path Polish | v1.0 | 1/1 | Complete | 2026-03-01 |
-| 8. Firebase Project Setup | v1.1 | 0/2 | Not started | - |
+| 8. Firebase Project Setup | v1.1 | Complete    | 2026-03-08 | - |
 | 9. Authentication | v1.1 | 0/TBD | Not started | - |
 | 10. Sync Engine | v1.1 | 0/TBD | Not started | - |
 | 11. Hosting Deploy | v1.1 | 0/TBD | Not started | - |
