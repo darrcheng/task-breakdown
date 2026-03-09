@@ -29,14 +29,16 @@ Turn vague, paralyzing tasks into small, concrete steps you can start right now.
 - ✓ Start-here highlighting on first subtask — v1.0
 - ✓ Swipe-complete triggers identical celebration and haptic as checkbox — v1.0
 - ✓ Mobile Someday navigation via bottom tab bar — v1.0
+- ✓ Firebase project on Spark plan with Firestore security rules — v1.1
+- ✓ Google sign-in with session persistence, auth gate, popup/redirect — v1.1
+- ✓ Real-time Firestore sync with offline-first IndexedDB (Dexie) — v1.1
+- ✓ Deployed to Firebase Hosting with SPA routing and PWA cache headers — v1.1
+- ✓ Data migration on first sign-in, deploys don't touch Firestore data — v1.1
+- ✓ Sync status indicator with error recovery UX — v1.1
 
 ### Active
 
-- [ ] Firebase project setup (Firestore, Auth, Hosting)
-- [ ] Google sign-in authentication
-- [ ] Real-time Firestore sync with offline-first IndexedDB cache
-- [ ] Deploy to Firebase Hosting
-- [ ] Data backup safety (deploys don't touch data)
+(None — planning next milestone)
 
 ### Out of Scope
 
@@ -48,25 +50,13 @@ Turn vague, paralyzing tasks into small, concrete steps you can start right now.
 - Social comparison — worsens inadequacy feelings
 - Rigid deadline enforcement — creates anxiety for ADHD users
 
-## Current Milestone: v1.1 Deploy & Sync
-
-**Goal:** Deploy TaskBreaker to Firebase and add real-time cross-device sync so tasks stay in sync between phone and PC.
-
-**Target features:**
-- Firebase project setup (Firestore, Auth, Hosting)
-- Google sign-in (single user now, multi-user ready)
-- Real-time Firestore sync layered on existing IndexedDB (offline-first)
-- Deploy to Firebase Hosting (GCP free trial / Spark plan)
-- Data backup safety — code deploys never touch data, IndexedDB as offline cache
-
 ## Context
 
-Shipped v1.0 MVP with 6,945 LOC TypeScript across 62 files.
-Tech stack: React + Vite 5 + Tailwind CSS 4 + Dexie.js + dnd-kit + vite-plugin-pwa.
-Built in 24 days (234 commits) across 9 phases including 2 decimal insertions.
-All 23 v1 requirements satisfied. 5 integration gaps found in audit were closed by Phases 5-7.
-Initial user testing showed demand for Gemini model selection (added as Phase 02.1).
-User is on GCP free trial. Firebase chosen for real-time sync (Firestore), auth (Google sign-in), and hosting — stays within permanent free tier (Spark plan) for single-user usage.
+Shipped v1.1 Deploy & Sync with 8,463 LOC TypeScript.
+Tech stack: React + Vite 5 + Tailwind CSS 4 + Dexie.js + Firebase (Auth, Firestore, Hosting) + dnd-kit + vite-plugin-pwa.
+Live at taskpad-app.web.app. Cross-device sync working between phone and PC.
+Built v1.0 in 24 days (234 commits, 9 phases). Built v1.1 in 3 days (23 commits, 5 phases).
+Firebase on Spark plan (permanent free tier) — sufficient for single-user usage.
 
 ## Constraints
 
@@ -92,6 +82,12 @@ User is on GCP free trial. Firebase chosen for real-time sync (Firestore), auth 
 | Departing state machine | 4-phase departure animation with deferred DB write | ✓ Good — Phase 3 |
 | Settling phase removed | Caused flash-back; direct fade + DB write is cleaner | ✓ Good — Phase 5 |
 | onRegisterComplete callback | Parent stores child triggerComplete in refs Map by task.id | ✓ Good — Phase 5 |
+| Firebase on Spark plan | Permanent free tier, not GCP trial credits | ✓ Good — Phase 8 |
+| Dexie as sole UI read source | Firestore is sync transport only, not competing cache | ✓ Good — Phase 10 |
+| signInWithPopup everywhere | Popup works on all browsers including iOS Safari standalone | ✓ Good — Phase 9 |
+| per-table clear() on sign-out | Preserves Dexie connection (db.delete() destroyed it) | ✓ Good — Phase 10 |
+| useSyncExternalStore for sync status | Tear-safe, concurrent-mode ready subscription | ✓ Good — Phase 12 |
+| Silent retry with exponential backoff | 2s, 4s delays before surfacing error to user | ✓ Good — Phase 12 |
 
 ---
-*Last updated: 2026-03-01 after v1.1 milestone start*
+*Last updated: 2026-03-09 after v1.1 milestone*

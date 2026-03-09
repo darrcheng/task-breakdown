@@ -1,5 +1,25 @@
 # Milestones
 
+## v1.1 Deploy & Sync (Shipped: 2026-03-09)
+
+**Phases completed:** 5 phases, 14 plans
+
+**Key accomplishments:**
+- Firebase project on Spark plan with deny-all Firestore security rules
+- Google sign-in with auth gate, session persistence, and popup/redirect platform handling
+- Bidirectional Dexie-Firestore sync with echo guard and last-write-wins conflict resolution
+- Offline-first data migration preserving existing local tasks on first sign-in
+- Deployed to taskpad-app.web.app with SPA routing and PWA cache headers
+- Sync status indicator with silent retry, exponential backoff, and error recovery UX
+
+**Stats:**
+- Timeline: 3 days (2026-03-07 → 2026-03-09)
+- Commits: 23
+- Lines of code: 8,463 TypeScript (+1,558 from v1.0)
+- Files changed: 18
+
+---
+
 ## v1.0 MVP (Shipped: 2026-03-01)
 
 **Phases completed:** 9 phases, 52 plans, 17 tasks
