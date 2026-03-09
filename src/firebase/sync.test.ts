@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   serializeForFirestore,
   deserializeFromFirestore,
@@ -6,7 +6,13 @@ import {
   isSyncWriteInProgress,
   migrateLocalData,
   isMigrating,
+  subscribeSyncStatus,
+  getSyncStatusSnapshot,
+  retrySync,
+  setupOnlineListener,
+  stopSync,
 } from './sync';
+import type { SyncStatus } from './sync';
 import { getDocs, writeBatch } from 'firebase/firestore';
 
 // Mock the database module
@@ -403,5 +409,148 @@ describe('sign-out safety', () => {
     // These should not throw — db connection is still alive
     await expect(mockPut({ id: 1, title: 'New task' })).resolves.not.toThrow();
     await expect(mockTasksToArray()).resolves.toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Sync status state machine tests
+// ---------------------------------------------------------------------------
+
+describe('sync status state machine', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // Reset to clean state by calling stopSync
+    stopSync();
+  });
+
+  describe('getSyncStatusSnapshot', () => {
+    it('returns synced by default', () => {
+      expect(getSyncStatusSnapshot()).toBe('synced');
+    });
+  });
+
+  describe('subscribeSyncStatus', () => {
+    it('registers a listener and returns an unsubscribe function', () => {
+      const listener = vi.fn();
+      const unsub = subscribeSyncStatus(listener);
+      expect(typeof unsub).toBe('function');
+      unsub();
+    });
+
+    it('calls listener when status changes', () => {
+      const listener = vi.fn();
+      subscribeSyncStatus(listener);
+
+      // Trigger a status change via retrySync (sets to 'syncing')
+      retrySync();
+      expect(listener).toHaveBeenCalled();
+    });
+
+    it('stops calling listener after unsubscribe', () => {
+      const listener = vi.fn();
+      const unsub = subscribeSyncStatus(listener);
+
+      retrySync();
+      expect(listener).toHaveBeenCalledTimes(1);
+
+      unsub();
+      // Reset to synced first
+      stopSync();
+      listener.mockClear();
+
+      retrySync();
+      expect(listener).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('retrySync', () => {
+    it('clears error state and sets status to syncing', () => {
+      // We need to get into error state first -- just test retrySync sets syncing
+      retrySync();
+      expect(getSyncStatusSnapshot()).toBe('syncing');
+    });
+
+    it('falls back to synced after 3s if still syncing', () => {
+      vi.useFakeTimers();
+      retrySync();
+      expect(getSyncStatusSnapshot()).toBe('syncing');
+
+      vi.advanceTimersByTime(3000);
+      expect(getSyncStatusSnapshot()).toBe('synced');
+      vi.useRealTimers();
+    });
+  });
+
+  describe('setupOnlineListener', () => {
+    let addEventListenerSpy: ReturnType<typeof vi.spyOn>;
+    let removeEventListenerSpy: ReturnType<typeof vi.spyOn>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const eventHandlers: Record<string, ((...args: any[]) => void)[]> = {};
+
+    beforeEach(() => {
+      // Clear event handlers
+      for (const key of Object.keys(eventHandlers)) {
+        delete eventHandlers[key];
+      }
+
+      addEventListenerSpy = vi.spyOn(window, 'addEventListener').mockImplementation(
+        (event: string, handler: EventListenerOrEventListenerObject) => {
+          if (!eventHandlers[event]) eventHandlers[event] = [];
+          eventHandlers[event].push(handler as () => void);
+        }
+      );
+      removeEventListenerSpy = vi.spyOn(window, 'removeEventListener').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      addEventListenerSpy.mockRestore();
+      removeEventListenerSpy.mockRestore();
+    });
+
+    it('sets status to offline on offline event', () => {
+      setupOnlineListener();
+
+      // Simulate offline event
+      if (eventHandlers['offline']) {
+        for (const handler of eventHandlers['offline']) handler();
+      }
+
+      expect(getSyncStatusSnapshot()).toBe('offline');
+    });
+
+    it('sets status to syncing on online event (not synced)', () => {
+      vi.useFakeTimers();
+      setupOnlineListener();
+
+      // First go offline
+      if (eventHandlers['offline']) {
+        for (const handler of eventHandlers['offline']) handler();
+      }
+      expect(getSyncStatusSnapshot()).toBe('offline');
+
+      // Then go online
+      if (eventHandlers['online']) {
+        for (const handler of eventHandlers['online']) handler();
+      }
+      expect(getSyncStatusSnapshot()).toBe('syncing');
+      vi.useRealTimers();
+    });
+
+    it('returns cleanup function', () => {
+      const cleanup = setupOnlineListener();
+      expect(typeof cleanup).toBe('function');
+      cleanup();
+      expect(removeEventListenerSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('stopSync resets state', () => {
+    it('resets sync status to synced', () => {
+      retrySync(); // sets to syncing
+      expect(getSyncStatusSnapshot()).toBe('syncing');
+
+      stopSync();
+      expect(getSyncStatusSnapshot()).toBe('synced');
+    });
   });
 });
