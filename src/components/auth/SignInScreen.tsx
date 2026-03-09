@@ -1,17 +1,15 @@
 import { useState } from 'react';
-import { useIsMobile } from '../../hooks/useMediaQuery';
 import { signInWithGoogle } from '../../firebase/auth';
 
 export function SignInScreen() {
   const [error, setError] = useState<string | null>(null);
   const [signingIn, setSigningIn] = useState(false);
-  const isMobile = useIsMobile();
 
   const handleSignIn = async () => {
     setError(null);
     setSigningIn(true);
     try {
-      await signInWithGoogle(isMobile);
+      await signInWithGoogle(false);
     } catch (err: unknown) {
       setSigningIn(false);
       const code = (err as { code?: string }).code;
