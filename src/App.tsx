@@ -17,7 +17,7 @@ import { SomedayView } from './components/overdue/SomedayView';
 import { MobileLayout } from './components/mobile/MobileLayout';
 import { MobileCalendarView } from './components/mobile/MobileCalendarView';
 import { InstallBanner } from './components/mobile/InstallBanner';
-import { OfflineIndicator } from './components/mobile/OfflineIndicator';
+import { SyncStatusIcon } from './components/ui/SyncStatusIcon';
 import { useCategoryMap, useTaskCount, useOverdueTasks } from './db/hooks';
 import { useSettings } from './hooks/useSettings';
 import { useIsMobile } from './hooks/useMediaQuery';
@@ -196,9 +196,6 @@ function AuthenticatedApp() {
     return (
       <>
         <MobileLayout activeTab={activeMobileTab} onTabChange={handleMobileTabChange}>
-          {/* Offline indicator */}
-          <OfflineIndicator />
-
           {/* Overdue banner on mobile */}
           {viewMode === 'calendar' && overdueTasks && overdueTasks.length > 0 && (
             <OverdueBanner
@@ -326,6 +323,7 @@ function AuthenticatedApp() {
             <Settings className="w-4 h-4" />
             <span className="hidden sm:inline">Settings</span>
           </button>
+          <SyncStatusIcon />
         </div>
       </header>
 
