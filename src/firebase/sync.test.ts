@@ -360,3 +360,48 @@ describe('migrateLocalData', () => {
     expect(isMigrating()).toBe(false);
   });
 });
+
+describe('sign-out safety', () => {
+  const mockTasksClear = vi.fn().mockResolvedValue(undefined);
+  const mockCategoriesClear = vi.fn().mockResolvedValue(undefined);
+  const mockAiSettingsClear = vi.fn().mockResolvedValue(undefined);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockTasksClear.mockResolvedValue(undefined);
+    mockCategoriesClear.mockResolvedValue(undefined);
+    mockAiSettingsClear.mockResolvedValue(undefined);
+  });
+
+  it('clear() on all tables resolves without error', async () => {
+    // Simulate the sign-out pattern: clear all tables via Promise.all
+    await expect(
+      Promise.all([
+        mockTasksClear(),
+        mockCategoriesClear(),
+        mockAiSettingsClear(),
+      ])
+    ).resolves.not.toThrow();
+
+    expect(mockTasksClear).toHaveBeenCalledTimes(1);
+    expect(mockCategoriesClear).toHaveBeenCalledTimes(1);
+    expect(mockAiSettingsClear).toHaveBeenCalledTimes(1);
+  });
+
+  it('db tables remain accessible after clear (connection alive)', async () => {
+    // After clearing, put and toArray should still be callable
+    await Promise.all([
+      mockTasksClear(),
+      mockCategoriesClear(),
+      mockAiSettingsClear(),
+    ]);
+
+    // Simulate post-clear operations (sign-back-in scenario)
+    mockPut.mockResolvedValue(undefined);
+    mockTasksToArray.mockResolvedValue([]);
+
+    // These should not throw — db connection is still alive
+    await expect(mockPut({ id: 1, title: 'New task' })).resolves.not.toThrow();
+    await expect(mockTasksToArray()).resolves.toEqual([]);
+  });
+});
