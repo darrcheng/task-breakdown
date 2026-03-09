@@ -1,9 +1,9 @@
 ---
-status: diagnosed
+status: resolved
 phase: 10-sync-engine
 source: [10-01-SUMMARY.md, 10-02-SUMMARY.md, 10-03-SUMMARY.md, 10-04-SUMMARY.md, 10-05-SUMMARY.md]
 started: 2026-03-08T21:04:29Z
-updated: 2026-03-08T21:08:00Z
+updated: 2026-03-08T23:00:00Z
 ---
 
 ## Current Test
@@ -51,7 +51,7 @@ skipped: 0
 ## Gaps
 
 - truth: "After sign-out and sign-back-in, tasks reappear from Firestore"
-  status: failed
+  status: resolved
   reason: "User reported: fail, my tasks are no longer there"
   severity: major
   test: 5
@@ -66,7 +66,7 @@ skipped: 0
   debug_session: ".planning/debug/tasks-disappear-after-signout-signin.md"
 
 - truth: "Categories exist and can be created while signed in"
-  status: failed
+  status: resolved
   reason: "User reported: I have no categories and I can't seem to make any"
   severity: major
   test: 6
