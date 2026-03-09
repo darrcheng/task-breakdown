@@ -97,7 +97,9 @@ Plans:
   3. `sw.js` and `index.html` are served with `no-cache` headers; hashed JS/CSS assets with `immutable`
   4. PWA install prompt appears on mobile and app installs from the Firebase Hosting URL
   5. Running `npm run deploy` does not touch or alter any Firestore data
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 11-01-PLAN.md — Configure Firebase Hosting, deploy scripts, and ship to taskpad-app.web.app
 
 ### Phase 12: Sync Polish
 **Goal**: Users can see the sync state at a glance and recover from sync errors without confusion — no silent failures
@@ -125,9 +127,9 @@ Plans:
 | 8. Firebase Project Setup | v1.1 | Complete    | 2026-03-08 | - |
 | 9. Authentication | 3/3 | Complete    | 2026-03-08 | - |
 | 10. Sync Engine | 6/6 | Complete    | 2026-03-09 | - |
-| 11. Hosting Deploy | v1.1 | 0/TBD | Not started | - |
+| 11. Hosting Deploy | v1.1 | 0/1 | Planned | - |
 | 12. Sync Polish | v1.1 | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-02-05*
-*Last updated: 2026-03-08 -- Phase 10 gap closure plan added (6 plans total)*
+*Last updated: 2026-03-08 -- Phase 11 planned (1 plan)*
