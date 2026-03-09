@@ -12,7 +12,7 @@ import {
   setupOnlineListener,
   stopSync,
 } from './sync';
-import type { SyncStatus } from './sync';
+
 import { getDocs, writeBatch } from 'firebase/firestore';
 
 // Mock the database module
