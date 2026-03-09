@@ -33,7 +33,11 @@ export function SettingsModal({ isOpen, onClose, settings, onUpdateSettings }: S
 
   const handleSignOut = async () => {
     stopSync();              // 1. Disable sync + unsubscribe listeners
-    await db.delete();       // 2. Wipe local Dexie (hooks won't fire to Firestore)
+    await Promise.all([      // 2. Clear all tables, preserving connection and hooks
+      db.tasks.clear(),
+      db.categories.clear(),
+      db.aiSettings.clear(),
+    ]);
     await signOutUser();     // 3. Firebase sign-out
   };
 
