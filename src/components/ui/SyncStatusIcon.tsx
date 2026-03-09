@@ -4,10 +4,10 @@ import { useSyncStatus } from '../../hooks/useSyncStatus';
 import { retrySync } from '../../firebase/sync';
 
 const SYNC_ICONS = {
-  synced:  { Icon: CloudCheck,  color: 'text-emerald-500', spin: false },
-  syncing: { Icon: CloudUpload, color: 'text-blue-500',    spin: true  },
-  offline: { Icon: CloudOff,    color: 'text-amber-500',   spin: false },
-  error:   { Icon: CloudAlert,  color: 'text-red-500',     spin: false },
+  synced:  { Icon: CloudCheck,  color: 'text-emerald-500' },
+  syncing: { Icon: CloudUpload, color: 'text-blue-500'    },
+  offline: { Icon: CloudOff,    color: 'text-amber-500'   },
+  error:   { Icon: CloudAlert,  color: 'text-red-500'     },
 } as const;
 
 const SYNC_MESSAGES = {
@@ -44,7 +44,7 @@ export function SyncStatusIcon() {
     return () => clearTimeout(timer);
   }, [showPopover, status]);
 
-  const { Icon, color, spin } = SYNC_ICONS[status];
+  const { Icon, color } = SYNC_ICONS[status];
 
   const handleRetry = () => {
     retrySync();
@@ -60,13 +60,7 @@ export function SyncStatusIcon() {
         className="flex items-center justify-center p-1 rounded hover:bg-slate-100 transition-colors"
         title={SYNC_MESSAGES[status]}
       >
-        {spin ? (
-          <div className="animate-[spin_2s_linear_infinite]">
-            {iconElement}
-          </div>
-        ) : (
-          iconElement
-        )}
+        {iconElement}
       </button>
 
       {showPopover && (
