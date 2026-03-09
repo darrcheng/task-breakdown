@@ -34,8 +34,8 @@ Requirements for Deploy & Sync milestone. Each maps to roadmap phases.
 
 - [x] **DATA-01**: Firestore security rules restrict each user to only their own data
 - [x] **DATA-02**: On first sign-in, existing local tasks are migrated to Firestore
-- [ ] **DATA-03**: Sync status indicator shows synced/syncing/offline state
-- [ ] **DATA-04**: Sync errors surface to user with recovery guidance (not silent failures)
+- [x] **DATA-03**: Sync status indicator shows synced/syncing/offline state
+- [x] **DATA-04**: Sync errors surface to user with recovery guidance (not silent failures)
 
 ## v2 Requirements
 
@@ -81,8 +81,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SYNC-05 | Phase 10 | Complete |
 | DATA-01 | Phase 9 | Complete |
 | DATA-02 | Phase 10 | Complete |
-| DATA-03 | Phase 12 | Pending |
-| DATA-04 | Phase 12 | Pending |
+| DATA-03 | Phase 12 | Complete |
+| DATA-04 | Phase 12 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 18 total

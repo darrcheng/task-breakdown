@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Deploy & Sync
 status: completed
-stopped_at: Phase 12 context gathered
-last_updated: "2026-03-09T14:23:55.173Z"
-last_activity: 2026-03-09 — Completed 10-06 (sign-out db.delete fix)
+stopped_at: Completed 12-01-PLAN.md
+last_updated: "2026-03-09T14:41:47.109Z"
+last_activity: 2026-03-09 — Completed 12-01 (sync status state machine)
 progress:
   total_phases: 5
   completed_phases: 4
-  total_plans: 12
-  completed_plans: 12
-  percent: 100
+  total_plans: 14
+  completed_plans: 13
+  percent: 93
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-01)
 
 **Core value:** Turn vague, paralyzing tasks into small, concrete steps you can start right now
-**Current focus:** v1.1 Deploy & Sync — Phase 10: Sync Engine
+**Current focus:** v1.1 Deploy & Sync — Phase 12: Sync Polish
 
 ## Current Position
 
-Phase: 10 of 12 (Sync Engine)
-Plan: 6 of 6 (complete)
-Status: Phase Complete (gap closure done)
-Last activity: 2026-03-09 — Completed 10-06 (sign-out db.delete fix)
+Phase: 12 of 12 (Sync Polish)
+Plan: 1 of 2 (complete)
+Status: Plan 01 complete, Plan 02 remaining
+Last activity: 2026-03-09 — Completed 12-01 (sync status state machine)
 
-Progress: [██████████] 100% (Phase 10 complete, including gap closure)
+Progress: [█████████░] 93% (13/14 plans complete)
 
 ## Accumulated Context
 
@@ -60,6 +60,10 @@ Full v1.0 decision history archived in `.planning/milestones/v1.0-ROADMAP.md`.
 - [Phase 10]: Category dedup not needed: inbound put() upserts by matching numeric ID
 - [Phase 10]: All 6 sync verification scenarios auto-approved (migration, cross-tab, offline, conflict, sign-out, categories)
 - [Phase 10]: Replaced db.delete() with per-table clear() in sign-out to preserve Dexie connection
+- [Phase 12]: useSyncExternalStore over useState/useEffect for sync status subscription (tear-safe, concurrent-mode ready)
+- [Phase 12]: Silent retry with exponential backoff (2s, 4s) before surfacing error to UI
+- [Phase 12]: 3s fallback timeout for syncing->synced when no pending writes detected
+- [Phase 12]: useSyncExternalStore for sync status (tear-safe, concurrent-mode ready)
 
 ### Pending Todos
 
@@ -75,6 +79,6 @@ Full v1.0 decision history archived in `.planning/milestones/v1.0-ROADMAP.md`.
 
 ## Session Continuity
 
-Last session: 2026-03-09T14:23:55.116Z
-Stopped at: Phase 12 context gathered
-Next step: Phase 10 fully complete (including gap closure). Proceed to next phase.
+Last session: 2026-03-09T14:41:42.134Z
+Stopped at: Completed 12-01-PLAN.md
+Next step: Execute 12-02-PLAN.md (sync indicator UI component)
