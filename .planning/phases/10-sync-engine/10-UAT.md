@@ -1,5 +1,5 @@
 ---
-status: complete
+status: diagnosed
 phase: 10-sync-engine
 source: [10-01-SUMMARY.md, 10-02-SUMMARY.md, 10-03-SUMMARY.md, 10-04-SUMMARY.md, 10-05-SUMMARY.md]
 started: 2026-03-08T21:04:29Z
@@ -55,17 +55,27 @@ skipped: 0
   reason: "User reported: fail, my tasks are no longer there"
   severity: major
   test: 5
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "db.delete() in SettingsModal.tsx destroys IndexedDB and permanently closes Dexie connection (disableAutoOpen: true). On re-sign-in, db singleton is dead — all reads return empty, writes silently fail, onSnapshot data can't be written to Dexie."
+  artifacts:
+    - path: "src/components/ui/SettingsModal.tsx"
+      issue: "db.delete() destroys database connection permanently"
+    - path: "src/db/database.ts"
+      issue: "setupDexieHooks() runs once at module load, hooks lost after delete"
+  missing:
+    - "Replace db.delete() with table.clear() calls to preserve connection"
+  debug_session: ".planning/debug/tasks-disappear-after-signout-signin.md"
 
 - truth: "Categories exist and can be created while signed in"
   status: failed
   reason: "User reported: I have no categories and I can't seem to make any"
   severity: major
   test: 6
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Same root cause as test 5. db.delete() with Dexie 4 defaults to disableAutoOpen: true, permanently closing the db singleton. populate() never re-fires, all category writes silently fail."
+  artifacts:
+    - path: "src/components/ui/SettingsModal.tsx"
+      issue: "db.delete() destroys database connection permanently"
+    - path: "src/db/database.ts"
+      issue: "populate() only fires on first database creation, not after delete+reopen"
+  missing:
+    - "Replace db.delete() with table.clear() calls to preserve connection and hooks"
+  debug_session: ".planning/debug/categories-missing-after-signin.md"
