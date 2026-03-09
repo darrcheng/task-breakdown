@@ -31,7 +31,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 8: Firebase Project Setup** - Configure Firebase project, SDK, and billing plan — unblocks all subsequent phases (completed 2026-03-08)
 - [x] **Phase 9: Authentication** - Google sign-in with session persistence, sign-out, auth gate, and popup/redirect platform handling (completed 2026-03-08)
 - [x] **Phase 10: Sync Engine** - Bidirectional Dexie-Firestore sync with offline-first, conflict resolution, echo guard, and data migration (completed 2026-03-08)
-- [ ] **Phase 11: Hosting Deploy** - Ship app to Firebase Hosting with correct SPA routing and PWA cache headers
+- [x] **Phase 11: Hosting Deploy** - Ship app to Firebase Hosting with correct SPA routing and PWA cache headers (completed 2026-03-09)
 - [ ] **Phase 12: Sync Polish** - Sync status indicator and error UX so users always know what the app is doing
 
 ## Phase Details
@@ -127,7 +127,7 @@ Plans:
 | 8. Firebase Project Setup | v1.1 | Complete    | 2026-03-08 | - |
 | 9. Authentication | 3/3 | Complete    | 2026-03-08 | - |
 | 10. Sync Engine | 6/6 | Complete    | 2026-03-09 | - |
-| 11. Hosting Deploy | v1.1 | 0/1 | Planned | - |
+| 11. Hosting Deploy | 1/1 | Complete   | 2026-03-09 | - |
 | 12. Sync Polish | v1.1 | 0/TBD | Not started | - |
 
 ---
