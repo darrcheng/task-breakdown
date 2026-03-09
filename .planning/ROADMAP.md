@@ -78,13 +78,14 @@ Plans:
   4. On first sign-in, existing local IndexedDB tasks are migrated to Firestore without data loss
   5. Rapid edits from the same device do not trigger redundant Firestore re-writes (echo guard active)
   6. Last edit wins when the same task is modified on two devices while one is offline (updatedAt LWW)
-**Plans**: 5 plans
+**Plans**: 6 plans
 Plans:
 - [ ] 10-01-PLAN.md — Test infrastructure, Firestore persistence config, sync module contracts
 - [ ] 10-02-PLAN.md — Sync engine core: outbound Dexie hooks + inbound onSnapshot + echo guard + LWW
 - [ ] 10-03-PLAN.md — Data migration: first sign-in upload, second-device merge, batch chunking
 - [ ] 10-04-PLAN.md — Integration wiring: auth lifecycle, sign-out flow, category dedup
 - [ ] 10-05-PLAN.md — Manual sync verification checkpoint (6 test scenarios)
+- [ ] 10-06-PLAN.md — Gap closure: fix db.delete() destroying Dexie connection on sign-out
 
 ### Phase 11: Hosting Deploy
 **Goal**: The app is live at a Firebase Hosting URL over HTTPS with correct SPA routing and PWA cache headers — deploy confirmed safe for existing Firestore data
@@ -129,4 +130,4 @@ Plans:
 
 ---
 *Roadmap created: 2026-02-05*
-*Last updated: 2026-03-08 -- Phase 10 plans created (5 plans)*
+*Last updated: 2026-03-08 -- Phase 10 gap closure plan added (6 plans total)*
