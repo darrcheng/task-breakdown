@@ -482,29 +482,33 @@ describe('sync status state machine', () => {
   });
 
   describe('setupOnlineListener', () => {
-    let addEventListenerSpy: ReturnType<typeof vi.spyOn>;
-    let removeEventListenerSpy: ReturnType<typeof vi.spyOn>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const eventHandlers: Record<string, ((...args: any[]) => void)[]> = {};
+    const mockAddEventListener = vi.fn((event: string, handler: () => void) => {
+      if (!eventHandlers[event]) eventHandlers[event] = [];
+      eventHandlers[event].push(handler);
+    });
+    const mockRemoveEventListener = vi.fn();
 
     beforeEach(() => {
       // Clear event handlers
       for (const key of Object.keys(eventHandlers)) {
         delete eventHandlers[key];
       }
+      mockAddEventListener.mockClear();
+      mockRemoveEventListener.mockClear();
 
-      addEventListenerSpy = vi.spyOn(window, 'addEventListener').mockImplementation(
-        (event: string, handler: EventListenerOrEventListenerObject) => {
-          if (!eventHandlers[event]) eventHandlers[event] = [];
-          eventHandlers[event].push(handler as () => void);
-        }
-      );
-      removeEventListenerSpy = vi.spyOn(window, 'removeEventListener').mockImplementation(() => {});
+      // Set up global window mock for node environment
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (globalThis as any).window = {
+        addEventListener: mockAddEventListener,
+        removeEventListener: mockRemoveEventListener,
+      };
     });
 
     afterEach(() => {
-      addEventListenerSpy.mockRestore();
-      removeEventListenerSpy.mockRestore();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (globalThis as any).window;
     });
 
     it('sets status to offline on offline event', () => {
@@ -540,7 +544,7 @@ describe('sync status state machine', () => {
       const cleanup = setupOnlineListener();
       expect(typeof cleanup).toBe('function');
       cleanup();
-      expect(removeEventListenerSpy).toHaveBeenCalled();
+      expect(mockRemoveEventListener).toHaveBeenCalled();
     });
   });
 

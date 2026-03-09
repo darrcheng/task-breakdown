@@ -24,6 +24,100 @@ let migrating = false;
 let unsubscribers: (() => void)[] = [];
 
 // ---------------------------------------------------------------------------
+// Sync status state machine
+// ---------------------------------------------------------------------------
+
+export type SyncStatus = 'synced' | 'syncing' | 'offline' | 'error';
+
+let syncStatus: SyncStatus = 'synced';
+const statusListeners = new Set<() => void>();
+let retryCount = 0;
+const MAX_SILENT_RETRIES = 2;
+const RETRY_DELAYS = [2000, 4000];
+let pendingWrites = 0;
+let syncedDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+let onlineListenerCleanup: (() => void) | null = null;
+
+function emitChange(): void {
+  for (const listener of statusListeners) {
+    listener();
+  }
+}
+
+function setSyncStatus(status: SyncStatus): void {
+  if (syncStatus !== status) {
+    syncStatus = status;
+    emitChange();
+  }
+}
+
+/**
+ * Subscribe to sync status changes.
+ * Returns an unsubscribe function (compatible with useSyncExternalStore).
+ */
+export function subscribeSyncStatus(callback: () => void): () => void {
+  statusListeners.add(callback);
+  return () => {
+    statusListeners.delete(callback);
+  };
+}
+
+/**
+ * Returns the current sync status snapshot (compatible with useSyncExternalStore).
+ */
+export function getSyncStatusSnapshot(): SyncStatus {
+  return syncStatus;
+}
+
+/**
+ * Clears error state and sets status to 'syncing'.
+ * The Firestore SDK's persistentLocalCache will auto-retry buffered writes;
+ * this just clears the UI error state.
+ */
+export function retrySync(): void {
+  retryCount = 0;
+  setSyncStatus('syncing');
+  // Fallback: if still syncing after 3s with no pending writes, set synced
+  setTimeout(() => {
+    if (syncStatus === 'syncing' && pendingWrites === 0) {
+      setSyncStatus('synced');
+    }
+  }, 3000);
+}
+
+/**
+ * Sets up window online/offline event listeners.
+ * Returns a cleanup function.
+ */
+export function setupOnlineListener(): () => void {
+  const handleOffline = () => {
+    setSyncStatus('offline');
+  };
+
+  const handleOnline = () => {
+    setSyncStatus('syncing');
+    // Fallback: if still syncing after 3s with no pending writes, set synced
+    setTimeout(() => {
+      if (syncStatus === 'syncing' && pendingWrites === 0) {
+        setSyncStatus('synced');
+      }
+    }, 3000);
+  };
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+  }
+
+  return () => {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    }
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Getter functions
 // ---------------------------------------------------------------------------
 
@@ -178,11 +272,56 @@ export async function processInboundChange(
 }
 
 // ---------------------------------------------------------------------------
-// Error handler for outbound sync writes
+// Error handler for outbound sync writes with retry logic
 // ---------------------------------------------------------------------------
 
-function handleSyncError(error: unknown): void {
+async function handleSyncError(error: unknown, retryFn?: () => Promise<void>): Promise<void> {
   console.error('Sync write failed:', error);
+
+  if (retryFn && retryCount < MAX_SILENT_RETRIES) {
+    const delay = RETRY_DELAYS[retryCount];
+    retryCount++;
+    await new Promise(resolve => setTimeout(resolve, delay));
+    try {
+      await retryFn();
+      retryCount = 0;
+      setSyncStatus('synced');
+    } catch (retryError) {
+      await handleSyncError(retryError, retryFn);
+    }
+  } else if (retryFn) {
+    // Exhausted retries
+    setSyncStatus('error');
+    retryCount = 0;
+  }
+}
+
+/**
+ * Tracks an outbound write promise for sync status transitions.
+ * Increments pendingWrites, sets status to 'syncing', and on settle
+ * decrements pendingWrites. When pendingWrites reaches 0, debounces 300ms
+ * then sets status to 'synced'.
+ */
+function trackOutboundWrite(promise: Promise<void>): void {
+  pendingWrites++;
+  if (syncStatus !== 'offline' && syncStatus !== 'error') {
+    setSyncStatus('syncing');
+  }
+
+  const onSettle = () => {
+    pendingWrites--;
+    if (pendingWrites === 0 && syncStatus === 'syncing') {
+      if (syncedDebounceTimer) clearTimeout(syncedDebounceTimer);
+      syncedDebounceTimer = setTimeout(() => {
+        if (pendingWrites === 0 && syncStatus === 'syncing') {
+          setSyncStatus('synced');
+        }
+        syncedDebounceTimer = null;
+      }, 300);
+    }
+  };
+
+  promise.then(onSettle, onSettle);
 }
 
 // ---------------------------------------------------------------------------
@@ -214,7 +353,10 @@ export function setupDexieHooks(): void {
         const uid = getCurrentUid();
         if (!uid) return;
         const docRef = doc(firestore, `users/${uid}/${tableName}/${resultKey}`);
-        setDoc(docRef, serializeForFirestore(obj, resultKey)).catch(handleSyncError);
+        const doWrite = () => setDoc(docRef, serializeForFirestore(obj, resultKey));
+        trackOutboundWrite(
+          doWrite().catch(err => handleSyncError(err, doWrite))
+        );
       };
     });
 
@@ -230,11 +372,12 @@ export function setupDexieHooks(): void {
         const uid = getCurrentUid();
         if (!uid) return;
         const docRef = doc(firestore, `users/${uid}/${tableName}/${primKey}`);
-        if (tableName === 'tasks') {
-          updateDoc(docRef, serializeModifications(modifications)).catch(handleSyncError);
-        } else {
-          setDoc(docRef, serializeForFirestore({ ...obj, ...modifications } as DexieRecord, primKey), { merge: true }).catch(handleSyncError);
-        }
+        const doWrite = tableName === 'tasks'
+          ? () => updateDoc(docRef, serializeModifications(modifications))
+          : () => setDoc(docRef, serializeForFirestore({ ...obj, ...modifications } as DexieRecord, primKey), { merge: true });
+        trackOutboundWrite(
+          doWrite().catch(err => handleSyncError(err, doWrite))
+        );
       };
     });
 
@@ -248,7 +391,10 @@ export function setupDexieHooks(): void {
         const uid = getCurrentUid();
         if (!uid) return;
         const docRef = doc(firestore, `users/${uid}/${tableName}/${primKey}`);
-        deleteDoc(docRef).catch(handleSyncError);
+        const doWrite = () => deleteDoc(docRef);
+        trackOutboundWrite(
+          doWrite().catch(err => handleSyncError(err, doWrite))
+        );
       };
     });
   }
@@ -266,13 +412,21 @@ export function startSync(uid: string): void {
   syncEnabled = true;
   currentUid = uid;
 
+  // Set up online/offline listener
+  onlineListenerCleanup = setupOnlineListener();
+
+  // Check initial online status
+  if (typeof navigator !== 'undefined' && !navigator.onLine) {
+    setSyncStatus('offline');
+  }
+
   const tables: TableName[] = ['tasks', 'categories', 'aiSettings'];
 
   for (const tableName of tables) {
     const collectionRef = collection(firestore, `users/${uid}/${tableName}`);
     const unsub = onSnapshot(collectionRef, (snapshot) => {
       for (const change of snapshot.docChanges()) {
-        processInboundChange(change, tableName).catch(handleSyncError);
+        processInboundChange(change, tableName).catch(err => handleSyncError(err));
       }
     });
     unsubscribers.push(unsub);
@@ -291,6 +445,22 @@ export function stopSync(): void {
     unsub();
   }
   unsubscribers = [];
+
+  // Clean up online listener
+  if (onlineListenerCleanup) {
+    onlineListenerCleanup();
+    onlineListenerCleanup = null;
+  }
+
+  // Reset sync status state
+  setSyncStatus('synced');
+  retryCount = 0;
+  pendingWrites = 0;
+  if (syncedDebounceTimer) {
+    clearTimeout(syncedDebounceTimer);
+    syncedDebounceTimer = null;
+  }
+
   console.log('Sync stopped');
 }
 
