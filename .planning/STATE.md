@@ -5,7 +5,7 @@ milestone_name: null
 status: between_milestones
 stopped_at: v1.1 completed
 last_updated: "2026-03-09"
-last_activity: 2026-03-09 — Quick task 001 (within-day task reordering) completed
+last_activity: 2026-03-09 - Completed quick task 001: Re-arrange task order within a day with sync support
 progress:
   total_phases: 0
   completed_phases: 0
@@ -46,3 +46,9 @@ Full v1.1 decision history archived in `.planning/milestones/v1.1-ROADMAP.md`.
 ### Blockers/Concerns
 
 None — clean slate for next milestone.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 001 | Re-arrange task order within a day with sync support | 2026-03-09 | ca73c28 | [001-reorder-tasks-within-day](./quick/001-reorder-tasks-within-day/) |
