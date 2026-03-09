@@ -1,4 +1,4 @@
-import { useDraggable } from '@dnd-kit/core';
+import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { Task } from '../../types';
 
@@ -8,14 +8,15 @@ interface DraggableTaskProps {
 }
 
 export function DraggableTask({ task, children }: DraggableTaskProps) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({
       id: `task-${task.id}`,
       data: { task },
     });
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
+    transition,
     opacity: isDragging ? 0.4 : undefined,
     cursor: 'grab',
   };

@@ -1,5 +1,7 @@
+import { useMemo } from 'react';
 import { format } from 'date-fns';
 import clsx from 'clsx';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useTasksByDate } from '../../db/hooks';
 import { formatDateKey, isToday, isSameMonth } from '../../utils/dates';
 import { TaskCard } from '../task/TaskCard';
@@ -28,6 +30,7 @@ export function DayCell({
 }: DayCellProps) {
   const dateStr = formatDateKey(date);
   const tasks = useTasksByDate(dateStr, showCompleted, energyFilter);
+  const taskIds = useMemo(() => (tasks ?? []).map((t) => `task-${t.id}`), [tasks]);
   const isCurrentMonth = isSameMonth(date, currentMonth);
   const today = isToday(date);
 
@@ -58,18 +61,20 @@ export function DayCell({
           {format(date, 'd')}
         </div>
         <div className="space-y-1 flex-1">
-          {tasks?.map((task) => (
-            <DraggableTask key={task.id} task={task}>
-              <TaskCard
-                task={task}
-                categoryMap={categoryMap}
-                onClick={(t, e) => {
-                  e?.stopPropagation();
-                  onTaskClick(t, e ? { x: e.clientX, y: e.clientY } : undefined);
-                }}
-              />
-            </DraggableTask>
-          ))}
+          <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
+            {tasks?.map((task) => (
+              <DraggableTask key={task.id} task={task}>
+                <TaskCard
+                  task={task}
+                  categoryMap={categoryMap}
+                  onClick={(t, e) => {
+                    e?.stopPropagation();
+                    onTaskClick(t, e ? { x: e.clientX, y: e.clientY } : undefined);
+                  }}
+                />
+              </DraggableTask>
+            ))}
+          </SortableContext>
         </div>
       </div>
     </DroppableDay>

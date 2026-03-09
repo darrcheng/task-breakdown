@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Plus } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { isToday } from '../../utils/dates';
 import { TaskListItem } from './TaskListItem';
 import { TaskInlineCreate } from '../task/TaskInlineCreate';
@@ -41,6 +42,8 @@ export function DayGroup({
     window.addEventListener('taskbreaker:inline-create', handleInlineCreate);
     return () => window.removeEventListener('taskbreaker:inline-create', handleInlineCreate);
   }, [date]);
+
+  const taskIds = useMemo(() => tasks.map((t) => `task-${t.id}`), [tasks]);
 
   const dateObj = parseISO(date);
   const today = isToday(dateObj);
@@ -83,48 +86,50 @@ export function DayGroup({
             }
           }}
         >
-          {tasks.length > 0 ? (
-            tasks.map((task) => (
-              <DraggableTask key={task.id} task={task}>
-                {isMobile ? (
-                  <SwipeableTaskRow
-                    onComplete={() => {
-                      if (task.id) {
-                        completeRefs.current.get(task.id)?.();
-                      }
-                    }}
-                    onDelete={async () => {
-                      if (task.id) {
-                        await db.tasks.delete(task.id);
-                      }
-                    }}
-                    isCompleted={task.status === 'done'}
-                  >
+          <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
+            {tasks.length > 0 ? (
+              tasks.map((task) => (
+                <DraggableTask key={task.id} task={task}>
+                  {isMobile ? (
+                    <SwipeableTaskRow
+                      onComplete={() => {
+                        if (task.id) {
+                          completeRefs.current.get(task.id)?.();
+                        }
+                      }}
+                      onDelete={async () => {
+                        if (task.id) {
+                          await db.tasks.delete(task.id);
+                        }
+                      }}
+                      isCompleted={task.status === 'done'}
+                    >
+                      <TaskListItem
+                        task={task}
+                        categoryMap={categoryMap}
+                        onClick={onTaskClick}
+                        onRegisterComplete={(fn) => {
+                          if (task.id) completeRefs.current.set(task.id, fn);
+                        }}
+                      />
+                    </SwipeableTaskRow>
+                  ) : (
                     <TaskListItem
                       task={task}
                       categoryMap={categoryMap}
                       onClick={onTaskClick}
-                      onRegisterComplete={(fn) => {
-                        if (task.id) completeRefs.current.set(task.id, fn);
-                      }}
                     />
-                  </SwipeableTaskRow>
-                ) : (
-                  <TaskListItem
-                    task={task}
-                    categoryMap={categoryMap}
-                    onClick={onTaskClick}
-                  />
-                )}
-              </DraggableTask>
-            ))
-          ) : (
-            !isCreating && (
-              <p className="text-sm text-slate-300 py-2 italic pointer-events-none">
-                Click to add a task
-              </p>
-            )
-          )}
+                  )}
+                </DraggableTask>
+              ))
+            ) : (
+              !isCreating && (
+                <p className="text-sm text-slate-300 py-2 italic pointer-events-none">
+                  Click to add a task
+                </p>
+              )
+            )}
+          </SortableContext>
         </div>
       </div>
     </DroppableDay>
