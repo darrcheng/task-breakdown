@@ -13,9 +13,11 @@ export function useTasksByDate(date: string, showCompleted: boolean, energyFilte
     () => {
       const query = db.tasks.where('date').equals(date);
       if (!showCompleted) {
-        return query.filter((t) => t.status !== 'done' && !t.isSomeday && (!energyFilter || t.energyLevel === energyFilter)).toArray();
+        return query.filter((t) => t.status !== 'done' && !t.isSomeday && (!energyFilter || t.energyLevel === energyFilter)).toArray()
+          .then(tasks => tasks.sort((a, b) => (a.sortOrder ?? Infinity) - (b.sortOrder ?? Infinity)));
       }
-      return query.filter((t) => !t.isSomeday && (!energyFilter || t.energyLevel === energyFilter)).toArray();
+      return query.filter((t) => !t.isSomeday && (!energyFilter || t.energyLevel === energyFilter)).toArray()
+        .then(tasks => tasks.sort((a, b) => (a.sortOrder ?? Infinity) - (b.sortOrder ?? Infinity)));
     },
     [date, showCompleted, energyFilter]
   );
@@ -38,9 +40,11 @@ export function useTasksByDateRange(
         .where('date')
         .between(startDate, endDate, true, true);
       if (!showCompleted) {
-        return query.filter((t) => t.status !== 'done' && !t.isSomeday && (!energyFilter || t.energyLevel === energyFilter)).toArray();
+        return query.filter((t) => t.status !== 'done' && !t.isSomeday && (!energyFilter || t.energyLevel === energyFilter)).toArray()
+          .then(tasks => tasks.sort((a, b) => (a.sortOrder ?? Infinity) - (b.sortOrder ?? Infinity)));
       }
-      return query.filter((t) => !t.isSomeday && (!energyFilter || t.energyLevel === energyFilter)).toArray();
+      return query.filter((t) => !t.isSomeday && (!energyFilter || t.energyLevel === energyFilter)).toArray()
+        .then(tasks => tasks.sort((a, b) => (a.sortOrder ?? Infinity) - (b.sortOrder ?? Infinity)));
     },
     [startDate, endDate, showCompleted, energyFilter]
   );

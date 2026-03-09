@@ -41,6 +41,20 @@ db.version(3).stores({
   });
 });
 
+// v4: Add sortOrder index for within-day task reordering
+db.version(4).stores({
+  tasks: '++id, date, status, categoryId, parentId, depth, energyLevel, sortOrder',
+  categories: '++id, name',
+  aiSettings: '++id, key',
+}).upgrade((tx) => {
+  // Assign sortOrder=0 to existing root tasks that lack it
+  return tx.table('tasks').toCollection().modify((task) => {
+    if (task.sortOrder === undefined && task.depth === 0) {
+      task.sortOrder = 0;
+    }
+  });
+});
+
 // Seed default categories on first use.
 // Default categories seeded here will be overwritten by Firestore sync
 // when onSnapshot delivers categories with matching IDs. No dedup needed
