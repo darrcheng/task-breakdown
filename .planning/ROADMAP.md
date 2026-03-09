@@ -109,7 +109,10 @@ Plans:
   1. Sync status indicator shows "synced", "syncing", or "offline" based on actual Firestore metadata
   2. When a sync error occurs, the user sees a message with recovery guidance — not a silent blank state
   3. Offline/online transitions are reflected in the UI within a few seconds
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 12-01-PLAN.md — Sync state machine, retry logic, and useSyncStatus hook
+- [ ] 12-02-PLAN.md — SyncStatusIcon component, header integration, OfflineIndicator removal
 
 ## Progress
 
@@ -128,8 +131,8 @@ Plans:
 | 9. Authentication | 3/3 | Complete    | 2026-03-08 | - |
 | 10. Sync Engine | 6/6 | Complete    | 2026-03-09 | - |
 | 11. Hosting Deploy | 1/1 | Complete    | 2026-03-09 | - |
-| 12. Sync Polish | v1.1 | 0/TBD | Not started | - |
+| 12. Sync Polish | v1.1 | 0/2 | Not started | - |
 
 ---
 *Roadmap created: 2026-02-05*
-*Last updated: 2026-03-08 -- Phase 11 planned (1 plan)*
+*Last updated: 2026-03-09 -- Phase 12 planned (2 plans)*
