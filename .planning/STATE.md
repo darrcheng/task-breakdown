@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Deploy & Sync
 status: completed
-stopped_at: Completed 10-05-PLAN.md (Phase 10 complete)
-last_updated: "2026-03-08T18:20:40.741Z"
-last_activity: 2026-03-08 — Completed 10-05 (sync engine verification)
+stopped_at: Completed 10-06-PLAN.md (gap closure)
+last_updated: "2026-03-09T01:30:00.918Z"
+last_activity: 2026-03-09 — Completed 10-06 (sign-out db.delete fix)
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 10
-  completed_plans: 10
+  total_plans: 11
+  completed_plans: 11
   percent: 100
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-01)
 ## Current Position
 
 Phase: 10 of 12 (Sync Engine)
-Plan: 5 of 5 (complete)
-Status: Phase Complete
-Last activity: 2026-03-08 — Completed 10-05 (sync engine verification)
+Plan: 6 of 6 (complete)
+Status: Phase Complete (gap closure done)
+Last activity: 2026-03-09 — Completed 10-06 (sign-out db.delete fix)
 
-Progress: [██████████] 100% (Phase 10 complete)
+Progress: [██████████] 100% (Phase 10 complete, including gap closure)
 
 ## Accumulated Context
 
@@ -59,6 +59,7 @@ Full v1.0 decision history archived in `.planning/milestones/v1.0-ROADMAP.md`.
 - [Phase 10]: Sync errors non-fatal: app works without sync if setup fails
 - [Phase 10]: Category dedup not needed: inbound put() upserts by matching numeric ID
 - [Phase 10]: All 6 sync verification scenarios auto-approved (migration, cross-tab, offline, conflict, sign-out, categories)
+- [Phase 10]: Replaced db.delete() with per-table clear() in sign-out to preserve Dexie connection
 
 ### Pending Todos
 
@@ -74,6 +75,6 @@ Full v1.0 decision history archived in `.planning/milestones/v1.0-ROADMAP.md`.
 
 ## Session Continuity
 
-Last session: 2026-03-08T18:16:52.019Z
-Stopped at: Completed 10-05-PLAN.md (Phase 10 complete)
-Next step: Phase 10 complete. Proceed to next phase.
+Last session: 2026-03-09T01:30:00.915Z
+Stopped at: Completed 10-06-PLAN.md (gap closure)
+Next step: Phase 10 fully complete (including gap closure). Proceed to next phase.
