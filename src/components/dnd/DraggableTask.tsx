@@ -19,6 +19,12 @@ export function DraggableTask({ task, children }: DraggableTaskProps) {
     transition,
     opacity: isDragging ? 0.4 : undefined,
     cursor: 'grab',
+    // Prevent browser default touch behaviors (text selection, callout)
+    // so dnd-kit TouchSensor can activate during the 500ms hold delay
+    WebkitTouchCallout: 'none',
+    WebkitUserSelect: 'none',
+    userSelect: 'none',
+    touchAction: 'none',
   };
 
   return (
