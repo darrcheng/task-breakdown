@@ -94,6 +94,16 @@ export const STATUS_COLORS: Record<
 };
 
 /**
+ * Detect whether a string is an emoji (vs a Lucide icon name).
+ * Emoji strings start with high Unicode codepoints; Lucide names are ASCII.
+ */
+export function isEmoji(icon: string): boolean {
+  if (!icon) return false;
+  const code = icon.codePointAt(0);
+  return code !== undefined && code > 255;
+}
+
+/**
  * Returns the next status in the cycle: todo -> in-progress -> done -> todo
  */
 export function getNextStatus(current: TaskStatus): TaskStatus {
