@@ -1,7 +1,7 @@
 import { type LucideIcon } from 'lucide-react';
 import { Battery, BatteryMedium, Zap, ListTree } from 'lucide-react';
 import clsx from 'clsx';
-import { CATEGORY_ICONS, STATUS_COLORS } from '../../utils/categories';
+import { STATUS_COLORS, renderCategoryIcon } from '../../utils/categories';
 import { ParentBadge } from './ParentBadge';
 import { formatEstimate } from '../../utils/estimateCalibration';
 import { useSubtasks } from '../../db/hooks';
@@ -22,9 +22,7 @@ const ENERGY_DISPLAY: Record<EnergyLevel, { icon: LucideIcon; color: string; lab
 export function TaskCard({ task, categoryMap, onClick }: TaskCardProps) {
   const colors = STATUS_COLORS[task.status];
   const category = categoryMap?.get(task.categoryId);
-  const IconComponent = category
-    ? CATEGORY_ICONS[category.icon]
-    : CATEGORY_ICONS['folder'];
+  const categoryIcon = category?.icon || 'folder';
 
   const energy = task.energyLevel ? ENERGY_DISPLAY[task.energyLevel] : null;
   const effectiveEstimate = task.timeEstimateOverride ?? task.timeEstimate;
@@ -47,7 +45,7 @@ export function TaskCard({ task, categoryMap, onClick }: TaskCardProps) {
         'hover:opacity-80'
       )}
     >
-      {IconComponent && <IconComponent className="w-3 h-3 flex-shrink-0" />}
+      <span className="flex-shrink-0">{renderCategoryIcon(categoryIcon, 'w-3 h-3', 'text-xs leading-none')}</span>
       <span className="text-xs font-medium truncate">{task.title}</span>
       {energy && (
         <span className={clsx('flex items-center gap-0.5 text-[10px] flex-shrink-0', energy.color)}>

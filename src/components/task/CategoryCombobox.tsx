@@ -3,7 +3,7 @@ import { Plus, X } from 'lucide-react';
 import clsx from 'clsx';
 import { db } from '../../db/database';
 import { useCategories } from '../../db/hooks';
-import { CATEGORY_ICONS } from '../../utils/categories';
+import { renderCategoryIcon } from '../../utils/categories';
 
 const RECENT_KEY = 'taskbreaker-recent-categories';
 const MAX_RECENT = 3;
@@ -154,12 +154,11 @@ export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
 
   return (
     <div className="relative">
-      {!isOpen && selectedCategory && (() => {
-        const IconComp = CATEGORY_ICONS[selectedCategory.icon] || CATEGORY_ICONS['folder'];
-        return IconComp ? (
-          <IconComp className="absolute left-2.5 top-2.5 w-4 h-4 text-slate-500 pointer-events-none z-10" />
-        ) : null;
-      })()}
+      {!isOpen && selectedCategory && (
+        <span className="absolute left-2.5 top-2.5 pointer-events-none z-10">
+          {renderCategoryIcon(selectedCategory.icon, 'w-4 h-4 text-slate-500', 'text-sm leading-none')}
+        </span>
+      )}
       {!isOpen && selectedCategory && (
         <button
           type="button"
@@ -197,9 +196,7 @@ export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
           role="listbox"
           className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-md shadow-lg max-h-48 overflow-y-auto"
         >
-          {filtered.map((cat, idx) => {
-            const IconComponent = CATEGORY_ICONS[cat.icon] || CATEGORY_ICONS['folder'];
-            return (
+          {filtered.map((cat, idx) => (
               <div
                 key={cat.id}
                 role="option"
@@ -217,11 +214,10 @@ export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
                   cat.id === value && 'font-medium'
                 )}
               >
-                <IconComponent className="w-4 h-4 flex-shrink-0 text-slate-500" />
+                <span className="flex-shrink-0">{renderCategoryIcon(cat.icon, 'w-4 h-4 text-slate-500', 'text-sm leading-none')}</span>
                 <span>{cat.name}</span>
               </div>
-            );
-          })}
+          ))}
 
           {showCreate && (
             <div

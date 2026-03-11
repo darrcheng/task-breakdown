@@ -1,3 +1,5 @@
+import { createElement } from 'react';
+import type { ReactNode } from 'react';
 import {
   Briefcase,
   User,
@@ -101,6 +103,24 @@ export function isEmoji(icon: string): boolean {
   if (!icon) return false;
   const code = icon.codePointAt(0);
   return code !== undefined && code > 255;
+}
+
+/**
+ * Render a category icon — either a Lucide component or an emoji span.
+ * @param icon - Lucide icon name or emoji character
+ * @param className - Tailwind classes for Lucide icons (ignored for emoji)
+ * @param emojiClassName - Optional Tailwind classes for emoji span
+ */
+export function renderCategoryIcon(
+  icon: string,
+  className: string = 'w-5 h-5 text-slate-500',
+  emojiClassName: string = 'text-base leading-none'
+): ReactNode {
+  if (isEmoji(icon)) {
+    return createElement('span', { className: emojiClassName, role: 'img' }, icon);
+  }
+  const IconComponent = CATEGORY_ICONS[icon] || CATEGORY_ICONS['folder'];
+  return createElement(IconComponent, { className });
 }
 
 /**

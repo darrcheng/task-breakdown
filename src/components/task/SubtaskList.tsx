@@ -3,7 +3,7 @@ import { ListTree, Sparkles, CheckCircle2 } from 'lucide-react';
 import clsx from 'clsx';
 import { useSubtasks } from '../../db/hooks';
 import { db } from '../../db/database';
-import { CATEGORY_ICONS } from '../../utils/categories';
+import { renderCategoryIcon } from '../../utils/categories';
 import type { Task, Category, TaskStatus } from '../../types';
 
 interface SubtaskListProps {
@@ -141,9 +141,7 @@ function SubtaskRow({
 
   const indent = (subtask.depth - parentDepth - 1) * 16;
   const category = categoryMap?.get(subtask.categoryId);
-  const IconComponent = category
-    ? CATEGORY_ICONS[category.icon]
-    : CATEGORY_ICONS['folder'];
+  const categoryIcon = category?.icon || 'folder';
   const canBreakDown = (subtask.depth ?? 0) < 3;
 
   const handleStatusClick = async (e: React.MouseEvent) => {
@@ -229,9 +227,7 @@ function SubtaskRow({
       />
 
       {/* Category icon */}
-      {IconComponent && (
-        <IconComponent className="w-3.5 h-3.5 flex-shrink-0 text-slate-400" />
-      )}
+      <span className="flex-shrink-0">{renderCategoryIcon(categoryIcon, 'w-3.5 h-3.5 text-slate-400', 'text-sm leading-none')}</span>
 
       {/* Title */}
       <button

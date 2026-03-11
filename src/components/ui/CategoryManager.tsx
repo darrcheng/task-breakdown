@@ -3,7 +3,8 @@ import { X, Plus, Pencil, Trash2 } from 'lucide-react';
 import clsx from 'clsx';
 import { db } from '../../db/database';
 import { useCategories } from '../../db/hooks';
-import { CATEGORY_ICONS, AVAILABLE_ICONS } from '../../utils/categories';
+import { AVAILABLE_ICONS, renderCategoryIcon } from '../../utils/categories';
+import { EmojiPicker } from './EmojiPicker';
 
 interface CategoryManagerProps {
   isOpen: boolean;
@@ -98,7 +99,6 @@ export function CategoryManager({ isOpen, onClose }: CategoryManagerProps) {
         {/* Category list */}
         <div className="flex-1 overflow-y-auto px-5 py-3 space-y-2">
           {categories?.map((cat) => {
-            const IconComponent = CATEGORY_ICONS[cat.icon] || CATEGORY_ICONS['folder'];
             const isEditing = editingId === cat.id;
 
             if (isEditing) {
@@ -112,26 +112,7 @@ export function CategoryManager({ isOpen, onClose }: CategoryManagerProps) {
                     placeholder="Category name"
                     autoFocus
                   />
-                  <div className="flex flex-wrap gap-1.5">
-                    {AVAILABLE_ICONS.map((iconName) => {
-                      const Ic = CATEGORY_ICONS[iconName];
-                      return (
-                        <button
-                          key={iconName}
-                          onClick={() => setIcon(iconName)}
-                          className={clsx(
-                            'p-1.5 rounded-md transition-colors',
-                            icon === iconName
-                              ? 'bg-blue-100 text-blue-600 ring-2 ring-blue-300'
-                              : 'hover:bg-slate-100 text-slate-500'
-                          )}
-                          title={iconName}
-                        >
-                          <Ic className="w-4 h-4" />
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <EmojiPicker value={icon} onChange={setIcon} />
                   <div className="flex gap-2">
                     <button
                       onClick={handleSave}
@@ -155,7 +136,7 @@ export function CategoryManager({ isOpen, onClose }: CategoryManagerProps) {
                 key={cat.id}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 group transition-colors"
               >
-                <IconComponent className="w-5 h-5 text-slate-500 flex-shrink-0" />
+                <span className="flex-shrink-0">{renderCategoryIcon(cat.icon, 'w-5 h-5 text-slate-500')}</span>
                 <span className="flex-1 text-sm font-medium text-slate-700">
                   {cat.name}
                 </span>
@@ -204,26 +185,7 @@ export function CategoryManager({ isOpen, onClose }: CategoryManagerProps) {
                 placeholder="Category name"
                 autoFocus
               />
-              <div className="flex flex-wrap gap-1.5">
-                {AVAILABLE_ICONS.map((iconName) => {
-                  const Ic = CATEGORY_ICONS[iconName];
-                  return (
-                    <button
-                      key={iconName}
-                      onClick={() => setIcon(iconName)}
-                      className={clsx(
-                        'p-1.5 rounded-md transition-colors',
-                        icon === iconName
-                          ? 'bg-blue-100 text-blue-600 ring-2 ring-blue-300'
-                          : 'hover:bg-slate-100 text-slate-500'
-                      )}
-                      title={iconName}
-                    >
-                      <Ic className="w-4 h-4" />
-                    </button>
-                  );
-                })}
-              </div>
+              <EmojiPicker value={icon} onChange={setIcon} />
               <div className="flex gap-2">
                 <button
                   onClick={handleSave}

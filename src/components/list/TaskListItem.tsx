@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { type LucideIcon } from 'lucide-react';
 import { Battery, BatteryMedium, Zap, Archive, ListTree } from 'lucide-react';
 import clsx from 'clsx';
-import { CATEGORY_ICONS, STATUS_COLORS, getNextStatus } from '../../utils/categories';
+import { STATUS_COLORS, getNextStatus, renderCategoryIcon } from '../../utils/categories';
 import { ParentBadge } from '../task/ParentBadge';
 import { hapticFeedback } from '../../utils/haptics';
 import { db } from '../../db/database';
@@ -54,9 +54,7 @@ export function TaskListItem({ task, categoryMap, onClick, onRegisterComplete }:
   // not amber/yellow (task.status still reflects DB state during 1500ms window)
   const colors = STATUS_COLORS[displayStatus];
   const category = categoryMap?.get(task.categoryId);
-  const IconComponent = category
-    ? CATEGORY_ICONS[category.icon]
-    : CATEGORY_ICONS['folder'];
+  const categoryIcon = category?.icon || 'folder';
   const energy = task.energyLevel ? ENERGY_DISPLAY[task.energyLevel] : null;
 
   const subtasks = useSubtasks(task.id ?? 0);
@@ -171,9 +169,9 @@ export function TaskListItem({ task, categoryMap, onClick, onRegisterComplete }:
         title={`Status: ${statusLabel}. Click to cycle.`}
       />
 
-      {IconComponent && (
-        <IconComponent className={clsx('w-4 h-4 flex-shrink-0', (departingPhase === 'ring' || departingPhase === 'fade') ? 'text-green-600' : colors.text)} />
-      )}
+      <span className="flex-shrink-0">
+        {renderCategoryIcon(categoryIcon, clsx('w-4 h-4', (departingPhase === 'ring' || departingPhase === 'fade') ? 'text-green-600' : colors.text), 'text-base leading-none')}
+      </span>
       <span className={clsx('flex-1 font-medium text-sm', (departingPhase === 'ring' || departingPhase === 'fade') ? 'text-green-600' : colors.text)}>
         {task.title}
       </span>

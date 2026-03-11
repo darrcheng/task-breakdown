@@ -4,7 +4,7 @@ import { db } from '../../db/database';
 import { useSomedayTasks } from '../../db/hooks';
 import { formatDateKey } from '../../utils/dates';
 import { DatePicker } from '../task/DatePicker';
-import { CATEGORY_ICONS } from '../../utils/categories';
+import { renderCategoryIcon } from '../../utils/categories';
 import type { Category, Task } from '../../types';
 
 interface SomedayViewProps {
@@ -16,7 +16,7 @@ function SomedayTaskRow({ task, categoryMap }: { task: Task; categoryMap: Map<nu
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const category = categoryMap?.get(task.categoryId);
-  const IconComponent = category ? CATEGORY_ICONS[category.icon] : CATEGORY_ICONS['folder'];
+  const categoryIcon = category?.icon || 'folder';
 
   const handleRescue = async (newDate: string) => {
     await db.tasks.update(task.id!, {
@@ -40,9 +40,7 @@ function SomedayTaskRow({ task, categoryMap }: { task: Task; categoryMap: Map<nu
     <div className="py-3 border-b border-slate-100 last:border-0">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          {IconComponent && (
-            <IconComponent className="w-4 h-4 text-slate-400 flex-shrink-0" />
-          )}
+          <span className="flex-shrink-0">{renderCategoryIcon(categoryIcon, 'w-4 h-4 text-slate-400', 'text-sm leading-none')}</span>
           <p className="text-sm font-medium text-slate-800 truncate">{task.title}</p>
         </div>
         <div className="flex items-center gap-1 flex-shrink-0">
