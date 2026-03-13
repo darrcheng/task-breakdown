@@ -180,7 +180,7 @@ export function renderCategoryIcon(
     const px = remSize * 16;
     return createElement('span', {
       role: 'img',
-      style: { width: px, height: px, fontSize: px, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+      style: { width: px, height: px, fontSize: px * 0.75, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
     }, icon);
   }
   const IconComponent = CATEGORY_ICONS[icon] || CATEGORY_ICONS['folder'];
