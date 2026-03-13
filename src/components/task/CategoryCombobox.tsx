@@ -156,7 +156,7 @@ export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
     <div className="relative">
       {!isOpen && selectedCategory && (
         <span className="absolute left-2.5 top-2.5 pointer-events-none z-10">
-          {renderCategoryIcon(selectedCategory.icon, 'w-4 h-4 text-slate-500', 'text-sm leading-none')}
+          {renderCategoryIcon(selectedCategory.icon, 'w-4 h-4 text-slate-500')}
         </span>
       )}
       {!isOpen && selectedCategory && (
@@ -214,7 +214,7 @@ export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
                   cat.id === value && 'font-medium'
                 )}
               >
-                <span className="flex-shrink-0">{renderCategoryIcon(cat.icon, 'w-4 h-4 text-slate-500', 'text-sm leading-none')}</span>
+                <span className="flex-shrink-0">{renderCategoryIcon(cat.icon, 'w-4 h-4 text-slate-500')}</span>
                 <span>{cat.name}</span>
               </div>
           ))}

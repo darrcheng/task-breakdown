@@ -227,7 +227,7 @@ function SubtaskRow({
       />
 
       {/* Category icon */}
-      <span className="flex-shrink-0">{renderCategoryIcon(categoryIcon, 'w-3.5 h-3.5 text-slate-400', 'text-sm leading-none')}</span>
+      <span className="flex-shrink-0">{renderCategoryIcon(categoryIcon, 'w-3.5 h-3.5 text-slate-400')}</span>
 
       {/* Title */}
       <button

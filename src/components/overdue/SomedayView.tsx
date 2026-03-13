@@ -40,7 +40,7 @@ function SomedayTaskRow({ task, categoryMap }: { task: Task; categoryMap: Map<nu
     <div className="py-3 border-b border-slate-100 last:border-0">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <span className="flex-shrink-0">{renderCategoryIcon(categoryIcon, 'w-4 h-4 text-slate-400', 'text-sm leading-none')}</span>
+          <span className="flex-shrink-0">{renderCategoryIcon(categoryIcon, 'w-4 h-4 text-slate-400')}</span>
           <p className="text-sm font-medium text-slate-800 truncate">{task.title}</p>
         </div>
         <div className="flex items-center gap-1 flex-shrink-0">

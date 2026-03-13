@@ -45,7 +45,7 @@ export function TaskCard({ task, categoryMap, onClick }: TaskCardProps) {
         'hover:opacity-80'
       )}
     >
-      <span className="flex-shrink-0">{renderCategoryIcon(categoryIcon, 'w-3 h-3', 'text-xs leading-none')}</span>
+      <span className="flex-shrink-0">{renderCategoryIcon(categoryIcon, 'w-3 h-3')}</span>
       <span className="text-xs font-medium truncate">{task.title}</span>
       {energy && (
         <span className={clsx('flex items-center gap-0.5 text-[10px] flex-shrink-0', energy.color)}>

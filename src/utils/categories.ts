@@ -165,17 +165,23 @@ export function isEmoji(icon: string): boolean {
 
 /**
  * Render a category icon — either a Lucide component or an emoji span.
+ * Emoji is sized to match the Lucide icon dimensions so card heights stay consistent.
  * @param icon - Lucide icon name or emoji character
  * @param className - Tailwind classes for Lucide icons (ignored for emoji)
- * @param emojiClassName - Optional Tailwind classes for emoji span
  */
 export function renderCategoryIcon(
   icon: string,
   className: string = 'w-5 h-5 text-slate-500',
-  emojiClassName: string = 'text-base leading-none'
 ): ReactNode {
   if (isEmoji(icon)) {
-    return createElement('span', { className: emojiClassName, role: 'img' }, icon);
+    // Extract pixel size from Tailwind w-N class to match Lucide icon dimensions
+    const sizeMatch = className.match(/w-(\d+(?:\.\d+)?)/);
+    const remSize = sizeMatch ? parseFloat(sizeMatch[1]) * 0.25 : 1.25;
+    const px = remSize * 16;
+    return createElement('span', {
+      role: 'img',
+      style: { width: px, height: px, fontSize: px, lineHeight: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
+    }, icon);
   }
   const IconComponent = CATEGORY_ICONS[icon] || CATEGORY_ICONS['folder'];
   return createElement(IconComponent, { className });

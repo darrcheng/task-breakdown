@@ -170,7 +170,7 @@ export function TaskListItem({ task, categoryMap, onClick, onRegisterComplete }:
       />
 
       <span className="flex-shrink-0">
-        {renderCategoryIcon(categoryIcon, clsx('w-4 h-4', (departingPhase === 'ring' || departingPhase === 'fade') ? 'text-green-600' : colors.text), 'text-base leading-none')}
+        {renderCategoryIcon(categoryIcon, clsx('w-4 h-4', (departingPhase === 'ring' || departingPhase === 'fade') ? 'text-green-600' : colors.text))}
       </span>
       <span className={clsx('flex-1 font-medium text-sm', (departingPhase === 'ring' || departingPhase === 'fade') ? 'text-green-600' : colors.text)}>
         {task.title}
