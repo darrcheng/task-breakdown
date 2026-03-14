@@ -60,13 +60,30 @@ export function getCalibrationHint(categoryId: number): string {
 }
 
 /**
- * Formats a minute value into a human-readable string.
- * e.g. 15 -> "15m", 90 -> "1.5h", 120 -> "2h"
+ * Formats a minute value into a human-readable "Xh Ym" string.
+ * e.g. 15 -> "15m", 90 -> "1h 30m", 120 -> "2h"
  */
 export function formatEstimate(minutes: number): string {
-  if (minutes < 60) {
-    return `${minutes}m`;
+  if (!minutes || minutes <= 0) return '';
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h === 0) return `${m}m`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
+}
+
+/**
+ * Sums effective time estimates for a list of tasks and formats as "Xh Ym".
+ * Returns empty string if no tasks have estimates.
+ */
+export function formatDailyTotal(tasks: { timeEstimate?: number | null; timeEstimateOverride?: number | null }[]): string {
+  let total = 0;
+  for (const task of tasks) {
+    const effective = task.timeEstimateOverride ?? task.timeEstimate;
+    if (effective && effective > 0) {
+      total += effective;
+    }
   }
-  const hours = Math.round((minutes / 60) * 10) / 10;
-  return `${hours}h`;
+  if (total === 0) return '';
+  return formatEstimate(total);
 }
