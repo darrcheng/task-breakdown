@@ -22,6 +22,7 @@ import { useCategoryMap, useTaskCount, useOverdueTasks } from './db/hooks';
 import { useSettings } from './hooks/useSettings';
 import { useIsMobile } from './hooks/useMediaQuery';
 import { useAuth } from './contexts/AuthContext';
+import { useAutoEstimate } from './hooks/useAutoEstimate';
 import { AuthLoadingScreen } from './components/ui/AuthLoadingScreen';
 import { SignInScreen } from './components/auth/SignInScreen';
 import { formatDateKey } from './utils/dates';
@@ -51,6 +52,8 @@ function App() {
 }
 
 function AuthenticatedApp() {
+  useAutoEstimate();
+
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [calendarView, setCalendarView] = useState<CalendarView>('month');
   const [viewMode, setViewMode] = useState<ViewMode>('calendar');
