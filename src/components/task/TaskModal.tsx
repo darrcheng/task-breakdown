@@ -186,8 +186,8 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
       createdAt: new Date(),
       updatedAt: new Date(),
     }));
-    await db.tasks.bulkAdd(newTasks);
     setShowRepeatModal(false);
+    await db.tasks.bulkAdd(newTasks);
   };
 
   const handleOpenSubtask = (subtask: Task) => {
