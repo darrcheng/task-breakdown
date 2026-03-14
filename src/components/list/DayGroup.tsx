@@ -18,10 +18,6 @@ interface DayGroupProps {
   categoryMap?: Map<number, Category>;
   onDayClick: (date: string) => void;
   onTaskClick: (task: Task) => void;
-  isMultiSelectActive?: boolean;
-  selectedIds?: Set<number>;
-  onToggleSelect?: (id: number) => void;
-  onSelectAll?: (ids: number[]) => void;
 }
 
 export function DayGroup({
@@ -29,10 +25,6 @@ export function DayGroup({
   tasks,
   categoryMap,
   onTaskClick,
-  isMultiSelectActive,
-  selectedIds,
-  onToggleSelect,
-  onSelectAll,
 }: DayGroupProps) {
   const [isCreating, setIsCreating] = useState(false);
   const isMobile = useIsMobile();
@@ -59,39 +51,18 @@ export function DayGroup({
     ? `Today - ${format(dateObj, 'MMMM d')}`
     : format(dateObj, 'EEEE, MMMM d, yyyy');
 
-  const dayTaskIds = useMemo(
-    () => tasks.map((t) => t.id).filter((id): id is number => id !== undefined),
-    [tasks]
-  );
-  const allDaySelected = isMultiSelectActive && dayTaskIds.length > 0 && dayTaskIds.every((id) => selectedIds?.has(id));
-
-  const handleSelectAllDay = () => {
-    onSelectAll?.(dayTaskIds);
-  };
-
   return (
-    <DroppableDay dateStr={date} taskIds={taskIds} className="mb-4">
+    <DroppableDay dateStr={date} className="mb-4">
       <div id={`day-${date}`}>
         {/* Sticky date header */}
         <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-slate-200 px-4 py-2 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {isMultiSelectActive && dayTaskIds.length > 0 && (
-              <input
-                type="checkbox"
-                checked={allDaySelected}
-                onChange={handleSelectAllDay}
-                className="w-4 h-4 rounded accent-blue-600 cursor-pointer"
-                title={`Select all tasks for ${dateLabel}`}
-              />
-            )}
-            <h3
-              className={`text-sm font-semibold ${
-                today ? 'text-blue-600' : 'text-slate-700'
-              }`}
-            >
-              {dateLabel}
-            </h3>
-          </div>
+          <h3
+            className={`text-sm font-semibold ${
+              today ? 'text-blue-600' : 'text-slate-700'
+            }`}
+          >
+            {dateLabel}
+          </h3>
           <button
             onClick={() => setIsCreating(!isCreating)}
             className="flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 hover:bg-blue-100 hover:text-blue-600 text-slate-500 transition-colors"
@@ -140,9 +111,6 @@ export function DayGroup({
                         onRegisterComplete={(fn) => {
                           if (task.id) completeRefs.current.set(task.id, fn);
                         }}
-                        isMultiSelectActive={isMultiSelectActive}
-                        isSelected={task.id !== undefined && selectedIds?.has(task.id)}
-                        onToggleSelect={task.id !== undefined ? () => onToggleSelect?.(task.id!) : undefined}
                       />
                     </SwipeableTaskRow>
                   ) : (
@@ -150,9 +118,6 @@ export function DayGroup({
                       task={task}
                       categoryMap={categoryMap}
                       onClick={onTaskClick}
-                      isMultiSelectActive={isMultiSelectActive}
-                      isSelected={task.id !== undefined && selectedIds?.has(task.id)}
-                      onToggleSelect={task.id !== undefined ? () => onToggleSelect?.(task.id!) : undefined}
                     />
                   )}
                 </DraggableTask>
