@@ -53,4 +53,4 @@ None — clean slate for next milestone.
 |---|-------------|------|--------|-----------|
 | 001 | Re-arrange task order within a day with sync support | 2026-03-09 | ca73c28 | [001-reorder-tasks-within-day](./quick/001-reorder-tasks-within-day/) |
 | 002 | Tabbed emoji picker for category icons | 2026-03-11 | 6c69797 | [002-tabbed-emoji-picker](./quick/002-tabbed-emoji-picker/) |
-| 003 | Desktop multiselect (Ctrl+click, Shift+click) with group drag | 2026-03-14 | 54503e4 | [003-multiselect-move-tasks](./quick/003-multiselect-move-tasks/) |
+| 003 | Desktop multiselect (Ctrl+click, Shift+click, Esc) with group drag | 2026-03-14 | cfea86e | [003-multiselect-move-tasks](./quick/003-multiselect-move-tasks/) |

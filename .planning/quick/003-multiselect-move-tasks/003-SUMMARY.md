@@ -45,6 +45,7 @@ Standard desktop multiselect (Ctrl+click toggle, Shift+click range) with group d
   - **Shift+click (same day):** selects range between anchor and current task within `dayTaskIds`
   - **Shift+click (cross-day):** falls back to toggle behavior
   - **Plain click:** clears all selection, returns `false` (allow normal modal open)
+  - **Escape key:** clears all selection via global keydown listener
 - Deleted `MultiSelectBar.tsx` - checkbox UI replaced by modifier-key selection
 
 ### DndProvider Group Drag (`src/components/dnd/DndProvider.tsx`)
@@ -77,6 +78,7 @@ None - plan executed exactly as written.
 |---|------|---------|
 | 1 | 87498db | feat(quick-003): rewrite useMultiSelect as context provider with Ctrl+click and Shift+click |
 | 2 | 54503e4 | feat(quick-003): wire multiselect into both views with group drag support |
+| 3 | cfea86e | feat: Escape key clears multiselect |
 
 ## Verification
 
