@@ -7,6 +7,7 @@ import { TaskListItem } from '../list/TaskListItem';
 import { SwipeableTaskRow } from './SwipeableTaskRow';
 import { db } from '../../db/database';
 import { formatDateKey } from '../../utils/dates';
+import { formatDailyTotal } from '../../utils/estimateCalibration';
 import type { Task, Category, EnergyLevel } from '../../types';
 
 interface DaySwipeViewProps {
@@ -49,10 +50,16 @@ export function DaySwipeView({
   return (
     <div {...handlers} className="flex-1 flex flex-col overflow-y-auto">
       {/* Day header with month context */}
-      <div className="px-4 pt-3 pb-2">
+      <div className="px-4 pt-3 pb-2 flex items-baseline justify-between">
         <h2 className="text-lg font-semibold text-slate-800">
           {format(currentDate, 'EEEE, MMMM d')}
         </h2>
+        {(() => {
+          const dailyTotal = formatDailyTotal(tasks ?? []);
+          return dailyTotal ? (
+            <span className="text-sm text-slate-400 font-medium">{dailyTotal}</span>
+          ) : null;
+        })()}
       </div>
 
       {/* Task list */}
