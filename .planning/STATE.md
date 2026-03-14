@@ -4,8 +4,8 @@ milestone: null
 milestone_name: null
 status: between_milestones
 stopped_at: v1.1 completed
-last_updated: "2026-03-11"
-last_activity: 2026-03-11 - Completed quick task 002: Tabbed emoji picker for category icons
+last_updated: "2026-03-14"
+last_activity: 2026-03-14 - Completed quick task 003: Multiselect and batch move tasks
 progress:
   total_phases: 0
   completed_phases: 0
@@ -25,8 +25,8 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 
 ## Current Position
 
-Status: Between milestones. v1.1 shipped, v1.2 not yet started. Quick tasks 001-002 completed.
-Last activity: 2026-03-11 — Quick task 002 (tabbed emoji picker) completed
+Status: Between milestones. v1.1 shipped, v1.2 not yet started. Quick tasks 001-003 completed.
+Last activity: 2026-03-14 — Quick task 003 (multiselect batch move) completed
 
 ## Accumulated Context
 
@@ -53,3 +53,4 @@ None — clean slate for next milestone.
 |---|-------------|------|--------|-----------|
 | 001 | Re-arrange task order within a day with sync support | 2026-03-09 | ca73c28 | [001-reorder-tasks-within-day](./quick/001-reorder-tasks-within-day/) |
 | 002 | Tabbed emoji picker for category icons | 2026-03-11 | 6c69797 | [002-tabbed-emoji-picker](./quick/002-tabbed-emoji-picker/) |
+| 003 | Multiselect and batch move tasks | 2026-03-14 | 42a020c | [003-multiselect-move-tasks](./quick/003-multiselect-move-tasks/) |
