@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { type LucideIcon } from 'lucide-react';
-import { Battery, BatteryMedium, Zap, Archive, ListTree } from 'lucide-react';
+import { Battery, BatteryMedium, Zap, Archive, ListTree, Check } from 'lucide-react';
 import clsx from 'clsx';
 import { STATUS_COLORS, getNextStatus, renderCategoryIcon } from '../../utils/categories';
 import { ParentBadge } from '../task/ParentBadge';
@@ -20,9 +20,12 @@ interface TaskListItemProps {
   categoryMap?: Map<number, Category>;
   onClick?: (task: Task) => void;
   onRegisterComplete?: (triggerFn: () => void) => void;
+  isMultiSelectActive?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: () => void;
 }
 
-export function TaskListItem({ task, categoryMap, onClick, onRegisterComplete }: TaskListItemProps) {
+export function TaskListItem({ task, categoryMap, onClick, onRegisterComplete, isMultiSelectActive, isSelected, onToggleSelect }: TaskListItemProps) {
   const [departingPhase, setDepartingPhase] = useState<'ring' | 'fade' | null>(null);
   const [displayStatus, setDisplayStatus] = useState<TaskStatus>(task.status);
   const departureTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -141,20 +144,46 @@ export function TaskListItem({ task, categoryMap, onClick, onRegisterComplete }:
     }
   };
 
+  const handleRowClick = () => {
+    if (isMultiSelectActive && onToggleSelect) {
+      onToggleSelect();
+    } else {
+      onClick?.(task);
+    }
+  };
+
   return (
     <div
-      onClick={() => onClick?.(task)}
+      onClick={handleRowClick}
       className={clsx(
         'group w-full flex items-center gap-3 px-4 py-3 rounded-lg border text-left cursor-pointer',
         !departing && 'transition-colors',
-        colors.bg,
-        colors.border,
+        isSelected ? 'bg-blue-50 border-blue-200' : colors.bg,
+        !isSelected && colors.border,
         'hover:opacity-80',
         (departingPhase === 'ring' || departingPhase === 'fade') && 'line-through decoration-green-600 text-green-600',
         departingPhase === 'ring' && 'ring-2 ring-emerald-400 ring-offset-1 transition-all duration-[1500ms]',
         departingPhase === 'fade' && 'ring-2 ring-emerald-400 ring-offset-1 opacity-0 transition-all duration-[1500ms]',
       )}
     >
+      {/* Multiselect checkbox */}
+      {isMultiSelectActive && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleSelect?.();
+          }}
+          className={clsx(
+            'w-5 h-5 rounded-sm border-2 flex-shrink-0 flex items-center justify-center transition-colors',
+            isSelected
+              ? 'bg-blue-600 border-blue-600'
+              : 'bg-white border-slate-300 hover:border-slate-400'
+          )}
+        >
+          {isSelected && <Check className="w-3 h-3 text-white" />}
+        </button>
+      )}
+
       {/* Status indicator - clickable to cycle */}
       <button
         onClick={handleStatusClick}
