@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
-import { Trash2, Battery, BatteryMedium, Zap, Archive } from 'lucide-react';
+import { Trash2, Battery, BatteryMedium, Zap, Archive, Repeat } from 'lucide-react';
 import clsx from 'clsx';
 import { STATUS_COLORS } from '../../utils/categories';
 import { CategoryCombobox } from './CategoryCombobox';
@@ -23,6 +23,7 @@ interface TaskFormProps {
   }) => void;
   onCancel: () => void;
   onDelete?: () => void;
+  onRepeat?: () => void;
   submitLabel?: string;
   isEditing?: boolean;
   onSendToSomeday?: () => void;
@@ -59,6 +60,7 @@ export const TaskForm = forwardRef<TaskFormHandle, TaskFormProps>(function TaskF
     onSubmit,
     onCancel,
     onDelete,
+    onRepeat,
     submitLabel = 'Save',
     isEditing = false,
     onSendToSomeday,
@@ -253,10 +255,20 @@ export const TaskForm = forwardRef<TaskFormHandle, TaskFormProps>(function TaskF
         />
       </div>
 
-      {/* Actions — hidden entirely in edit mode when there's no delete button */}
-      {(!isEditing || onDelete) && (
+      {/* Actions — hidden entirely in edit mode when there's no delete button and no repeat */}
+      {(!isEditing || onDelete || onRepeat) && (
         <div className="flex items-center justify-between pt-3 pb-1 sticky bottom-0 bg-white border-t border-slate-100 -mx-6 px-6 mt-2">
-          <div>
+          <div className="flex items-center gap-2">
+            {onRepeat && (
+              <button
+                type="button"
+                onClick={onRepeat}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors text-blue-600 hover:bg-blue-50"
+              >
+                <Repeat className="w-4 h-4" />
+                Repeat
+              </button>
+            )}
             {onDelete && (
               <button
                 type="button"
