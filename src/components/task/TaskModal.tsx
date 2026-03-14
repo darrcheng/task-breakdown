@@ -9,6 +9,7 @@ import { BreakdownButton } from './BreakdownButton';
 import { SubtaskReview } from './SubtaskReview';
 import { SubtaskList } from './SubtaskList';
 import { ProviderSetupModal } from '../settings/ProviderSetupModal';
+import { RepeatModal } from './RepeatModal';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { useBreakdown } from '../../hooks/useBreakdown';
 import { useTimeEstimate } from '../../hooks/useTimeEstimate';
@@ -42,6 +43,9 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
   // Flag to distinguish dismiss-triggered submit (backdrop/Escape) from explicit submit (Enter/Create button)
   const closingRef = useRef(false);
 
+  // Repeat modal state
+  const [showRepeatModal, setShowRepeatModal] = useState(false);
+
   // Override editing state
   const [isEditingOverride, setIsEditingOverride] = useState(false);
   const [overrideInput, setOverrideInput] = useState<string>('');
@@ -54,6 +58,7 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
   useEffect(() => {
     setNavigationOverride(undefined);
     setParentStack([]);
+    setShowRepeatModal(false);
     if (!isOpen) {
       breakdown.cancelBreakdown();
     }
@@ -166,6 +171,25 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
     }
   };
 
+  const handleRepeatSubmit = async (dates: string[]) => {
+    if (!currentTask) return;
+    const newTasks = dates.map((targetDate) => ({
+      title: currentTask.title,
+      description: currentTask.description,
+      status: 'todo' as const,
+      categoryId: currentTask.categoryId,
+      depth: currentTask.depth,
+      energyLevel: currentTask.energyLevel,
+      timeEstimate: currentTask.timeEstimate,
+      timeEstimateOverride: currentTask.timeEstimateOverride,
+      date: targetDate,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }));
+    await db.tasks.bulkAdd(newTasks);
+    setShowRepeatModal(false);
+  };
+
   const handleOpenSubtask = (subtask: Task) => {
     if (currentTask) {
       setParentStack((prev) => [...prev, currentTask]);
@@ -265,6 +289,7 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
         onSubmit={handleSubmit}
         onCancel={onClose}
         onDelete={currentTask?.id ? handleDelete : undefined}
+        onRepeat={isEditing ? () => setShowRepeatModal(true) : undefined}
         submitLabel={currentTask?.id ? 'Save' : 'Create'}
         isEditing={isEditing}
         onSendToSomeday={isEditing ? handleSendToSomeday : undefined}
@@ -376,6 +401,16 @@ export function TaskModal({ isOpen, onClose, date, task, clickPosition }: TaskMo
           parentDepth={currentTask.depth ?? 0}
           categoryMap={categoryMap}
           onOpenSubtask={handleOpenSubtask}
+        />
+      )}
+
+      {/* Repeat modal */}
+      {showRepeatModal && currentTask && (
+        <RepeatModal
+          isOpen={showRepeatModal}
+          onClose={() => setShowRepeatModal(false)}
+          onSubmit={handleRepeatSubmit}
+          taskDate={currentTask.date}
         />
       )}
     </>
