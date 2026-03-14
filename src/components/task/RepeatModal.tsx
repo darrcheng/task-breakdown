@@ -1,6 +1,23 @@
-import { useState, useMemo } from 'react';
-import { addDays, format, parseISO } from 'date-fns';
-import { X } from 'lucide-react';
+import { useState, useMemo, useCallback, useRef } from 'react';
+import {
+  addDays,
+  addMonths,
+  subMonths,
+  format,
+  parseISO,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  eachDayOfInterval,
+  isSameMonth,
+  isSameDay,
+  isToday,
+  isBefore,
+  startOfDay,
+} from 'date-fns';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import clsx from 'clsx';
 
 interface RepeatModalProps {
   isOpen: boolean;
@@ -11,23 +28,45 @@ interface RepeatModalProps {
 
 type RepeatMode = 'daily' | 'select';
 
+const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+function getCalendarDaysForMonth(month: Date): Date[] {
+  const start = startOfWeek(startOfMonth(month));
+  const end = endOfWeek(endOfMonth(month));
+  return eachDayOfInterval({ start, end });
+}
+
 export function RepeatModal({ isOpen, onClose, onSubmit, taskDate }: RepeatModalProps) {
   const [mode, setMode] = useState<RepeatMode>('daily');
   const [dayCount, setDayCount] = useState(3);
-  const [selectedDates, setSelectedDates] = useState<string[]>(['']);
+  const [selectedDates, setSelectedDates] = useState<Date[]>([]);
+  const [calendarMonth, setCalendarMonth] = useState(() => parseISO(taskDate));
+  const lastClickedDate = useRef<Date | null>(null);
 
   if (!isOpen) return null;
 
+  const taskDateParsed = parseISO(taskDate);
+
   const dailyDates = useMemo(() => {
-    const base = parseISO(taskDate);
     return Array.from({ length: dayCount }, (_, i) =>
-      format(addDays(base, i + 1), 'yyyy-MM-dd')
+      format(addDays(taskDateParsed, i + 1), 'yyyy-MM-dd')
     );
   }, [taskDate, dayCount]);
 
-  const validSelectedDates = selectedDates.filter((d) => d.trim() !== '');
+  const dailyPreview = useMemo(() => {
+    if (dailyDates.length === 0) return '';
+    if (dailyDates.length === 1) return format(parseISO(dailyDates[0]), 'MMM d');
+    const first = format(parseISO(dailyDates[0]), 'MMM d');
+    const last = format(parseISO(dailyDates[dailyDates.length - 1]), 'MMM d');
+    return `${first} – ${last}`;
+  }, [dailyDates]);
 
-  const datesToCreate = mode === 'daily' ? dailyDates : validSelectedDates;
+  const selectedDateStrings = useMemo(
+    () => selectedDates.map((d) => format(d, 'yyyy-MM-dd')).sort(),
+    [selectedDates]
+  );
+
+  const datesToCreate = mode === 'daily' ? dailyDates : selectedDateStrings;
   const count = datesToCreate.length;
 
   const handleSubmit = () => {
@@ -36,35 +75,57 @@ export function RepeatModal({ isOpen, onClose, onSubmit, taskDate }: RepeatModal
     }
   };
 
-  const handleAddDate = () => {
-    if (selectedDates.length < 10) {
-      setSelectedDates((prev) => [...prev, '']);
-    }
-  };
+  const calendarDays = useMemo(
+    () => getCalendarDaysForMonth(calendarMonth),
+    [calendarMonth]
+  );
 
-  const handleRemoveDate = (index: number) => {
-    setSelectedDates((prev) => prev.filter((_, i) => i !== index));
-  };
+  const isDateSelected = useCallback(
+    (day: Date) => selectedDates.some((d) => isSameDay(d, day)),
+    [selectedDates]
+  );
 
-  const handleDateChange = (index: number, value: string) => {
-    setSelectedDates((prev) => prev.map((d, i) => (i === index ? value : d)));
-  };
+  const handleDayClick = useCallback(
+    (day: Date, e: React.MouseEvent) => {
+      if (isBefore(day, startOfDay(new Date()))) return;
 
-  const formatPreviewDate = (dateStr: string) => {
-    try {
-      return format(parseISO(dateStr), 'MMM d');
-    } catch {
-      return dateStr;
-    }
-  };
+      if (e.shiftKey && lastClickedDate.current) {
+        // Shift+click: select range between last clicked and this day
+        const start = lastClickedDate.current < day ? lastClickedDate.current : day;
+        const end = lastClickedDate.current < day ? day : lastClickedDate.current;
+        const rangeDays = eachDayOfInterval({ start, end }).filter(
+          (d) => !isBefore(d, startOfDay(new Date()))
+        );
+
+        setSelectedDates((prev) => {
+          const existing = new Set(prev.map((d) => d.getTime()));
+          const merged = [...prev];
+          for (const rd of rangeDays) {
+            if (!existing.has(rd.getTime())) {
+              merged.push(rd);
+            }
+          }
+          return merged;
+        });
+      } else {
+        // Normal click: toggle single date
+        setSelectedDates((prev) => {
+          const exists = prev.some((d) => isSameDay(d, day));
+          if (exists) {
+            return prev.filter((d) => !isSameDay(d, day));
+          }
+          return [...prev, day];
+        });
+      }
+      lastClickedDate.current = day;
+    },
+    [selectedDates]
+  );
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center">
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/40"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
 
       {/* Modal */}
       <div className="relative bg-white rounded-lg shadow-xl w-full max-w-sm mx-4 p-5">
@@ -126,44 +187,93 @@ export function RepeatModal({ isOpen, onClose, onSubmit, taskDate }: RepeatModal
             </div>
             <p className="text-sm text-slate-500">
               Creates {dayCount} task{dayCount !== 1 ? 's' : ''}:{' '}
-              <span className="text-slate-700 font-medium">
-                {dailyDates.map(formatPreviewDate).join(', ')}
-              </span>
+              <span className="text-slate-700 font-medium">{dailyPreview}</span>
             </p>
           </div>
         )}
 
-        {/* Select dates mode */}
+        {/* Select dates mode — mini calendar */}
         {mode === 'select' && (
-          <div className="space-y-2">
-            {selectedDates.map((dateVal, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <input
-                  type="date"
-                  value={dateVal}
-                  onChange={(e) => handleDateChange(index, e.target.value)}
-                  className="flex-1 px-3 py-1.5 text-sm border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none"
-                />
-                {selectedDates.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveDate(index)}
-                    className="text-slate-400 hover:text-red-500 transition-colors"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            ))}
-            {selectedDates.length < 10 && (
+          <div>
+            {/* Month navigation */}
+            <div className="flex items-center justify-between mb-2">
               <button
-                type="button"
-                onClick={handleAddDate}
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                onClick={() => setCalendarMonth((m) => subMonths(m, 1))}
+                className="p-1 text-slate-400 hover:text-slate-700 transition-colors"
               >
-                + Add date
+                <ChevronLeft className="w-4 h-4" />
               </button>
+              <span className="text-sm font-semibold text-slate-700">
+                {format(calendarMonth, 'MMMM yyyy')}
+              </span>
+              <button
+                onClick={() => setCalendarMonth((m) => addMonths(m, 1))}
+                className="p-1 text-slate-400 hover:text-slate-700 transition-colors"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Day name headers */}
+            <div className="grid grid-cols-7 mb-1">
+              {DAY_NAMES.map((name) => (
+                <div
+                  key={name}
+                  className="text-[10px] font-semibold text-slate-400 text-center uppercase tracking-wider py-1"
+                >
+                  {name}
+                </div>
+              ))}
+            </div>
+
+            {/* Calendar grid */}
+            <div className="grid grid-cols-7">
+              {calendarDays.map((day) => {
+                const inMonth = isSameMonth(day, calendarMonth);
+                const today = isToday(day);
+                const selected = isDateSelected(day);
+                const past = isBefore(day, startOfDay(new Date()));
+
+                return (
+                  <button
+                    key={day.toISOString()}
+                    type="button"
+                    disabled={past}
+                    onClick={(e) => handleDayClick(day, e)}
+                    className={clsx(
+                      'w-full aspect-square flex items-center justify-center text-xs rounded-full transition-colors',
+                      past && 'text-slate-300 cursor-not-allowed',
+                      !past && !selected && inMonth && 'text-slate-700 hover:bg-slate-100',
+                      !past && !selected && !inMonth && 'text-slate-400 hover:bg-slate-100',
+                      !past && today && !selected && 'bg-red-500 text-white hover:bg-red-600',
+                      selected && 'bg-blue-500 text-white hover:bg-blue-600'
+                    )}
+                  >
+                    {format(day, 'd')}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Selection summary */}
+            {selectedDates.length > 0 && (
+              <div className="mt-2 flex items-center justify-between">
+                <p className="text-xs text-slate-500">
+                  {selectedDates.length} date{selectedDates.length !== 1 ? 's' : ''} selected
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setSelectedDates([])}
+                  className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  Clear
+                </button>
+              </div>
             )}
+
+            <p className="text-[10px] text-slate-400 mt-1">
+              Shift+click to select a range
+            </p>
           </div>
         )}
 
