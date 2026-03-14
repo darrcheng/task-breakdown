@@ -31,6 +31,7 @@ export function DayCell({
   const dateStr = formatDateKey(date);
   const tasks = useTasksByDate(dateStr, showCompleted, energyFilter);
   const taskIds = useMemo(() => (tasks ?? []).map((t) => `task-${t.id}`), [tasks]);
+  const dayTaskIds = useMemo(() => (tasks ?? []).map((t) => t.id!).filter(Boolean), [tasks]);
   const isCurrentMonth = isSameMonth(date, currentMonth);
   const today = isToday(date);
 
@@ -67,6 +68,7 @@ export function DayCell({
                 <TaskCard
                   task={task}
                   categoryMap={categoryMap}
+                  dayTaskIds={dayTaskIds}
                   onClick={(t, e) => {
                     e?.stopPropagation();
                     onTaskClick(t, e ? { x: e.clientX, y: e.clientY } : undefined);

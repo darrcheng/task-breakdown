@@ -5,12 +5,14 @@ import { STATUS_COLORS, renderCategoryIcon } from '../../utils/categories';
 import { ParentBadge } from './ParentBadge';
 import { formatEstimate } from '../../utils/estimateCalibration';
 import { useSubtasks } from '../../db/hooks';
+import { useMultiSelectContext } from '../../hooks/useMultiSelect';
 import type { Task, Category, EnergyLevel } from '../../types';
 
 interface TaskCardProps {
   task: Task;
   categoryMap?: Map<number, Category>;
   onClick?: (task: Task, e?: React.MouseEvent) => void;
+  dayTaskIds?: number[];
 }
 
 const ENERGY_DISPLAY: Record<EnergyLevel, { icon: LucideIcon; color: string; label: string }> = {
@@ -19,13 +21,16 @@ const ENERGY_DISPLAY: Record<EnergyLevel, { icon: LucideIcon; color: string; lab
   high: { icon: Zap, color: 'text-emerald-500', label: 'High' },
 };
 
-export function TaskCard({ task, categoryMap, onClick }: TaskCardProps) {
+export function TaskCard({ task, categoryMap, onClick, dayTaskIds }: TaskCardProps) {
   const colors = STATUS_COLORS[task.status];
   const category = categoryMap?.get(task.categoryId);
   const categoryIcon = category?.icon || 'folder';
 
   const energy = task.energyLevel ? ENERGY_DISPLAY[task.energyLevel] : null;
   const effectiveEstimate = task.timeEstimateOverride ?? task.timeEstimate;
+
+  const { handleTaskClick, isSelected } = useMultiSelectContext();
+  const selected = isSelected(task.id!);
 
   const subtasks = useSubtasks(task.id ?? 0);
   const subtaskCount = subtasks?.length ?? 0;
@@ -35,12 +40,15 @@ export function TaskCard({ task, categoryMap, onClick }: TaskCardProps) {
     <button
       onClick={(e) => {
         e.stopPropagation();
-        onClick?.(task, e);
+        const handled = handleTaskClick(task, e, dayTaskIds ?? []);
+        if (!handled) {
+          onClick?.(task, e);
+        }
       }}
       className={clsx(
         'w-full flex items-center gap-1.5 px-2 py-1 rounded border text-left cursor-pointer transition-colors',
-        colors.bg,
-        colors.border,
+        selected ? 'ring-2 ring-blue-400 bg-blue-50' : colors.bg,
+        selected ? 'border-blue-300' : colors.border,
         colors.text,
         'hover:opacity-80'
       )}

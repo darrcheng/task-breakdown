@@ -7,6 +7,7 @@ import { ParentBadge } from '../task/ParentBadge';
 import { hapticFeedback } from '../../utils/haptics';
 import { db } from '../../db/database';
 import { useSubtasks } from '../../db/hooks';
+import { useMultiSelectContext } from '../../hooks/useMultiSelect';
 import type { Task, Category, TaskStatus, EnergyLevel } from '../../types';
 
 const ENERGY_DISPLAY: Record<EnergyLevel, { icon: LucideIcon; color: string; label: string }> = {
@@ -20,15 +21,18 @@ interface TaskListItemProps {
   categoryMap?: Map<number, Category>;
   onClick?: (task: Task) => void;
   onRegisterComplete?: (triggerFn: () => void) => void;
+  dayTaskIds?: number[];
 }
 
-export function TaskListItem({ task, categoryMap, onClick, onRegisterComplete }: TaskListItemProps) {
+export function TaskListItem({ task, categoryMap, onClick, onRegisterComplete, dayTaskIds }: TaskListItemProps) {
   const [departingPhase, setDepartingPhase] = useState<'ring' | 'fade' | null>(null);
   const [displayStatus, setDisplayStatus] = useState<TaskStatus>(task.status);
   const departureTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const settlingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const innerRafRef = useRef<number | null>(null);
 
+  const { handleTaskClick: handleMultiSelectClick, isSelected } = useMultiSelectContext();
+  const selected = isSelected(task.id!);
   const departing = departingPhase !== null;
 
   // Two-frame animation: ring phase → double-rAF → fade phase
@@ -143,12 +147,17 @@ export function TaskListItem({ task, categoryMap, onClick, onRegisterComplete }:
 
   return (
     <div
-      onClick={() => onClick?.(task)}
+      onClick={(e) => {
+        const handled = handleMultiSelectClick(task, e, dayTaskIds ?? []);
+        if (!handled) {
+          onClick?.(task);
+        }
+      }}
       className={clsx(
         'group w-full flex items-center gap-3 px-4 py-3 rounded-lg border text-left cursor-pointer',
         !departing && 'transition-colors',
-        colors.bg,
-        colors.border,
+        selected ? 'ring-2 ring-blue-400 bg-blue-50' : colors.bg,
+        selected ? 'border-blue-300' : colors.border,
         'hover:opacity-80',
         (departingPhase === 'ring' || departingPhase === 'fade') && 'line-through decoration-green-600 text-green-600',
         departingPhase === 'ring' && 'ring-2 ring-emerald-400 ring-offset-1 transition-all duration-[1500ms]',

@@ -44,6 +44,7 @@ export function DayGroup({
   }, [date]);
 
   const taskIds = useMemo(() => tasks.map((t) => `task-${t.id}`), [tasks]);
+  const dayTaskIds = useMemo(() => tasks.map((t) => t.id!).filter(Boolean), [tasks]);
 
   const dateObj = parseISO(date);
   const today = isToday(dateObj);
@@ -108,6 +109,7 @@ export function DayGroup({
                         task={task}
                         categoryMap={categoryMap}
                         onClick={onTaskClick}
+                        dayTaskIds={dayTaskIds}
                         onRegisterComplete={(fn) => {
                           if (task.id) completeRefs.current.set(task.id, fn);
                         }}
@@ -118,6 +120,7 @@ export function DayGroup({
                       task={task}
                       categoryMap={categoryMap}
                       onClick={onTaskClick}
+                      dayTaskIds={dayTaskIds}
                     />
                   )}
                 </DraggableTask>
