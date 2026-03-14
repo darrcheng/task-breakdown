@@ -30,3 +30,4 @@ Added a "Repeat" button to the edit task action bar (left of Delete) that opens 
 | 856f3ef | Add RepeatModal component and Repeat button in TaskForm |
 | 8cd4d43 | Wire repeat flow in TaskModal with bulk task creation |
 | d345f04 | Improve repeat modal with date range preview and calendar picker |
+| a842810 | Close repeat sub-modal immediately on submit |
