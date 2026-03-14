@@ -5,7 +5,7 @@ milestone_name: null
 status: between_milestones
 stopped_at: v1.1 completed
 last_updated: "2026-03-14"
-last_activity: 2026-03-14 - Quick task 004: Time estimates on task cards and daily totals
+last_activity: 2026-03-14 - Completed quick task 005: Repeat button in edit task mode
 progress:
   total_phases: 0
   completed_phases: 0
@@ -25,8 +25,8 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 
 ## Current Position
 
-Status: Between milestones. v1.1 shipped, v1.2 not yet started. Quick tasks 001-004 completed.
-Last activity: 2026-03-14 — Quick task 004: Time estimates on task cards, daily totals, auto-estimation
+Status: Between milestones. v1.1 shipped, v1.2 not yet started. Quick tasks 001-005 completed.
+Last activity: 2026-03-14 — Quick task 005: Repeat button in edit task mode
 
 ## Accumulated Context
 
@@ -55,3 +55,4 @@ None — clean slate for next milestone.
 | 002 | Tabbed emoji picker for category icons | 2026-03-11 | 6c69797 | [002-tabbed-emoji-picker](./quick/002-tabbed-emoji-picker/) |
 | 003 | Desktop multiselect (Ctrl+click, Shift+click, Esc) with group drag | 2026-03-14 | cfea86e | [003-multiselect-move-tasks](./quick/003-multiselect-move-tasks/) |
 | 004 | Time estimates on cards, daily totals (incl. mobile), auto-estimation | 2026-03-14 | 5a031bc | [004-time-estimates](./quick/004-time-estimates/) |
+| 005 | Repeat button in edit task mode with calendar date picker | 2026-03-14 | d345f04 | [005-add-repeat-button-in-edit-task-mode-with](./quick/005-add-repeat-button-in-edit-task-mode-with/) |
