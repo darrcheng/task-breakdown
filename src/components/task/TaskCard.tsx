@@ -63,7 +63,7 @@ export function TaskCard({ task, categoryMap, onClick, dayTaskIds }: TaskCardPro
       )}
       {effectiveEstimate && (
         <span className="text-[10px] text-slate-400 flex-shrink-0 whitespace-nowrap">
-          ~{formatEstimate(effectiveEstimate)}
+          {formatEstimate(effectiveEstimate)}
         </span>
       )}
       {subtaskCount > 0 && (

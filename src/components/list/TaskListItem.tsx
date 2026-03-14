@@ -4,6 +4,7 @@ import { Battery, BatteryMedium, Zap, Archive, ListTree } from 'lucide-react';
 import clsx from 'clsx';
 import { STATUS_COLORS, getNextStatus, renderCategoryIcon } from '../../utils/categories';
 import { ParentBadge } from '../task/ParentBadge';
+import { formatEstimate } from '../../utils/estimateCalibration';
 import { hapticFeedback } from '../../utils/haptics';
 import { db } from '../../db/database';
 import { useSubtasks } from '../../db/hooks';
@@ -64,6 +65,9 @@ export function TaskListItem({ task, categoryMap, onClick, onRegisterComplete, d
   const subtasks = useSubtasks(task.id ?? 0);
   const subtaskCount = subtasks?.length ?? 0;
   const subtaskDoneCount = subtasks?.filter(s => s.status === 'done').length ?? 0;
+
+  const effectiveEstimate = task.timeEstimateOverride ?? task.timeEstimate;
+  const timeLabel = effectiveEstimate && effectiveEstimate > 0 ? formatEstimate(effectiveEstimate) : '';
 
   const statusLabel =
     displayStatus === 'todo'
@@ -212,17 +216,19 @@ export function TaskListItem({ task, categoryMap, onClick, onRegisterComplete, d
         <Archive className="w-4 h-4" />
       </button>
       {task.id && <ParentBadge taskId={task.id} />}
-      <span
-        className={clsx(
-          'text-xs px-2 py-0.5 rounded-full font-medium',
-          colors.bg,
-          (departingPhase === 'ring' || departingPhase === 'fade') ? 'text-green-600' : colors.text,
-          'border',
-          colors.border
-        )}
-      >
-        {statusLabel}
-      </span>
+      {timeLabel && (
+        <span
+          className={clsx(
+            'text-xs px-2 py-0.5 rounded-full font-medium',
+            colors.bg,
+            (departingPhase === 'ring' || departingPhase === 'fade') ? 'text-green-600' : colors.text,
+            'border',
+            colors.border
+          )}
+        >
+          {timeLabel}
+        </span>
+      )}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useTasksByDate } from '../../db/hooks';
 import { formatDateKey, isToday, isSameMonth } from '../../utils/dates';
+import { formatDailyTotal } from '../../utils/estimateCalibration';
 import { TaskCard } from '../task/TaskCard';
 import { DraggableTask } from '../dnd/DraggableTask';
 import { DroppableDay } from '../dnd/DroppableDay';
@@ -48,7 +49,13 @@ export function DayCell({
         'hover:bg-slate-50/80'
       )}
     >
-      <div onClick={handleCellClick} className="flex-1 flex flex-col">
+      <div onClick={handleCellClick} className="flex-1 flex flex-col relative">
+        {(() => {
+          const dailyTotal = formatDailyTotal(tasks ?? []);
+          return dailyTotal ? (
+            <span className="absolute top-0 right-0 text-[9px] text-slate-400 font-medium">{dailyTotal}</span>
+          ) : null;
+        })()}
         <div
           className={clsx(
             'w-6 h-6 flex items-center justify-center rounded-full text-sm font-medium mb-1 mx-auto',

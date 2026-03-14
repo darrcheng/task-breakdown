@@ -3,6 +3,7 @@ import { Plus } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { isToday } from '../../utils/dates';
+import { formatDailyTotal } from '../../utils/estimateCalibration';
 import { TaskListItem } from './TaskListItem';
 import { TaskInlineCreate } from '../task/TaskInlineCreate';
 import { DraggableTask } from '../dnd/DraggableTask';
@@ -51,6 +52,7 @@ export function DayGroup({
   const dateLabel = today
     ? `Today - ${format(dateObj, 'MMMM d')}`
     : format(dateObj, 'EEEE, MMMM d, yyyy');
+  const dailyTotal = formatDailyTotal(tasks);
 
   return (
     <DroppableDay dateStr={date} className="mb-4">
@@ -63,6 +65,7 @@ export function DayGroup({
             }`}
           >
             {dateLabel}
+            {dailyTotal && <span className="text-slate-400 font-normal ml-1">({dailyTotal})</span>}
           </h3>
           <button
             onClick={() => setIsCreating(!isCreating)}
