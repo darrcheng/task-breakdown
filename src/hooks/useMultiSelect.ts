@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import React from 'react';
 import type { Task } from '../types';
 
@@ -112,6 +112,17 @@ export function MultiSelectProvider({ children }: MultiSelectProviderProps) {
     }
     return false;
   }, [lastClickedId, lastClickedDate, selectedIds.size, clearSelection]);
+
+  // Escape key clears selection
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selectedIds.size > 0) {
+        clearSelection();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedIds.size, clearSelection]);
 
   const value: MultiSelectContextValue = {
     selectedIds,
