@@ -26,6 +26,7 @@ key-files:
     - src/components/list/TaskListItem.tsx
     - src/components/task/TaskCard.tsx
     - src/App.tsx
+    - src/components/mobile/DaySwipeView.tsx
 
 key-decisions:
   - "Used duck-typed parameter in formatDailyTotal instead of importing Task type for flexibility"
@@ -56,6 +57,7 @@ completed: 2026-03-14
 ## Accomplishments
 - formatEstimate rewritten to produce "Xh Ym" format (30m, 1h, 1h 30m) instead of decimal hours
 - Calendar day cells show summed daily time totals at top-right corner
+- Mobile calendar (DaySwipeView) shows daily total to the right of the date header
 - List view day group headers show daily totals in parentheses after date
 - Task cards show time estimate instead of status text (status already color-coded)
 - TaskListItem badge replaced status label with formatted time estimate
@@ -68,6 +70,7 @@ Each task was committed atomically:
 1. **Task 1: Fix formatEstimate and add daily total helper** - `18f952d` (feat)
 2. **Task 2: Show daily totals in DayCell and DayGroup, replace status text with time estimates** - `e6d9201` (feat)
 3. **Task 3: Auto-assign AI time estimates on app load** - `b32e2ec` (feat)
+4. **Fix: Show daily total on mobile calendar view** - `5a031bc` (fix)
 
 ## Files Created/Modified
 - `src/utils/estimateCalibration.ts` - Rewritten formatEstimate, new formatDailyTotal helper
@@ -77,6 +80,7 @@ Each task was committed atomically:
 - `src/components/task/TaskCard.tsx` - Removed tilde prefix from estimate display
 - `src/hooks/useAutoEstimate.ts` - New hook for background auto-estimation
 - `src/App.tsx` - Added useAutoEstimate() call in AuthenticatedApp
+- `src/components/mobile/DaySwipeView.tsx` - Daily time total in mobile calendar header
 
 ## Decisions Made
 - Used duck-typed parameter in formatDailyTotal instead of importing the full Task type, making the utility more flexible and avoiding circular dependency concerns
